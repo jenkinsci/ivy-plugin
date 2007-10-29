@@ -1,0 +1,3 @@
+<div>
+  This plugin allow to manage the dependencies upon Hudson projects with the <a href="http://ant.apache.org/ivy/">Ivy</a> dependencies management system.
+</div>
