@@ -22,11 +22,13 @@ import fr.jayasoft.ivy.ModuleDescriptor;
 import fr.jayasoft.ivy.ModuleId;
 import fr.jayasoft.ivy.parser.ModuleDescriptorParserRegistry;
 import hudson.CopyOnWrite;
-import hudson.Launcher;
+import hudson.FilePath;
 import hudson.Util;
 import hudson.model.AbstractProject;
 import hudson.model.Build;
 import hudson.model.BuildListener;
+import hudson.model.DependecyDeclarer;
+import hudson.model.DependencyGraph;
 import hudson.model.Descriptor;
 import hudson.model.Hudson;
 import hudson.model.Project;
@@ -35,7 +37,7 @@ import hudson.util.FormFieldValidator;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintStream;
+import java.net.MalformedURLException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -43,6 +45,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
 
@@ -53,16 +57,18 @@ import org.kohsuke.stapler.StaplerResponse;
  * Trigger the build of other project based on the Ivy dependency managment
  * system.
  */
-public class IvyBuildTrigger extends Publisher {
+public class IvyBuildTrigger extends Publisher implements DependecyDeclarer {
 
-    private final String ivyFile;
+    private static final Logger LOGGER = Logger.getLogger(IvyBuildTrigger.class.getName());
+
+    private String ivyFile = "ivy.xml";
 
     /**
      * Identifies {@link IvyConfiguration} to be used.
      */
     private final String ivyConfName;
 
-    private transient ModuleDescriptor md;
+    private transient ModuleDescriptor moduleDescriptor;
 
     /**
      * Contructor
@@ -113,11 +119,23 @@ public class IvyBuildTrigger extends Publisher {
      * @throws ParseException
      * @throws IOException
      */
-    public Ivy getIvy() throws ParseException, IOException {
-        IvyConfiguration ivyConf = getIvyConfiguration();
-        File conf = new File(ivyConf.getIvyConfPath());
+    public Ivy getIvy() {
         Ivy ivy = new Ivy();
-        ivy.configure(conf);
+        IvyConfiguration ivyConf = getIvyConfiguration();
+        if (ivyConf != null) {
+            File conf = new File(ivyConf.getIvyConfPath());
+            try {
+                ivy.configure(conf);
+            } catch (ParseException e) {
+                LOGGER.log(Level.WARNING, "Parsing error while reading the ivy configuration " + ivyConf.getName()
+                        + " at " + ivyConf.getIvyConfPath(), e);
+                return null;
+            } catch (IOException e) {
+                LOGGER.log(Level.WARNING, "I/O error while reading the ivy configuration " + ivyConf.getName() + " at "
+                        + ivyConf.getIvyConfPath(), e);
+                return null;
+            }
+        }
         return ivy;
     }
 
@@ -125,15 +143,17 @@ public class IvyBuildTrigger extends Publisher {
      * Get the last computed Ivy module descriptior created from the ivy.xml of
      * this trigger
      * 
+     * @param workspace
+     *            the path to the root of the workspace
      * @return the Ivy module descriptior
      * @throws ParseException
      * @throws IOException
      */
-    public ModuleDescriptor getModuleDescriptor() throws ParseException, IOException {
-        if (md == null) {
-            recomputeModuleDescriptor();
+    public ModuleDescriptor getModuleDescriptor(FilePath workspace) {
+        if (moduleDescriptor == null) {
+            recomputeModuleDescriptor(workspace);
         }
-        return md;
+        return moduleDescriptor;
     }
 
     /**
@@ -142,14 +162,24 @@ public class IvyBuildTrigger extends Publisher {
      * @throws ParseException
      * @throws IOException
      */
-    public void recomputeModuleDescriptor() throws ParseException, IOException {
+    public void recomputeModuleDescriptor(FilePath workspace) {
         Ivy ivy = getIvy();
         if (ivy == null) {
-            md = null;
+            moduleDescriptor = null;
         } else {
-            File ivyF = new File(ivyFile);
-            md = ModuleDescriptorParserRegistry.getInstance().parseDescriptor(ivy, ivyF.toURI().toURL(),
-                    ivy.doValidate());
+            FilePath ivyF = workspace.child(ivyFile);
+            try {
+                moduleDescriptor = ModuleDescriptorParserRegistry.getInstance().parseDescriptor(ivy,
+                        ivyF.toURI().toURL(), ivy.doValidate());
+            } catch (InterruptedException e) {
+                LOGGER.log(Level.WARNING, "The Ivy module descriptor parsing of " + ivyF + " has been interrupted", e);
+            } catch (MalformedURLException e) {
+                LOGGER.log(Level.WARNING, "The URL is malformed : " + ivyF, e);
+            } catch (ParseException e) {
+                LOGGER.log(Level.WARNING, "Parsing error while reading the ivy file " + ivyF, e);
+            } catch (IOException e) {
+                LOGGER.log(Level.WARNING, "I/O error while reading the ivy file " + ivyF, e);
+            }
         }
     }
 
@@ -202,81 +232,48 @@ public class IvyBuildTrigger extends Publisher {
 
     @Override
     public boolean prebuild(Build build, BuildListener listener) {
-        PrintStream logger = listener.getLogger();
-        try {
-            recomputeModuleDescriptor();
-        } catch (ParseException e) {
-            logger.println("Unable to parse the ivy file : " + e.getMessage());
-            e.printStackTrace(logger);
-        } catch (IOException e) {
-            logger.println("Unable to parse the ivy file : " + e.getMessage());
-            e.printStackTrace(logger);
-        }
+        // PrintStream logger = listener.getLogger();
+        recomputeModuleDescriptor(build.getProject().getWorkspace());
         return true;
     }
 
-    public boolean perform(Build<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException,
-            IOException {
+    public void buildDependencyGraph(AbstractProject owner, DependencyGraph graph) {
+        ModuleDescriptor md = getModuleDescriptor(owner.getWorkspace());
+        if (md == null) {
+            return;
+        }
+        Ivy ivy = getIvy();
+        if (ivy == null) {
+            return;
+        }
 
-        PrintStream logger = listener.getLogger();
-
-        try {
-            Ivy ivy;
-            ivy = getIvy();
-            if (ivy == null) {
-                return true;
+        List<Project> projects = Hudson.getInstance().getAllItems(Project.class);
+        Map<ModuleId, ModuleDescriptor> moduleIdMap = new HashMap<ModuleId, ModuleDescriptor>();
+        Map<ModuleId, AbstractProject<?, ?>> projectMap = new HashMap<ModuleId, AbstractProject<?, ?>>();
+        for (Project<?, ?> p : projects) {
+            if (p.isDisabled()) {
+                continue;
             }
-
-            List<Project> projects = Hudson.getInstance().getAllItems(Project.class);
-            Map<ModuleId, ModuleDescriptor> moduleIdMap = new HashMap<ModuleId, ModuleDescriptor>();
-            Map<ModuleId, AbstractProject<?, ?>> projectMap = new HashMap<ModuleId, AbstractProject<?, ?>>();
-            for (AbstractProject<?, ?> p : projects) {
-                if (p.isDisabled()) {
-                    continue;
-                }
-                IvyBuildTrigger t = (IvyBuildTrigger) build.getProject().getPublisher(DESCRIPTOR);
-                if (t != null) {
-                    ModuleId id = t.getModuleDescriptor().getModuleRevisionId().getModuleId();
-                    moduleIdMap.put(id, t.getModuleDescriptor());
+            IvyBuildTrigger t = (IvyBuildTrigger) p.getPublisher(DESCRIPTOR);
+            if (t != null) {
+                ModuleDescriptor m = t.getModuleDescriptor(p.getWorkspace());
+                if (m != null) {
+                    ModuleId id = m.getModuleRevisionId().getModuleId();
+                    moduleIdMap.put(id, m);
                     projectMap.put(id, p);
                 }
             }
-
-            Set<ModuleDescriptor> dependencies = new HashSet<ModuleDescriptor>();
-            processFilterNodeFromRoot(getModuleDescriptor(), dependencies, moduleIdMap);
-
-            @SuppressWarnings("unchecked")
-            List<ModuleDescriptor> sortedModules = ivy.sortModuleDescriptors(dependencies);
-            List<AbstractProject<?, ?>> deps = new ArrayList<AbstractProject<?, ?>>(sortedModules.size());
-            for (ModuleDescriptor m : sortedModules) {
-                deps.add(projectMap.get(m));
-            }
-
-            // if (!build.getResult().isWorseThan(getThreshold())) {
-            for (AbstractProject p : deps) {
-                if (p.isDisabled()) {
-                    logger.println(p.getName() + " is disabled. Triggering skiiped");
-                    continue;
-                }
-
-                // this is not completely accurate, as a new build might be
-                // triggered
-                // between these calls
-                String name = p.getName() + " #" + p.getNextBuildNumber();
-                if (!p.scheduleBuild()) {
-                    logger.println("Triggering a new build of " + name);
-                } else {
-                    logger.println(name + " is already in the queue");
-                }
-            }
-            // }
-
-        } catch (ParseException e) {
-            logger.println("Unable to parse the ivy file : " + e.getMessage());
-            e.printStackTrace(logger);
         }
 
-        return true;
+        Set<ModuleDescriptor> dependencies = new HashSet<ModuleDescriptor>();
+        processFilterNodeFromLeaf(md, dependencies, moduleIdMap);
+
+        List<ModuleDescriptor> sortedModules = ivy.sortModuleDescriptors(dependencies);
+        List<AbstractProject> deps = new ArrayList<AbstractProject>(sortedModules.size());
+        for (ModuleDescriptor m : sortedModules) {
+            deps.add(projectMap.get(m.getModuleRevisionId().getModuleId()));
+        }
+        graph.addDependency(owner, deps);
     }
 
     /**
@@ -294,13 +291,39 @@ public class IvyBuildTrigger extends Publisher {
      */
     private void processFilterNodeFromRoot(ModuleDescriptor node, Set<ModuleDescriptor> toKeep,
             Map<ModuleId, ModuleDescriptor> moduleIdMap) {
-        toKeep.add(node);
-
         DependencyDescriptor[] deps = node.getDependencies();
         for (int i = 0; i < deps.length; i++) {
             ModuleId id = deps[i].getDependencyId();
-            if (moduleIdMap.get(id) != null) {
-                processFilterNodeFromRoot(moduleIdMap.get(id), toKeep, moduleIdMap);
+            ModuleDescriptor n = moduleIdMap.get(id);
+            if (n != null) {
+                toKeep.add(n);
+                processFilterNodeFromRoot(n, toKeep, moduleIdMap);
+            }
+        }
+    }
+
+    /**
+     * Search in the moduleIdMap modules depending on node, add them to the
+     * toKeep set and process them recursively.
+     * 
+     * @param node
+     *            the node to be processed
+     * @param toKeep
+     *            the set of ModuleDescriptors that should be kept
+     * @param moduleIdMap
+     *            reference mapping of moduleId to ModuleDescriptor that are
+     *            part of the BuildList
+     */
+    private void processFilterNodeFromLeaf(ModuleDescriptor node, Set<ModuleDescriptor> toKeep,
+            Map<ModuleId, ModuleDescriptor> moduleIdMap) {
+        for (ModuleDescriptor m : moduleIdMap.values()) {
+            DependencyDescriptor[] deps = m.getDependencies();
+            for (int i = 0; i < deps.length; i++) {
+                ModuleId id = deps[i].getDependencyId();
+                if (node.getModuleRevisionId().getModuleId().equals(id) && !toKeep.contains(m)) {
+                    toKeep.add(m);
+                    processFilterNodeFromLeaf(m, toKeep, moduleIdMap);
+                }
             }
         }
     }
@@ -373,7 +396,6 @@ public class IvyBuildTrigger extends Publisher {
                 confs = new IvyConfiguration[0];
             }
 
-
             this.configurations = confs;
 
             save();
@@ -417,7 +439,6 @@ public class IvyBuildTrigger extends Publisher {
             }.process();
         }
 
-
         /**
          * Check that the ivy.xml file exist
          * 
@@ -429,29 +450,7 @@ public class IvyBuildTrigger extends Publisher {
          * @throws ServletException
          */
         public void doCheckIvyFile(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-            // this can be used to check the existence of a file on the server,
-            // so needs to be protected
-            new FormFieldValidator(req, rsp, true) {
-                @Override
-                public void check() throws IOException, ServletException {
-                    File f = getFileParameter("value");
-                    if (f.getPath().equals("")) {
-                        error("The Ivy file path is required");
-                        return;
-                    }
-                    if (!f.isFile()) {
-                        error(f + " is not a file");
-                        return;
-                    }
-
-                    // I couldn't come up with a simple logic to test for a
-                    // maven installation
-                    // there seems to be just too much difference between m1 and
-                    // m2.
-
-                    ok();
-                }
-            }.process();
+            new FormFieldValidator.WorkspaceFilePath(req, rsp, true, true).process();
         }
 
         @Override

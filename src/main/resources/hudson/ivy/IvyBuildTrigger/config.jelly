@@ -12,6 +12,6 @@
   <f:entry title="Ivy file">
     <input class="setting-input validated" name="ivy_file"
          type="text" value="${instance.ivyFile}"
-          checkUrl="'../../publisher/IvyBuildTrigger/checkIvyFile?value='+escape(this.value)"/>
+          checkUrl="'${rootUrl}/publisher/IvyBuildTrigger/checkIvyFile?job=${it.fullName}&amp;value='+escape(this.value)"/>
   </f:entry>
 </j:jelly>
