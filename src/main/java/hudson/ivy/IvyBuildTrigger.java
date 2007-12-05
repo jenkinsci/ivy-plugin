@@ -37,6 +37,7 @@ import hudson.util.FormFieldValidator;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.net.MalformedURLException;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -62,6 +63,8 @@ public class IvyBuildTrigger extends Publisher implements DependecyDeclarer {
     private static final Logger LOGGER = Logger.getLogger(IvyBuildTrigger.class.getName());
 
     private String ivyFile = "ivy.xml";
+
+    private long lastmodified = 0;
 
     /**
      * Identifies {@link IvyConfiguration} to be used.
@@ -171,6 +174,7 @@ public class IvyBuildTrigger extends Publisher implements DependecyDeclarer {
             try {
                 moduleDescriptor = ModuleDescriptorParserRegistry.getInstance().parseDescriptor(ivy,
                         ivyF.toURI().toURL(), ivy.doValidate());
+                lastmodified = ivyF.lastModified();
             } catch (InterruptedException e) {
                 LOGGER.log(Level.WARNING, "The Ivy module descriptor parsing of " + ivyF + " has been interrupted", e);
             } catch (MalformedURLException e) {
@@ -232,8 +236,18 @@ public class IvyBuildTrigger extends Publisher implements DependecyDeclarer {
 
     @Override
     public boolean prebuild(Build build, BuildListener listener) {
-        // PrintStream logger = listener.getLogger();
-        recomputeModuleDescriptor(build.getProject().getWorkspace());
+        FilePath workspace = build.getProject().getWorkspace();
+        FilePath f = workspace.child(ivyFile);
+        try {
+            if (lastmodified != f.lastModified()) {
+                recomputeModuleDescriptor(build.getProject().getWorkspace());
+                Hudson.getInstance().rebuildDependencyGraph();
+            }
+        } catch (IOException e) {
+            e.printStackTrace(listener.error("Failed to read the ivy file " + f));
+        } catch (InterruptedException e) {
+            e.printStackTrace(listener.error("Interuption of the read the ivy file " + f));
+        }
         return true;
     }
 
