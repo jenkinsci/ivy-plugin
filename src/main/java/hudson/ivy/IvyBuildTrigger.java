@@ -277,32 +277,6 @@ public class IvyBuildTrigger extends Publisher implements DependecyDeclarer {
     }
 
     /**
-     * Adds the current node to the toKeep collection and then processes the
-     * each of the direct dependencies of this node that appear in the
-     * moduleIdMap (indicating that the dependency is part of this BuildList)
-     * 
-     * @param node
-     *            the node to be processed
-     * @param toKeep
-     *            the set of ModuleDescriptors that should be kept
-     * @param moduleIdMap
-     *            reference mapping of moduleId to ModuleDescriptor that are
-     *            part of the BuildList
-     */
-    private void processFilterNodeFromRoot(ModuleDescriptor node, Set<ModuleDescriptor> toKeep,
-            Map<ModuleId, ModuleDescriptor> moduleIdMap) {
-        DependencyDescriptor[] deps = node.getDependencies();
-        for (int i = 0; i < deps.length; i++) {
-            ModuleId id = deps[i].getDependencyId();
-            ModuleDescriptor n = moduleIdMap.get(id);
-            if (n != null) {
-                toKeep.add(n);
-                processFilterNodeFromRoot(n, toKeep, moduleIdMap);
-            }
-        }
-    }
-
-    /**
      * Search in the moduleIdMap modules depending on node, add them to the
      * toKeep set and process them recursively.
      * 
@@ -322,7 +296,6 @@ public class IvyBuildTrigger extends Publisher implements DependecyDeclarer {
                 ModuleId id = deps[i].getDependencyId();
                 if (node.getModuleRevisionId().getModuleId().equals(id) && !toKeep.contains(m)) {
                     toKeep.add(m);
-                    processFilterNodeFromLeaf(m, toKeep, moduleIdMap);
                 }
             }
         }
