@@ -3,7 +3,7 @@
   <parent>
     <groupId>org.jvnet.hudson.plugins</groupId>
     <artifactId>plugin</artifactId>
-    <version>1.156</version>
+    <version>1.160</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
   
@@ -18,17 +18,6 @@
       <groupId>org.jvnet.hudson</groupId>
       <artifactId>ivy</artifactId>
       <version>1.4.1</version>
-    </dependency>
-    <dependency>
-      <groupId>org.jvnet.hudson.main</groupId>
-      <artifactId>hudson-core</artifactId>
-      <version>1.160-SNAPSHOT</version>
-    </dependency>
-    <dependency>
-      <groupId>org.jvnet.hudson.main</groupId>
-      <artifactId>hudson-war</artifactId>
-      <version>1.160-SNAPSHOT</version>
-      <type>war</type>
     </dependency>
   </dependencies>
 </project>
