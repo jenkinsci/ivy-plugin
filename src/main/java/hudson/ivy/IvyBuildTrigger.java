@@ -23,6 +23,7 @@ import fr.jayasoft.ivy.ModuleId;
 import fr.jayasoft.ivy.parser.ModuleDescriptorParserRegistry;
 import hudson.CopyOnWrite;
 import hudson.FilePath;
+import hudson.Launcher;
 import hudson.Util;
 import hudson.model.AbstractProject;
 import hudson.model.Build;
@@ -235,7 +236,7 @@ public class IvyBuildTrigger extends Publisher implements DependecyDeclarer {
     }
 
     @Override
-    public boolean prebuild(Build build, BuildListener listener) {
+    public boolean perform(Build<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
         FilePath workspace = build.getProject().getWorkspace();
         FilePath f = workspace.child(ivyFile);
         try {
