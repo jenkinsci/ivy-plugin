@@ -1,4 +1,4 @@
-<project>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.jvnet.hudson.plugins</groupId>
@@ -10,7 +10,7 @@
   <artifactId>ivy</artifactId>
   <packaging>hpi</packaging>
   <name>Hudson Ivy plugin</name>
-  <version>1.0-SNAPSHOT</version>
+  <version>0.1</version>
   <!-- TODO: <url></url> -->
   
   <dependencies>
@@ -20,4 +20,10 @@
       <version>1.4.1</version>
     </dependency>
   </dependencies>
+
+  <scm>
+    <connection>scm:svn:https://guest@svn.dev.java.net/svn/hudson/tags/ivy-0.1</connection>
+    <developerConnection>scm:svn:https://svn.dev.java.net/svn/hudson/tags/ivy-0.1</developerConnection>
+    <url>https://hudson.dev.java.net/source/browse/hudson/hudson/plugins/ivy/tags/ivy-0.1</url>
+  </scm>
 </project>
