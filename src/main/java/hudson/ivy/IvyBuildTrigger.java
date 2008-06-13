@@ -21,6 +21,7 @@ import fr.jayasoft.ivy.Ivy;
 import fr.jayasoft.ivy.ModuleDescriptor;
 import fr.jayasoft.ivy.ModuleId;
 import fr.jayasoft.ivy.parser.ModuleDescriptorParserRegistry;
+import fr.jayasoft.ivy.util.Message;
 import hudson.CopyOnWrite;
 import hudson.FilePath;
 import hudson.Launcher;
@@ -38,15 +39,12 @@ import hudson.util.FormFieldValidator;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.net.MalformedURLException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -73,6 +71,13 @@ public class IvyBuildTrigger extends Publisher implements DependecyDeclarer {
     private final String ivyConfName;
 
     private transient ModuleDescriptor moduleDescriptor;
+
+    /**
+     * Set the Message Implementation for ivy to avoid logging to err
+     */
+    static {
+        Message.init (new IvyMessageImpl());
+    }
 
     /**
      * Contructor
@@ -124,6 +129,7 @@ public class IvyBuildTrigger extends Publisher implements DependecyDeclarer {
      * @throws IOException
      */
     public Ivy getIvy() {
+        Message.init (new IvyMessageImpl());
         Ivy ivy = new Ivy();
         IvyConfiguration ivyConf = getIvyConfiguration();
         if (ivyConf != null) {
@@ -257,13 +263,10 @@ public class IvyBuildTrigger extends Publisher implements DependecyDeclarer {
         if (md == null) {
             return;
         }
-        Ivy ivy = getIvy();
-        if (ivy == null) {
-            return;
-        }
 
+        // Create a map of all known ModuleID'S to their Projects
+        // TODO One might introduce some caching for this.
         List<Project> projects = Hudson.getInstance().getAllItems(Project.class);
-        Map<ModuleId, ModuleDescriptor> moduleIdMap = new HashMap<ModuleId, ModuleDescriptor>();
         Map<ModuleId, AbstractProject<?, ?>> projectMap = new HashMap<ModuleId, AbstractProject<?, ?>>();
         for (Project<?, ?> p : projects) {
             if (p.isDisabled()) {
@@ -274,47 +277,25 @@ public class IvyBuildTrigger extends Publisher implements DependecyDeclarer {
                 ModuleDescriptor m = t.getModuleDescriptor(p.getWorkspace());
                 if (m != null) {
                     ModuleId id = m.getModuleRevisionId().getModuleId();
-                    moduleIdMap.put(id, m);
                     projectMap.put(id, p);
                 }
             }
         }
 
-        Set<ModuleDescriptor> dependencies = new HashSet<ModuleDescriptor>();
-        processFilterNodeFromLeaf(md, dependencies, moduleIdMap);
+       // Get All Dependencies from ivy.
+       // Map them to corresponding  hudson projects
 
-        List<ModuleDescriptor> sortedModules = ivy.sortModuleDescriptors(dependencies);
-        List<AbstractProject> deps = new ArrayList<AbstractProject>(sortedModules.size());
-        for (ModuleDescriptor m : sortedModules) {
-            deps.add(projectMap.get(m.getModuleRevisionId().getModuleId()));
+        DependencyDescriptor[] deps = md.getDependencies();
+        List <AbstractProject> dependencies = new ArrayList<AbstractProject>();
+        for (DependencyDescriptor depDesc : deps) {
+            ModuleId id = depDesc.getDependencyId();
+            AbstractProject p = projectMap.get(id);
+            // Such a project might not exist
+            if (p != null) dependencies.add(p);
         }
-        graph.addDependency(owner, deps);
+        graph.addDependency(dependencies, owner);
     }
 
-    /**
-     * Search in the moduleIdMap modules depending on node, add them to the
-     * toKeep set and process them recursively.
-     * 
-     * @param node
-     *            the node to be processed
-     * @param toKeep
-     *            the set of ModuleDescriptors that should be kept
-     * @param moduleIdMap
-     *            reference mapping of moduleId to ModuleDescriptor that are
-     *            part of the BuildList
-     */
-    private void processFilterNodeFromLeaf(ModuleDescriptor node, Set<ModuleDescriptor> toKeep,
-            Map<ModuleId, ModuleDescriptor> moduleIdMap) {
-        for (ModuleDescriptor m : moduleIdMap.values()) {
-            DependencyDescriptor[] deps = m.getDependencies();
-            for (int i = 0; i < deps.length; i++) {
-                ModuleId id = deps[i].getDependencyId();
-                if (node.getModuleRevisionId().getModuleId().equals(id) && !toKeep.contains(m)) {
-                    toKeep.add(m);
-                }
-            }
-        }
-    }
 
     public Descriptor<Publisher> getDescriptor() {
         return DESCRIPTOR;
