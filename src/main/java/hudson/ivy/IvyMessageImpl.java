@@ -2,15 +2,17 @@ package hudson.ivy;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.ivy.util.AbstractMessageLogger;
+import org.apache.ivy.util.Message;
+import org.apache.ivy.util.MessageLogger;
 
-import fr.jayasoft.ivy.util.Message;
-import fr.jayasoft.ivy.util.MessageImpl;
+
 /**
- * This implements Ivy's MessageImpl. We log all Messages to java.util.loggin.
+ * This implements Ivy's MessageLogger. We log all Messages to java.util.logging.
  * if we wouldn't provide an implementation, all messages go to err
  *
  */
-public class IvyMessageImpl implements MessageImpl {
+public class IvyMessageImpl extends AbstractMessageLogger implements MessageLogger {
     private Logger logger = Logger.getLogger(IvyMessageImpl.class.getName());
     public void log(String msg, int level) {
         Level logLevel = Level.INFO;
@@ -34,17 +36,22 @@ public class IvyMessageImpl implements MessageImpl {
         logger.log(logLevel,msg);
     }
 
-    public void progress() {
-        log (".", Message.MSG_INFO);
-    }
 
     public void rawlog(String msg, int level) {
         log (msg, level);
     }
 
-    public void endProgress(String msg) {
+
+
+    @Override
+    protected void doEndProgress(String msg) {
         log (msg, Message.MSG_INFO);
 
+    }
+
+    @Override
+    protected void doProgress() {
+        log (".", Message.MSG_INFO);
     }
 
 }
