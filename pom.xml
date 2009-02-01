@@ -15,7 +15,7 @@
   
   <dependencies>
     <dependency>
-      <groupId>org.jvnet.hudson</groupId>
+      <groupId>org.apache.ivy</groupId>
       <artifactId>ivy</artifactId>
       <version>2.0.0</version>
     </dependency>
