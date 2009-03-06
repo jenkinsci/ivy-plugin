@@ -10,7 +10,7 @@
   <artifactId>ivy</artifactId>
   <packaging>hpi</packaging>
   <name>Hudson Ivy plugin</name>
-  <version>0.2-SNAPSHOT</version>
+  <version>0.3-SNAPSHOT</version>
   <url>http://hudson.gotdns.com/wiki/display/HUDSON/Ivy+Plugin</url>
   
   <dependencies>

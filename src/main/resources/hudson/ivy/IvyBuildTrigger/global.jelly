@@ -1,6 +1,11 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <f:section title="Ivy">
-    <f:entry title="Ivy configuration"
+    <f:entry title="Ivy Revision Matching">
+      <f:checkbox name="ivy_global_version_matching" checked="${descriptor.globalExtendedVersionMatching}"
+          />
+      <label>${%Use extended revision matching to filter upstream project dependencies globally}</label>
+    </f:entry>
+    <f:entry title="Ivy Configuration"
       description="List of Ivy configurations.">
       <f:repeatable var="conf" items="${descriptor.configurations}">
         <table width="100%">

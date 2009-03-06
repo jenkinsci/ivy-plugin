@@ -1,4 +1,11 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <j:if test="${!descriptor.globalExtendedVersionMatching}">
+    <f:entry title="Ivy Revision Matching">
+      <f:checkbox name="ivy_version_matching" checked="${instance.extendedVersionMatching}"
+          />
+      <label class="attach-previous">${%Use extended revision matching to filter upstream project dependencies}</label>
+    </f:entry>
+  </j:if>
   <j:if test="${!empty(descriptor.configurations)}">
     <f:entry title="Ivy Configuration">
       <select class="setting-input" name="ivy_conf_name">
@@ -9,9 +16,9 @@
       </select>
     </f:entry>
   </j:if>
-  <f:entry title="Ivy file">
+  <f:entry title="Ivy File">
     <input class="setting-input validated" name="ivy_file"
          type="text" value="${instance.ivyFile}"
-          checkUrl="'${rootUrl}/publisher/IvyBuildTrigger/checkIvyFile?job=${it.fullName}&amp;value='+escape(this.value)"/>
+          checkUrl="'${rootURL}/publisher/IvyBuildTrigger/checkIvyFile?job=${it.fullName}&amp;value='+escape(this.value)"/>
   </f:entry>
 </j:jelly>
