@@ -1,20 +1,20 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <f:section title="Ivy">
-    <f:entry title="Ivy Revision Matching">
+    <f:entry title="${%revision_matching_title}">
       <f:checkbox name="ivy_global_version_matching" checked="${descriptor.globalExtendedVersionMatching}"
           />
-      <label>${%Use extended revision matching to filter upstream project dependencies globally}</label>
+      <label>${%revision_matching_checkbox}</label>
     </f:entry>
-    <f:entry title="Ivy Configuration"
-      description="List of Ivy configurations.">
+    <f:entry title="${%ivy_configuration_title}"
+      description="${%ivy_configuration_description}">
       <f:repeatable var="conf" items="${descriptor.configurations}">
         <table width="100%">
-          <f:entry title="name">
+          <f:entry title="${%ivy_configuration_name_title}">
             <input class="setting-input" name="ivy_name"
               type="text" value="${conf.name}"/>
           </f:entry>
 
-          <f:entry title="configuration file">
+          <f:entry title="${%ivy_configuration_file_title}">
             <input class="setting-input validated" name="ivy_conf_path"
               type="text" value="${conf.ivyConfPath}"
               checkUrl="'publisher/IvyBuildTrigger/checkIvyConf?value='+escape(this.value)"/>

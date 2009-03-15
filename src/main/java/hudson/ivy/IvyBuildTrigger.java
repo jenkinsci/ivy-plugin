@@ -266,7 +266,7 @@ public class IvyBuildTrigger extends Publisher implements DependecyDeclarer {
     }
 
     /**
-     * Container the configuration of Ivy
+     * Container for the Ivy configuration.
      */
     public static class IvyConfiguration {
 
@@ -319,7 +319,8 @@ public class IvyBuildTrigger extends Publisher implements DependecyDeclarer {
     }
 
     /**
-     *  Workaround for a bug in p.getWorkspace prior to 1.279
+     * Workaround for a bug in p.getWorkspace prior to 1.279
+     * 
      * @param p
      * @return
      */
@@ -336,7 +337,7 @@ public class IvyBuildTrigger extends Publisher implements DependecyDeclarer {
      * 
      * @param workspace Workspace root Directory
      * @param rootDir The Projects root dir where the backup copy is stored
-     *      */
+     */
     private void copyIvyFileFromWorkspaceIfNecessary(AbstractProject p) {
         FilePath workspace = getWorkspace (p);
         File rootDir = p.getRootDir();
@@ -468,7 +469,7 @@ public class IvyBuildTrigger extends Publisher implements DependecyDeclarer {
          * Reason for this maybe:
          * <ul>
          *  <li> An Ivy File has Changed
-         *  <li> an Project was renamed
+         *  <li> A Project was renamed
          * </ul>
          */
         public void invalidateProjectMap() {
@@ -515,13 +516,17 @@ public class IvyBuildTrigger extends Publisher implements DependecyDeclarer {
             return configurations;
         }
 
+        /**
+         * 
+         * @return  is extended version matching to be configured globally?
+         */
         public boolean isGlobalExtendedVersionMatching() {
             return globalExtendedVersionMatching;
         }
 
         @Override
         public String getDisplayName() {
-            return "Trigger the build of other projects based on the Ivy management system";
+            return Messages.IvyBuildTrigger_DisplayName();
         }
 
         @Override
@@ -589,47 +594,24 @@ public class IvyBuildTrigger extends Publisher implements DependecyDeclarer {
         }
 
         /**
-         * Check that the Ivy configuration file exist
-         *
-         * @param req
-         *            the Stapler request
-         * @param rsp
-         *            the Stapler response
-         * @throws IOException
-         * @throws ServletException
-         */
-        public void doCheckIvyConf(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-            // this can be used to check the existence of a file on the server,
-            // so needs to be protected
-            new FormFieldValidator(req, rsp, true) {
-                @Override
-                public void check() throws IOException, ServletException {
-                    File f = getFileParameter("value");
-                    if (f.getPath().equals("")) {
-                        error("The Ivy configuration path is required");
-                        return;
-                    }
-                    if (!f.isFile()) {
-                        error(f + " is not a file");
-                        return;
-                    }
-
-                    // I couldn't come up with a simple logic to test for a
-                    // maven installation
-                    // there seems to be just too much difference between m1 and
-                    // m2.
-
-                    ok();
-                }
-            }.process();
-        }
-
-        /**
          * Simulate what would happen internally if a successful build occurred on an IvyBuildTrigger managed project.
          * This provides a hook to start builds on downstream projects if a triggering event outside of Hudson occurred.
          * One such triggering event could be publish of a non-integration (milestone/release) build of the IvyBuildTrigger
-         * managed project code to the Ivy repository that is visible to your build system. 
+         * managed project code to the Ivy repository that is visible to your build system.
          * 
+         * The StaplerRequest parameter must include request parameters <code>org</code>, <code>name</code>,
+         * and <code>rev</code> which respectively represent the Ivy module descriptor attributes
+         * <code>organisation</code>, <code>module</code>, and <code>revision</code>.  If extended revision matching
+         * is not being used, then the revision attribute is ignored by the trigger even though required in the request.
+         * The value of <code>branch</code> is optional on the request and may be used to match against the module
+         * descriptor <code>branch</code> attribute when present.  These attributes are used to match against projects
+         * managed with the IvyBuildTrigger and need to be set accordingly.
+         * 
+         * Note this event does not actually build the matched project(s) in Hudson.  It just schedules builds on downstream
+         * dependent projects.  Successfully executing this event requires global {@link Item#BUILD} permission on a
+         * secured instance.
+         * 
+         * @author jmetcalf
          * @param req  The StaplerRequest
          * @param rsp  The StaplerResponse
          * @throws IOException    IOException on the servlet call
@@ -644,7 +626,7 @@ public class IvyBuildTrigger extends Publisher implements DependecyDeclarer {
             Hudson.getInstance().getACL().checkPermission(Item.BUILD);
 
             if (org == null || name == null || rev == null)
-                throw new IllegalArgumentException("doHandleExternalTrigger requires the org, name, and rev parameters to contain non-empty values");
+                throw new IllegalArgumentException("doHandleExternalTrigger requires the org, name, and rev parameters be non-empty");
 
             final ModuleRevisionId rid = ModuleRevisionId.newInstance(org, name, branch, rev);
 
@@ -663,12 +645,7 @@ public class IvyBuildTrigger extends Publisher implements DependecyDeclarer {
                     List<AbstractProject> downstream = Hudson.getInstance().getDependencyGraph().getDownstream(p);
                     for (AbstractProject down : downstream) {
                         if (down.isDisabled() == false) {
-                            down.scheduleBuild(new Cause.UserCause() {
-                                public String getShortDescription() {
-                                    return "IvyBuildTrigger external event (" + rid.toString() + "): " + 
-                                    super.getShortDescription();
-                                }
-                            });
+                            down.scheduleBuild(new UserCause(rid));
                         }
                     }
                 }
@@ -676,7 +653,46 @@ public class IvyBuildTrigger extends Publisher implements DependecyDeclarer {
         }
 
         /**
-         * Check that the ivy.xml file exist
+         * Check that the Ivy configuration file exist
+         *
+         * @param req
+         *            the Stapler request
+         * @param rsp
+         *            the Stapler response
+         * @throws IOException
+         * @throws ServletException
+         */
+        public void doCheckIvyConf(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+            // this can be used to check the existence of a file on the server,
+            // so needs to be protected
+            new FormFieldValidator(req, rsp, true) {
+                @Override
+                public void check() throws IOException, ServletException {
+                    File f = getFileParameter("value");
+                    if (f.getPath().equals("")) {
+                        error(Messages.IvyBuildTrigger_CheckIvyConf_PathRequiredError());
+                        return;
+                    }
+                    if (!f.isFile()) {
+                        error(Messages.IvyBuildTrigger_CheckIvyConf_PathNotFileError(f));
+                        return;
+                    }
+
+                    // I couldn't come up with a simple logic to test for a
+                    // maven installation
+                    // there seems to be just too much difference between m1 and
+                    // m2.
+
+                    ok();
+                }
+            }.process();
+        }
+
+        /**
+         * Check that the ivy.xml file exist.  This validator is not implemented at this time
+         * since Ivy files are usually maintained under source code control at the base of
+         * the working copy.  It will therefore never exist for new projects and so the validator
+         * will always fail which can be confusing.
          *
          * @param req
          *            the Stapler request
@@ -695,36 +711,36 @@ public class IvyBuildTrigger extends Publisher implements DependecyDeclarer {
             new FormFieldValidator(req, rsp, true) {
                 @Override
                 public void check() throws IOException, ServletException {
-                    String job = Util.fixEmptyAndTrim(request.getParameter("job"));
-                    String value = Util.fixEmptyAndTrim(request.getParameter("value"));
+                	String job = Util.fixEmptyAndTrim(request.getParameter("job"));
+                	String value = Util.fixEmptyAndTrim(request.getParameter("value"));
 
                     if(value==null || job==null) {
                         ok(); // none entered yet, or something is seriously wrong
                         return;
                     }
 
-                    FilePath w = IvyBuildTrigger.getWorkspace(Hudson.getInstance().getItemByFullName(job, AbstractProject.class));
-                    if(w==null) {
-                        ok();  // should not happen
-                        return;
-                    }
+                	FilePath w = IvyBuildTrigger.getWorkspace(Hudson.getInstance().getItemByFullName(job, AbstractProject.class));
+                	if(w==null) {
+                		ok();  // should not happen
+                		return;
+                	}
 
-                    FilePath ivyF = w.child(value);
-                    try {
-                        if (ivyF.exists()) {
-                            if (ivyF.isDirectory()) {
-                                error("Path is not a file");
-                                return;
-                            }
-                        }
-                        else {
-                            error("Path does not exist");
-                            return;
-                        }
-                    } 
-                    catch (InterruptedException e) {
-                        // couldn't check
-                    }
+                	FilePath ivyF = w.child(value);
+                	try {
+						if (ivyF.exists()) {
+							if (ivyF.isDirectory()) {
+								error("Path is not a file");
+								return;
+							}
+						}
+						else {
+							error("Path does not exist");
+							return;
+						}
+					} 
+                	catch (InterruptedException e) {
+						// couldn't check
+					}
 
                     ok();
                 }
@@ -739,4 +755,32 @@ public class IvyBuildTrigger extends Publisher implements DependecyDeclarer {
         }
     }
 
+    /**
+     * This cause is used when triggering downstream builds from the external event trigger.
+     * 
+     * @author jmetcalf
+     * @see #doHandleExternalTrigger(StaplerRequest, StaplerResponse)
+     */
+    public static class UserCause extends Cause.UserCause {
+
+        private ModuleRevisionId rid;
+
+        /**
+         * Constructor
+         * 
+         * @param rid  The ModuleRevisionId computed from the StaplerRequest.
+         */
+        public UserCause(ModuleRevisionId rid) {
+            this.rid = rid;
+        }
+        
+        public ModuleRevisionId getModuleRevisionId() {
+            return rid;
+        }
+
+        @Override
+        public String getShortDescription() {
+            return Messages.IvyBuildTrigger_UserCause_ShortDescription(getModuleRevisionId(), getUserName());
+        }
+    }
 }
