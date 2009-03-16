@@ -1,0 +1,11 @@
+<div>
+    Select this checkbox if you want to allow the optional <i>trunk</i> and <i>revision</i> attributes
+    of the ivy.xml module descriptor to help identify upstream project dependencies within Hudson.
+    Leaving this option unchecked means that only the mandatory <i>organisation</i> and <i>module</i> 
+    attributes will be used when matching against project module descriptors.  However it also means
+    that if you have two or more projects configured in Hudson using the same mandatory attribute
+    values in their module descriptors, and this project defines a dynamic revision dependency on one of the
+    modules, then all those projects will match and will be considered upstream dependencies.  This is usually
+    <b>not</b> what you want if you are using Hudson CI to build different versions (or different
+    source code branches) of the same module at the same time.
+</div>

@@ -1,25 +1,25 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <f:section title="Ivy">
-    <f:entry title="${%revision_matching_title}">
+    <f:entry title="${%revision_matching_title}" field="revisionMatching">
       <f:checkbox name="ivy_global_version_matching" checked="${descriptor.globalExtendedVersionMatching}"
           />
       <label>${%revision_matching_checkbox}</label>
     </f:entry>
     <f:entry title="${%ivy_configuration_title}"
-      description="${%ivy_configuration_description}">
+      description="${%ivy_configuration_description}" field="settings">
       <f:repeatable var="conf" items="${descriptor.configurations}">
         <table width="100%">
-          <f:entry title="${%ivy_configuration_name_title}">
+          <f:entry title="${%ivy_configuration_name_title}" field="settingsNameTitle">
             <input class="setting-input" name="ivy_name"
               type="text" value="${conf.name}"/>
           </f:entry>
 
-          <f:entry title="${%ivy_configuration_file_title}">
+          <f:entry title="${%ivy_configuration_file_title}" field="settingsFileTitle">
             <input class="setting-input validated" name="ivy_conf_path"
               type="text" value="${conf.ivyConfPath}"
               checkUrl="'publisher/IvyBuildTrigger/checkIvyConf?value='+escape(this.value)"/>
           </f:entry>
-          <f:entry title="">
+          <f:entry title="" field="settingsDelete">
             <div align="right">
               <f:repeatableDeleteButton />
             </div>

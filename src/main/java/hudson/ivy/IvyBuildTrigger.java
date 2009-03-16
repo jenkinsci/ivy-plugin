@@ -171,24 +171,29 @@ public class IvyBuildTrigger extends Publisher implements DependecyDeclarer {
      */
     public Ivy getIvy() {
         Message.setDefaultLogger(new IvyMessageImpl());
-        Ivy ivy = Ivy.newInstance();
         IvyConfiguration ivyConf = getIvyConfiguration();
+        Ivy ivy = Ivy.newInstance();
+        Ivy configured = null;
         if (ivyConf != null) {
-            File conf = new File(ivyConf.getIvyConfPath());
             try {
-                LOGGER.info("Configure Ivy for Configuration: " + ivyConf.name);
-                ivy.configure(conf);
-            } catch (ParseException e) {
-                LOGGER.log(Level.WARNING, "Parsing error while reading the ivy configuration " + ivyConf.getName()
+                ivy.configure(new File(ivyConf.getIvyConfPath()));
+                LOGGER.info("Configured Ivy using the Ivy settings " + ivyConf.getName());
+                configured = ivy;
+            } catch (Exception e) {
+                LOGGER.log(Level.SEVERE, "Error while reading the Ivy settings " + ivyConf.getName()
                         + " at " + ivyConf.getIvyConfPath(), e);
-                return null;
-            } catch (IOException e) {
-                LOGGER.log(Level.WARNING, "I/O error while reading the ivy configuration " + ivyConf.getName() + " at "
-                        + ivyConf.getIvyConfPath(), e);
-                return null;
             }
         }
-        return ivy;
+        else {
+            try {
+                ivy.configureDefault();
+                LOGGER.info("Configured Ivy using default 2.0 settings");
+                configured = ivy;
+            } catch (Exception e) {
+                LOGGER.log(Level.SEVERE, "Error while reading the default Ivy 2.0 settings", e);
+            }
+        }
+        return configured;
     }
 
     /**
@@ -267,6 +272,8 @@ public class IvyBuildTrigger extends Publisher implements DependecyDeclarer {
 
     /**
      * Container for the Ivy configuration.
+     * Note that configurations are now called settings in Ivy 2.0
+     * to avoid confusion with dependency configurations.
      */
     public static class IvyConfiguration {
 
@@ -438,6 +445,10 @@ public class IvyBuildTrigger extends Publisher implements DependecyDeclarer {
      */
     public static final class DescriptorImpl extends Descriptor<Publisher> {
 
+        /**
+         * Note that configurations are now called settings in Ivy 2.0
+         * to avoid confusion with dependency configurations.
+         */
         @CopyOnWrite
         private volatile IvyConfiguration[] configurations = new IvyConfiguration[0];
 
@@ -562,6 +573,7 @@ public class IvyBuildTrigger extends Publisher implements DependecyDeclarer {
             } else {
                 confs = new IvyConfiguration[0];
             }
+            LOGGER.info("IvyConfigurations: " + confs.length);
 
             this.configurations = confs;
             this.globalExtendedVersionMatching = (gvm != null);
@@ -678,21 +690,16 @@ public class IvyBuildTrigger extends Publisher implements DependecyDeclarer {
                         return;
                     }
 
-                    // I couldn't come up with a simple logic to test for a
-                    // maven installation
-                    // there seems to be just too much difference between m1 and
-                    // m2.
-
                     ok();
                 }
             }.process();
         }
 
         /**
-         * Check that the ivy.xml file exist.  This validator is not implemented at this time
-         * since Ivy files are usually maintained under source code control at the base of
-         * the working copy.  It will therefore never exist for new projects and so the validator
-         * will always fail which can be confusing.
+         * Check that the workspace relative path to the ivy.xml file was entered.  This code cannot check for
+         * file existence since the file never exists for new projects that need to check out the ivy file
+         * from source control. Under this condition the validator would always fail for first time configuration
+         * which can be confusing.
          *
          * @param req
          *            the Stapler request
@@ -702,50 +709,22 @@ public class IvyBuildTrigger extends Publisher implements DependecyDeclarer {
          * @throws ServletException
          */
         public void doCheckIvyFile(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-            // this can be used to check the existence of a file on the server,
-            // so needs to be protected
-            /*
-             * Unsure of value of this validator.  Ivy file generally never exists
-             * for new projects until the working copy is checked out.
-             * 
             new FormFieldValidator(req, rsp, true) {
                 @Override
                 public void check() throws IOException, ServletException {
-                	String job = Util.fixEmptyAndTrim(request.getParameter("job"));
-                	String value = Util.fixEmptyAndTrim(request.getParameter("value"));
-
-                    if(value==null || job==null) {
-                        ok(); // none entered yet, or something is seriously wrong
+                    File f = getFileParameter("value");
+                    if (f.getPath().equals("")) {
+                        error(Messages.IvyBuildTrigger_CheckIvyFile_PathRequiredError());
                         return;
                     }
-
-                	FilePath w = IvyBuildTrigger.getWorkspace(Hudson.getInstance().getItemByFullName(job, AbstractProject.class));
-                	if(w==null) {
-                		ok();  // should not happen
-                		return;
-                	}
-
-                	FilePath ivyF = w.child(value);
-                	try {
-						if (ivyF.exists()) {
-							if (ivyF.isDirectory()) {
-								error("Path is not a file");
-								return;
-							}
-						}
-						else {
-							error("Path does not exist");
-							return;
-						}
-					} 
-                	catch (InterruptedException e) {
-						// couldn't check
-					}
+                    if (f.isAbsolute()) {
+                        error(Messages.IvyBuildTrigger_CheckIvyFile_PathAbsoluteError());
+                        return;
+                    }
 
                     ok();
                 }
             }.process();
-             */
         }
 
         @Override
@@ -773,7 +752,7 @@ public class IvyBuildTrigger extends Publisher implements DependecyDeclarer {
         public UserCause(ModuleRevisionId rid) {
             this.rid = rid;
         }
-        
+
         public ModuleRevisionId getModuleRevisionId() {
             return rid;
         }
