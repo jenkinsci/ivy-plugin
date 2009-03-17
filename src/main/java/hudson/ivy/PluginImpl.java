@@ -17,16 +17,8 @@
 package hudson.ivy;
 
 import hudson.Plugin;
-import hudson.tasks.BuildStep;
 
 /**
- * @plugin
+ * Everything should be handled by Extension.
  */
-public class PluginImpl extends Plugin {
-
-    @Override
-    public void start() throws Exception {
-        BuildStep.PUBLISHERS.add(IvyBuildTrigger.DESCRIPTOR);
-    }
-
-}
+public class PluginImpl extends Plugin {}
