@@ -36,6 +36,7 @@ import hudson.tasks.Publisher;
 import hudson.util.FormFieldValidator;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.text.ParseException;
@@ -93,12 +94,6 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
     private final String ivyConfName;
 
     /**
-     * Indicates whether or not dependent project candidates will be filtered using
-     * an extended fine grained strategy based on branch and/or revision.
-     */
-    private boolean extendedVersionMatching = false;
-
-    /**
      * The last modified time of the backup copy of the ivy file on the master.
      */
     private transient long lastmodified = 0;
@@ -127,13 +122,10 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
      *            the ivy.xml file path within the workspace
      * @param ivyConfName
      *            the Ivy configuration name to use
-     * @param extendedVersionMatching
-     *            indicates if using extended version matching to determine project dependencies
      */
-    public IvyBuildTrigger(final String ivyFile, final String ivyConfName, final boolean extendedVersionMatching) {
+    public IvyBuildTrigger(final String ivyFile, final String ivyConfName) {
         this.ivyFile = ivyFile;
         this.ivyConfName = ivyConfName;
-        this.extendedVersionMatching = extendedVersionMatching;
     }
 
     /**
@@ -150,14 +142,6 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
      */
     public String getIvyConfName() {
         return ivyConfName;
-    }
-
-    /**
-     * 
-     * @return  true if using extended version matching
-     */
-    public boolean isExtendedVersionMatching() {
-        return extendedVersionMatching;
     }
 
     /**
@@ -235,25 +219,22 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
      * @param workspace Workspace root Directory
      * @param localFile The local file to be copied to
      * @return  true iff the file was actually copied
+     * @throws IOException   If unable to access/copy the workspace ivy file
+     * @throws InterruptedException  If interrupted while accessing the workspace ivy file
      */
-    private boolean copyIvyFileFromWorkspaceIfNecessary(FilePath workspace, File localFile) {
+    private boolean copyIvyFileFromWorkspaceIfNecessary(FilePath workspace, File localFile) throws IOException, InterruptedException {
         boolean copied = false;
         if (workspace != null) { // Unless the workspace is non-null we can not copy a new ivy file
             FilePath f = workspace.child(ivyFile);
-            try {
-                // Copy the ivy file from the workspace (possibly at a slave) to the projects dir (at Master)
-                FilePath backupCopy = new FilePath(localFile);
-                long flastModified = f.lastModified();
-                if (flastModified > lastmodified) {
-                    f.copyTo(backupCopy);
-                    localFile.setLastModified(flastModified);
-                    copied = true;
-                    LOGGER.info("Copied workspace Ivy file to backup " + localFile);
-                }
-            } catch (IOException e) {
-                LOGGER.warning("Failed to read the ivy file " + f);
-            } catch (InterruptedException e) {
-                LOGGER.warning("Interupted when reading the ivy file " + f);
+            // Copy the ivy file from the workspace (possibly at a slave) to the projects dir (at Master)
+            FilePath backupCopy = new FilePath(localFile);
+            long flastModified = f.lastModified();
+            if (flastModified == 0l) throw new FileNotFoundException("Can't stat file " + f);
+            if (flastModified > lastmodified) {
+                f.copyTo(backupCopy);
+                localFile.setLastModified(flastModified);
+                copied = true;
+                LOGGER.info("Copied the workspace ivy file to backup");
             }
         }
         return copied;
@@ -263,8 +244,6 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
      * Force the creation of the module descriptor.
      *
      * @param  p  the project this trigger belongs to
-     * @throws ParseException
-     * @throws IOException
      */
     private void recomputeModuleDescriptor(AbstractProject p) {
         LOGGER.fine ("Recomputing Moduledescriptor for Project "+p.getFullDisplayName());
@@ -276,9 +255,22 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
         versionMatcher = ivy.getSettings().getVersionMatcher();
 
         final File ivyF = new File(p.getRootDir(), BACKUP_IVY_FILE_NAME);
-        copyIvyFileFromWorkspaceIfNecessary(getWorkspace(p), ivyF);
+        try {
+            copyIvyFileFromWorkspaceIfNecessary(getWorkspace(p), ivyF);
+        }
+        catch (IOException e) {
+            LOGGER.log(Level.WARNING, "Failed to access the workspace ivy file", e);
+            LOGGER.log(Level.WARNING, "Removing ModuleDescriptor");
+            setModuleDescriptor(null);
+            return;
+        }
+        catch (InterruptedException e) {
+            LOGGER.log(Level.WARNING, "Interupted while accessing the workspace ivy file", e);
+            if (ivyF.canRead()) LOGGER.log(Level.WARNING, "Will try to use use existing backup");
+        }
         // Calculate ModuleDescriptor from the backup copy 
-        if (!ivyF.exists()) {
+        if (!ivyF.canRead()) {
+            LOGGER.log(Level.WARNING, "Cannot read ivy file backup...removing ModuleDescriptor");
             setModuleDescriptor(null);
             return;
         }
@@ -388,7 +380,7 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
                 if (p.isDisabled()) p = null;
                 // Such a project might not exist
                 if (p != null && p instanceof Project) {
-                    if (captures(true, rid, (Project) p)) {
+                    if (captures(rid, (Project) p)) {
                         dependencies.add(p);
                     }
                 }
@@ -400,33 +392,33 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
     /**
      * Determine if a dependency ModuleRevisionId captures the candidate project.
      * 
-     * @param enforceDynamicMatching  true if the depRevId must be considered dynamic by the configured Ivy VersionMatcher.
      * @param depRevId   The ModuleRevisionId of the dependency
      * @param candidate  A candidate Project that is tested against the depRevId
      * @return  true iff the candidate is captured according to the rules
      */
-    private boolean captures(boolean enforceDynamicMatching, ModuleRevisionId depRevId, Project candidate) {
+    private boolean captures(ModuleRevisionId depRevId, Project candidate) {
         IvyBuildTrigger t = (IvyBuildTrigger) candidate.getPublisher(DESCRIPTOR);
         boolean captures = (t != null); // check again in case candidate reconfigured against race condition
-        if (captures && extendedVersionMatching) {
+        if (captures && DESCRIPTOR.isExtendedVersionMatching()) {
             ModuleDescriptor cmd = t.getModuleDescriptor(candidate);
             ModuleRevisionId cmrid = cmd.getModuleRevisionId();
 
             VersionMatcher matcher = versionMatcher;
 
             // A null VersionMatcher means something is really wrong and we should not proceed to add the dependency
-            captures = (matcher != null);
-            if (captures && enforceDynamicMatching) {
-                captures = matcher.isDynamic(depRevId);
-            }
+            captures = (matcher != null && matcher.isDynamic(depRevId));
             if (captures) {
                 String dbranch = depRevId.getBranch();
-                if (dbranch != null) {
-                    // Best Practice assumes you are using branch in your Ivy repository patterns before revision.
-                    // Otherwise you will need to use pattern-based (not latest.*) dynamic dependency revisions
-                    // to guarantee you will not run into Ivy resolve errors during builds. 
-                    String cbranch = cmrid.getBranch();
-                    captures = cbranch != null && cbranch.equals(dbranch);
+                String cbranch = cmrid.getBranch();
+
+                // Best Practice assumes you are using branch in your Ivy repository patterns before revision.
+                // Otherwise you will need to use pattern-based (not latest.*) dynamic dependency revisions
+                // to guarantee you will not run into Ivy resolve errors during builds.
+                if (dbranch != null) { 
+                    captures = dbranch.equals(cbranch);
+                }
+                else {
+                    captures = (cbranch == null);
                 }
                 if (captures) {
                     captures = matcher.accept(depRevId, cmrid);
@@ -514,10 +506,10 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
         private transient volatile Map<ModuleId, List<AbstractProject>> projectMap=null;
 
         /**
-         * This indicates if extendedVersionMatching should be enforced globally across all
-         * projects using this trigger type.
+         * This indicates if extendedVersionMatching should be used to help restrict
+         * project dependency mapping.
          */
-        private volatile boolean globalExtendedVersionMatching = false;
+        private volatile boolean extendedVersionMatching = false;
 
         /**
          * Default constructor just loads any serialized configuration.
@@ -598,10 +590,10 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
 
         /**
          * 
-         * @return  true if extended version matching is globally enforced for all triggers.
+         * @return  true if extended version matching is being used.
          */
-        public boolean isGlobalExtendedVersionMatching() {
-            return globalExtendedVersionMatching;
+        public boolean isExtendedVersionMatching() {
+            return extendedVersionMatching;
         }
 
         /**
@@ -621,7 +613,7 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
             int i;
             String[] names = req.getParameterValues("ivy_name");
             String[] paths = req.getParameterValues("ivy_conf_path");
-            String gvm = req.getParameter("ivy_global_version_matching");
+            String vm = req.getParameter("ivy_version_matching");
 
             IvyConfiguration[] confs;
 
@@ -643,28 +635,7 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
             LOGGER.info("IvyConfigurations: " + confs.length);
 
             this.configurations = confs;
-            this.globalExtendedVersionMatching = (gvm != null);
-
-            if (globalExtendedVersionMatching) {
-                List<Project> projects = Hudson.getInstance().getAllItems(Project.class);
-                for (Project<?, ?> p : projects) {
-                    if (p.isDisabled()) {
-                        continue;
-                    }
-                    IvyBuildTrigger t = (IvyBuildTrigger) p.getPublisher(DESCRIPTOR);
-                    if (t != null) {
-                        if (! t.extendedVersionMatching) {
-                            t.extendedVersionMatching = true;
-                            try {
-                                p.save();
-                            }
-                            catch (IOException io) {
-                                LOGGER.log(Level.WARNING, "Failed to save " + p.getConfigFile(), io);
-                            }
-                        }
-                    }
-                }
-            }
+            this.extendedVersionMatching = (vm != null);
 
             save();
             invalidateProjectMap();
@@ -678,23 +649,26 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
          * One such triggering event could be publish of a non-integration (milestone/release) build of the IvyBuildTrigger
          * managed project code to the Ivy repository that is visible to your build system.
          * 
-         * The StaplerRequest parameter must include request parameters <code>org</code>, <code>name</code>,
-         * and <code>rev</code> which respectively represent the Ivy module descriptor attributes
-         * <code>organisation</code>, <code>module</code>, and <code>revision</code>.  If extended revision matching
-         * is not being used, then the revision attribute is ignored by the trigger even though required in the request.
-         * The value of <code>branch</code> is optional on the request and may be used to match against the module
-         * descriptor <code>branch</code> attribute when present.  These attributes are used to match against projects
-         * managed with the IvyBuildTrigger and need to be set accordingly.
+         * The StaplerRequest parameter must include request parameters <code>org</code> and <code>name</code>
+         * which respectively represent the Ivy module descriptor attributes <code>organisation</code> and <code>module</code>.
+         * Optional request parameters that can be passed on the StaplerRequest include <code>branch</code> and <code>rev</code>
+         * which respectively represent the Ivy module descriptor attributes <code>branch</code> and <code>revision</code>.
+         * These values are used to match against the ModuleDescriptor of Hudson projects using the IvyBuildTrigger.  In the
+         * case that more than one project matches, it is the first match that will win, and only that project will have
+         * its downstream dependencies scheduled for builds.  Therefore the caller is wise to provide the most
+         * information in the request to ensure the best possible match.  If the trigger descriptor is set to use extended
+         * version matching, then at least one of the optional <code>rev</code> or <code>branch</code> is required on the request.
          * 
-         * Note this event does not actually build the matched project(s) in Hudson.  It just schedules builds on downstream
-         * dependent projects.  Successfully executing this event requires global {@link Item#BUILD} permission on a
-         * secured instance.
+         * Note this event trigger does not actually build the matched project in Hudson.  It just schedules builds on downstream
+         * dependent projects.  Successfully executing this event trigger requires global {@link Item#BUILD} permission on a
+         * secured Hudson instance.
          * 
          * @author jmetcalf@dev.java.net
          * @param req  The StaplerRequest
          * @param rsp  The StaplerResponse
          * @throws IOException    IOException on the servlet call
          * @throws ServletException   ServletException on the servlet call
+         * @see #isExtendedVersionMatching()
          */
         public void doHandleExternalTrigger(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
             String org = Util.fixEmptyAndTrim(req.getParameter("org"));
@@ -704,12 +678,17 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
 
             Hudson.getInstance().getACL().checkPermission(Item.BUILD);
 
-            if (org == null || name == null || rev == null)
-                throw new IllegalArgumentException("doHandleExternalTrigger requires the org, name, and rev parameters be non-empty");
+            if (org == null || name == null)
+                throw new IllegalArgumentException("doHandleExternalTrigger requires the org and name parameters");
 
-            final ModuleRevisionId rid = ModuleRevisionId.newInstance(org, name, branch, rev);
+            if (extendedVersionMatching && branch == null && rev == null)
+                throw new IllegalArgumentException("doHandleExternalTrigger requires rev or branch when using extended revision matching");
 
-            List<AbstractProject> candidates = getProjectsFor(rid.getModuleId());
+            ModuleId id = ModuleId.newInstance(org, name);
+            String ivylabel = ModuleRevisionId.newInstance(org, name, branch, Util.fixNull(rev)).toString();  // Used only in reporting.
+            List<AbstractProject> downstream = Collections.emptyList();
+
+            List<AbstractProject> candidates = getProjectsFor(id);
             for (AbstractProject candidate : candidates) {
 
                 // Don't try to identify downstream dependencies of a disabled project.
@@ -720,13 +699,25 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
                 Project p = (Project) candidate;
                 IvyBuildTrigger t = (IvyBuildTrigger) p.getPublisher(DESCRIPTOR);
 
-                if (t != null && t.captures(false, rid, p)) {
-                    List<AbstractProject> downstream = Hudson.getInstance().getDependencyGraph().getDownstream(p);
-                    for (AbstractProject down : downstream) {
-                        if (down.isDisabled() == false) {
-                            down.scheduleBuild(new UserCause(rid));
-                        }
+                if (t != null) {
+                    if (extendedVersionMatching) {
+                        ModuleDescriptor md = t.getModuleDescriptor(p);
+                        ModuleRevisionId mdrid = md.getModuleRevisionId();
+                        String mdbranch = mdrid.getBranch();
+                        if (branch != null && branch.equals(mdbranch) == false)
+                            continue;
+                        if (branch == null && mdbranch != null)
+                            continue;
+                        if (rev != null && rev.equals(mdrid.getRevision()) == false)
+                            continue;
                     }
+                    downstream = Hudson.getInstance().getDependencyGraph().getDownstream(p);
+                    break;
+                }
+            }
+            for (AbstractProject down : downstream) {
+                if (down.isDisabled() == false) {
+                    down.scheduleBuild(new UserCause(ivylabel));
                 }
             }
         }
@@ -765,7 +756,8 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
          * Check that the workspace relative path to the ivy.xml file was entered and conforms to basic expectations.
          * This code cannot check for file existence since the file never exists for new projects that need to check
          * out the ivy file from source control. Under this condition the validator would always fail for first time
-         * configuration which can be confusing.
+         * configuration which can be confusing.  The Ivy file might also be on a remote slave making checking for
+         * existence at this level more difficult.
          *
          * @param req
          *            the Stapler request
@@ -797,8 +789,7 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
          */
         @Override
         public Publisher newInstance(StaplerRequest req, JSONObject json) {
-            boolean ivyVersionMatching = globalExtendedVersionMatching || (req.getParameter("ivy_version_matching") != null);
-            return new IvyBuildTrigger(req.getParameter("ivy_file"), req.getParameter("ivy_conf_name"), ivyVersionMatching);
+            return new IvyBuildTrigger(req.getParameter("ivy_file"), req.getParameter("ivy_conf_name"));
         }
 
         /**
@@ -821,23 +812,23 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
      */
     public static class UserCause extends Cause.UserCause {
 
-        private ModuleRevisionId rid;
+        private String ivylabel;
 
         /**
          * Constructor
          * 
-         * @param rid  The ModuleRevisionId computed from the StaplerRequest.
+         * @param ivylabel  The Ivy ModuleRevisionId label computed from the StaplerRequest.
          */
-        public UserCause(ModuleRevisionId rid) {
-            this.rid = rid;
+        public UserCause(String ivylabel) {
+            this.ivylabel = ivylabel;
         }
 
         /**
          * 
-         * @return the Ivy ModuleRevisionId associated with the cause.
+         * @return the Ivy ModuleRevisionId label associated with the cause.
          */
-        public ModuleRevisionId getModuleRevisionId() {
-            return rid;
+        public String getIvylabel() {
+            return ivylabel;
         }
 
         /**
@@ -846,7 +837,7 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
          */
         @Override
         public String getShortDescription() {
-            return Messages.IvyBuildTrigger_UserCause_ShortDescription(getModuleRevisionId(), getUserName());
+            return Messages.IvyBuildTrigger_UserCause_ShortDescription(getIvylabel(), getUserName());
         }
     }
 }

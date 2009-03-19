@@ -1,11 +1,4 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <j:if test="${!descriptor.globalExtendedVersionMatching}">
-    <f:entry title="${%revision_matching_title}" field="revisionMatching">
-      <f:checkbox name="ivy_version_matching" checked="${instance.extendedVersionMatching}"
-          />
-      <label class="attach-previous">${%revision_matching_checkbox}</label>
-    </f:entry>
-  </j:if>
   <j:if test="${!empty(descriptor.configurations)}">
     <f:entry title="${%ivy_configuration_title}" field="settingsName">
       <select class="setting-input" name="ivy_conf_name">
