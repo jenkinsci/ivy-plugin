@@ -10,7 +10,7 @@
   <artifactId>ivy</artifactId>
   <packaging>hpi</packaging>
   <name>Hudson Ivy plugin</name>
-  <version>0.3-SNAPSHOT</version>
+  <version>0.3</version>
   <url>http://hudson.gotdns.com/wiki/display/HUDSON/Ivy+Plugin</url>
   
   <dependencies>
@@ -20,4 +20,10 @@
       <version>2.0.0</version>
     </dependency>
   </dependencies>
+
+  <scm>
+    <connection>scm:svn:https://guest@svn.dev.java.net/svn/hudson/tags/ivy-0.3</connection>
+    <developerConnection>scm:svn:https://svn.dev.java.net/svn/hudson/tags/ivy-0.3</developerConnection>
+    <url>https://hudson.dev.java.net/source/browse/hudson/hudson/plugins/ivy/tags/ivy-0.3</url>
+  </scm>
 </project>
