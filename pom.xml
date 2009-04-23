@@ -11,7 +11,7 @@
   <packaging>hpi</packaging>
   <name>Hudson Ivy plugin</name>
   <version>0.4-SNAPSHOT</version>
-  <url>http://hudson.gotdns.com/wiki/display/HUDSON/Ivy+Plugin</url>
+  <url>http://wiki.hudson-ci.org/display/HUDSON/Ivy+Plugin</url>
   
   <dependencies>
     <dependency>
