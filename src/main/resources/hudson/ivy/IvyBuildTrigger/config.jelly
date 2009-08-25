@@ -4,7 +4,7 @@
       <select class="setting-input" name="ivy_conf_name">
         <option>${%ivy_configuration_default}</option>
         <j:forEach var="conf" items="${descriptor.configurations}">
-          <f:option selected="${conf.name==instance.ivyConfiguration.name}">${conf.name}</f:option>
+          <f:option selected="${conf.name==instance.ivyConfName}">${conf.name}</f:option>
         </j:forEach>
       </select>
     </f:entry>
