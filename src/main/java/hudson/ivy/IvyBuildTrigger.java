@@ -31,9 +31,10 @@ import hudson.model.Hudson;
 import hudson.model.Item;
 import hudson.model.Project;
 import hudson.tasks.BuildStepDescriptor;
+import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Notifier;
 import hudson.tasks.Publisher;
-import hudson.util.FormFieldValidator;
+import hudson.util.FormValidation;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -62,6 +63,7 @@ import org.apache.ivy.core.module.id.ModuleRevisionId;
 import org.apache.ivy.plugins.parser.ModuleDescriptorParserRegistry;
 import org.apache.ivy.plugins.version.VersionMatcher;
 import org.apache.ivy.util.Message;
+import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -204,7 +206,7 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
      */
     private ModuleDescriptor getModuleDescriptor(AbstractProject p) {
         if (moduleDescriptor == null) {
-            recomputeModuleDescriptor(p);
+            recomputeModuleDescriptor(p.getSomeBuildWithWorkspace());
         }
         return moduleDescriptor;
     }
@@ -243,10 +245,10 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
     /**
      * Force the creation of the module descriptor.
      *
-     * @param  p  the project this trigger belongs to
+     * @param  b  a build this trigger belongs to
      */
-    private void recomputeModuleDescriptor(AbstractProject p) {
-        LOGGER.fine ("Recomputing Moduledescriptor for Project "+p.getFullDisplayName());
+    private void recomputeModuleDescriptor(AbstractBuild<?,?> b) {
+        LOGGER.fine ("Recomputing Moduledescriptor for Project "+b.getProject().getFullDisplayName());
         Ivy ivy = getIvy();
         if (ivy == null) {
             setModuleDescriptor(null);
@@ -254,9 +256,9 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
         }
         versionMatcher = ivy.getSettings().getVersionMatcher();
 
-        final File ivyF = new File(p.getRootDir(), BACKUP_IVY_FILE_NAME);
+        final File ivyF = new File(b.getRootDir(), BACKUP_IVY_FILE_NAME);
         try {
-            copyIvyFileFromWorkspaceIfNecessary(getWorkspace(p), ivyF);
+            copyIvyFileFromWorkspaceIfNecessary(b.getWorkspace(), ivyF);
         }
         catch (IOException e) {
             LOGGER.log(Level.WARNING, "Failed to access the workspace ivy file", e);
@@ -320,7 +322,7 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
      */
     @Override
     public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
-        recomputeModuleDescriptor(build.getProject());
+        recomputeModuleDescriptor(build);
         return true;
     }
 
@@ -336,19 +338,8 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
         return true;
     }
 
-    /**
-     * Workaround for a bug in p.getWorkspace prior to 1.279
-     * 
-     * @param p  the project this trigger belongs to
-     * @return  the FilePath (possibly remote) for the project workspace
-     */
-    private static FilePath getWorkspace(AbstractProject p) {
-        try {
-            return p.getWorkspace();
-        } catch (NullPointerException e) {
-            LOGGER.warning("Caught a problem in AbstractProject.getWorkspace!" );
-            return null;
-        }
+    public BuildStepMonitor getRequiredMonitorService() {
+        return BuildStepMonitor.BUILD;
     }
 
     /**
@@ -726,30 +717,21 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
          * Check that the Ivy configuration file exists.
          *
          * @param req
-         *            the Stapler request
-         * @param rsp
-         *            the Stapler response
-         * @throws IOException
-         * @throws ServletException
+         *            the file path
          */
-        public void doCheckIvyConf(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        public FormValidation doCheckIvyConf(@QueryParameter final String value) {
             // this can be used to check the existence of a file on the server,
             // so needs to be protected
-            new FormFieldValidator(req, rsp, true) {
-                public void check() throws IOException, ServletException {
-                    File f = getFileParameter("value");
-                    if (f.getPath().equals("")) {
-                        error(Messages.IvyBuildTrigger_CheckIvyConf_PathRequiredError());
-                        return;
-                    }
-                    if (!f.isFile()) {
-                        error(Messages.IvyBuildTrigger_CheckIvyConf_PathNotFileError(f));
-                        return;
-                    }
+            if (!Hudson.getInstance().hasPermission(Hudson.ADMINISTER)) return FormValidation.ok();
+            if (Util.fixEmpty(value) == null) {
+                return FormValidation.error(Messages.IvyBuildTrigger_CheckIvyConf_PathRequiredError());
+            }
+            File f = new File(value);
+            if (!f.isFile()) {
+                return FormValidation.error(Messages.IvyBuildTrigger_CheckIvyConf_PathNotFileError(f));
+            }
 
-                    ok();
-                }
-            }.process();
+            return FormValidation.ok();
         }
 
         /**
@@ -759,29 +741,19 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
          * configuration which can be confusing.  The Ivy file might also be on a remote slave making checking for
          * existence at this level more difficult.
          *
-         * @param req
-         *            the Stapler request
-         * @param rsp
-         *            the Stapler response
-         * @throws IOException
-         * @throws ServletException
+         * @param value
+         *            the relative path
          */
-        public void doCheckIvyFile(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-            new FormFieldValidator(req, rsp, true) {
-                public void check() throws IOException, ServletException {
-                    File f = getFileParameter("value");
-                    if (f.getPath().equals("")) {
-                        error(Messages.IvyBuildTrigger_CheckIvyFile_PathRequiredError());
-                        return;
-                    }
-                    if (f.isAbsolute()) {
-                        error(Messages.IvyBuildTrigger_CheckIvyFile_PathAbsoluteError());
-                        return;
-                    }
+        public FormValidation doCheckIvyFile(@QueryParameter final String value) {
+            if (!Hudson.getInstance().hasPermission(Hudson.ADMINISTER)) return FormValidation.ok();
+            if (Util.fixEmpty(value) == null) {
+                return FormValidation.error(Messages.IvyBuildTrigger_CheckIvyFile_PathRequiredError());
+            }
+            if (new File(value).isAbsolute()) {
+                return FormValidation.error(Messages.IvyBuildTrigger_CheckIvyFile_PathAbsoluteError());
+            }
 
-                    ok();
-                }
-            }.process();
+            return FormValidation.ok();
         }
 
         /**
