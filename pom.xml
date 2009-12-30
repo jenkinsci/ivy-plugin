@@ -12,6 +12,18 @@
   <name>Hudson Ivy plugin</name>
   <version>0.4-SNAPSHOT</version>
   <url>http://wiki.hudson-ci.org/display/HUDSON/Ivy+Plugin</url>
+  <developers>
+    <developer>
+      <id>hibou</id>
+    </developer>
+    <developer>
+      <id>martinficker</id>
+      <name>Martin Ficker</name>
+    </developer>
+    <developer>
+      <id>jmetcalf</id>
+    </developer>
+  </developers>
   
   <dependencies>
     <dependency>
