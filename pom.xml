@@ -23,6 +23,10 @@
     <developer>
       <id>jmetcalf</id>
     </developer>
+    <developer>
+      <id>tbingaman</id>
+      <name>Timothy Bingaman</name>
+    </developer>
   </developers>
   
   <dependencies>
