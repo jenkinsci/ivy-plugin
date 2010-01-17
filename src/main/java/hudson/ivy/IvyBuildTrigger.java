@@ -248,7 +248,11 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
      * @param  b  a build this trigger belongs to
      */
     private void recomputeModuleDescriptor(AbstractBuild<?,?> b) {
-        LOGGER.fine ("Recomputing Moduledescriptor for Project "+b.getProject().getFullDisplayName());
+        // The build may be null if no build with a workspace was found
+        if (b == null) {
+            return;
+        }
+        LOGGER.fine("Recomputing Moduledescriptor for Project "+b.getProject().getFullDisplayName());
         Ivy ivy = getIvy();
         if (ivy == null) {
             setModuleDescriptor(null);
@@ -256,7 +260,7 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
         }
         versionMatcher = ivy.getSettings().getVersionMatcher();
 
-        final File ivyF = new File(b.getRootDir(), BACKUP_IVY_FILE_NAME);
+        final File ivyF = new File(b.getProject().getRootDir(), BACKUP_IVY_FILE_NAME);
         try {
             copyIvyFileFromWorkspaceIfNecessary(b.getWorkspace(), ivyF);
         }
