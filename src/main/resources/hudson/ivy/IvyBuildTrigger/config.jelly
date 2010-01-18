@@ -12,7 +12,8 @@
   <f:entry title="${%ivy_file_title}" field="ivyFile">
     <f:textbox/>
   </f:entry>
-  <f:entry title="${%Trigger when unstable}" field="triggerWhenUnstable">
-    <f:checkbox/>
+  <f:entry title="" field="triggerWhenUnstable">
+    <f:checkbox id="ivy.triggerWhenUnstable"/>
+    <label for="ivy.triggerWhenUnstable">${%Trigger when unstable}</label>
   </f:entry>
 </j:jelly>
