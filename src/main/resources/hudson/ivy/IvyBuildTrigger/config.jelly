@@ -1,7 +1,7 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <j:if test="${!empty(descriptor.configurations)}">
-    <f:entry title="${%ivy_configuration_title}" field="settingsName">
-      <select class="setting-input" name="ivy_conf_name">
+    <f:entry title="${%ivy_configuration_title}" field="ivyConfName">
+      <select class="setting-input" name="ivyConfName">
         <option>${%ivy_configuration_default}</option>
         <j:forEach var="conf" items="${descriptor.configurations}">
           <f:option selected="${conf.name==instance.ivyConfName}">${conf.name}</f:option>
@@ -10,8 +10,9 @@
     </f:entry>
   </j:if>
   <f:entry title="${%ivy_file_title}" field="ivyFile">
-    <input class="setting-input validated" name="ivy_file"
-         type="text" value="${instance.ivyFile}"
-          checkUrl="'${rootURL}/publisher/IvyBuildTrigger/checkIvyFile?job=${it.fullName}&amp;value='+escape(this.value)"/>
+    <f:textbox/>
+  </f:entry>
+  <f:entry title="${%Trigger when unstable}" field="triggerWhenUnstable">
+    <f:checkbox/>
   </f:entry>
 </j:jelly>

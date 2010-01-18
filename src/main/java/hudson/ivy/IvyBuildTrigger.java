@@ -30,6 +30,7 @@ import hudson.model.DependencyGraph;
 import hudson.model.Hudson;
 import hudson.model.Item;
 import hudson.model.Project;
+import hudson.model.Result;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Notifier;
@@ -63,6 +64,7 @@ import org.apache.ivy.core.module.id.ModuleRevisionId;
 import org.apache.ivy.plugins.parser.ModuleDescriptorParserRegistry;
 import org.apache.ivy.plugins.version.VersionMatcher;
 import org.apache.ivy.util.Message;
+import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -73,6 +75,7 @@ import org.kohsuke.stapler.StaplerResponse;
  * @author jmetcalf@dev.java.net
  * @author martinficker@dev.java.net
  * @author hibou@dev.java.net
+ * @author tbingaman@dev.java.net
  */
 @SuppressWarnings("unchecked")
 public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
@@ -94,6 +97,8 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
      * Identifies {@link IvyConfiguration} to be used.
      */
     private final String ivyConfName;
+    
+    private final boolean triggerWhenUnstable;
 
     /**
      * The last modified time of the backup copy of the ivy file on the master.
@@ -124,10 +129,29 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
      *            the ivy.xml file path within the workspace
      * @param ivyConfName
      *            the Ivy configuration name to use
+     * @param triggerWhenUnstable
+     *            true if this build should be triggered even when an upstream build in Unstable.
+     *            false if this build should be triggered only when an upstream build is Successful.
      */
-    public IvyBuildTrigger(final String ivyFile, final String ivyConfName) {
+    @DataBoundConstructor
+    public IvyBuildTrigger(final String ivyFile, final String ivyConfName, final boolean triggerWhenUnstable) {
         this.ivyFile = ivyFile;
         this.ivyConfName = ivyConfName;
+        this.triggerWhenUnstable = triggerWhenUnstable;
+    }
+
+    /**
+     * Constructor
+     *
+     * @param ivyFile
+     *            the ivy.xml file path within the workspace
+     * @param ivyConfName
+     *            the Ivy configuration name to use
+     * @deprecated use {@link #IvyBuildTrigger(String, String, boolean)} instead
+     */
+    @Deprecated
+    public IvyBuildTrigger(final String ivyFile, final String ivyConfName) {
+        this(ivyFile, ivyConfName, false);
     }
 
     /**
@@ -161,6 +185,10 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
             }
         }
         return conf;
+    }
+
+    public boolean isTriggerWhenUnstable() {
+        return triggerWhenUnstable;
     }
 
     /**
@@ -363,7 +391,6 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
         // Map them to corresponding  hudson projects
 
         DependencyDescriptor[] deps = md.getDependencies();
-        List <AbstractProject> dependencies = new ArrayList<AbstractProject>();
 
         for (DependencyDescriptor depDesc : deps) {
             ModuleId id = depDesc.getDependencyId();
@@ -376,12 +403,11 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
                 // Such a project might not exist
                 if (p != null && p instanceof Project) {
                     if (captures(rid, (Project) p)) {
-                        dependencies.add(p);
+                        graph.addDependency(new IvyDependency(p, owner, triggerWhenUnstable ? Result.UNSTABLE : Result.SUCCESS));
                     }
                 }
             }
         }
-        graph.addDependency(dependencies, owner);
     }
 
     /**
@@ -758,14 +784,6 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
             }
 
             return FormValidation.ok();
-        }
-
-        /**
-         * Create a new instance of the trigger based on GUI request.
-         */
-        @Override
-        public Publisher newInstance(StaplerRequest req, JSONObject json) {
-            return new IvyBuildTrigger(req.getParameter("ivy_file"), req.getParameter("ivy_conf_name"));
         }
 
         /**
