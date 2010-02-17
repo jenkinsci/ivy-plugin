@@ -1,0 +1,16 @@
+<div>
+  <p>
+  If checked, Hudson will run individual module builds as separate builds. On a project
+  with a large number of modules, or on a project where modules take a long time to build,
+  setting this option to true may speed up the whole build, as different modules can be built
+  in parallel.
+  
+  <p>
+  In this case the specified ant targets will be called on each module separately.  Also, all
+  of the post-build actions will be run per-module and the paths you specify in their
+  configuration should be relative to the root directory of each individual module.
+  
+  <p>
+  Otherwise, leave it unchecked and Hudson will build this Ivy project like you'd normally
+  do from command line.
+</div>
