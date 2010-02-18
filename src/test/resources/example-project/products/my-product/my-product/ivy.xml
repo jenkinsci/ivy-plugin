@@ -1,0 +1,9 @@
+<ivy-module version="2.0" xmlns:e="http://ant.apache.org/ivy/extra">
+    <info organisation="hudson.ivy.example" module="my-product"/>
+    
+    <dependencies>
+        <dependency name="my-product-utils" rev="latest.integration"/>
+        <dependency name="my-product-api" rev="latest.integration"/>
+        <dependency name="common-lib" rev="latest.integration"/>
+    </dependencies>
+</ivy-module>
