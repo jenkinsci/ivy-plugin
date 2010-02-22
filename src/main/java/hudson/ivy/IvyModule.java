@@ -159,6 +159,12 @@ public final class IvyModule extends AbstractIvyProject<IvyModule, IvyBuild> imp
         return false;
     }
 
+    @Override
+    public boolean isBuildable() {
+        // not buildable if the parent project is disabled
+        return super.isBuildable() && getParent().isBuildable();
+    }
+
     /**
      * Called to update the module with the new ivy.xml information.
      * <p>
