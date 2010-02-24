@@ -69,6 +69,7 @@ import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.ivy.Ivy;
 import org.apache.ivy.Ivy.IvyCallback;
 import org.apache.ivy.core.IvyContext;
@@ -448,38 +449,32 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
                         if (!preBuild(listener, project.getPublishers()))
                             return Result.FAILURE;
 
-                        // TODO: uncomment when proxying stuff is done
-//                        SplittableBuildListener slistener = new SplittableBuildListener(listener);
-//                        proxies = new HashMap<ModuleName, ProxyImpl2>();
-//                        List<String> changedModules = new ArrayList<String>();
-//
-//                        for (IvyModule m : project.sortedActiveModules) {
-//                            IvyBuild mb = m.newBuild();
-//
-//                            // Check if incrementalBuild is selected and that
-//                            // there are changes -
-//                            // we act as if incrementalBuild is not set if there
-//                            // are no changes.
-//                            if (!IvyModuleSetBuild.this.getChangeSet().isEmptySet() && project.isIncrementalBuild()) {
-//                                // If there are changes for this module, add it.
-//                                // Also add it if we've never seen this module
-//                                // before,
-//                                // or if the previous build of this module
-//                                // failed or was unstable.
-//                                if ((mb.getPreviousBuiltBuild() == null) || (!getChangeSetFor(m).isEmpty())
-//                                        || (mb.getPreviousBuiltBuild().getResult().isWorseThan(Result.SUCCESS))) {
-//                                    changedModules.add(m.getModuleName().toString());
-//                                }
-//                            }
-//
-//                            mb.setWorkspace(getModuleRoot().child(m.getRelativePathToModuleRoot()));
-//                            proxies.put(m.getModuleName(), mb.new ProxyImpl2(IvyModuleSetBuild.this,slistener));
-//                        }
+                        List<String> changedModules = new ArrayList<String>();
+                        for (IvyModule m : project.sortedActiveModules) {
+                            // Check if incrementalBuild is selected and that
+                            // there are changes -
+                            // we act as if incrementalBuild is not set if there
+                            // are no changes.
+                            if (!IvyModuleSetBuild.this.getChangeSet().isEmptySet() && project.isIncrementalBuild()) {
+                                // If there are changes for this module, add it.
+                                if (!getChangeSetFor(m).isEmpty()) {
+                                    changedModules.add(m.getModuleName().name);
+                                }
+                            }
+                        }
 
-                        // TODO: remove once the proxying support is finished.
+                        StringBuilder antProperties = new StringBuilder();
+                        if (project.getAntProperties() != null)
+                            antProperties.append(project.getAntProperties()).append("\n");
+
+                        if (project.isAggregatorStyleBuild() && project.isIncrementalBuild()) {
+                            antProperties.append(project.getChangedModulesProperty() == null ? "hudson.ivy.changedModules" : project
+                                    .getChangedModulesProperty());
+                            antProperties.append("=").append(StringUtils.join(changedModules, ','));
+                        }
                         String buildFile = (project.getBuildFile() == null) ? "build.xml" : project.getBuildFile();
                         Ant ant = new Ant(getProject().getTargets(), antInstallation.getName(), project.getAntOpts(), getModuleRoot().child(buildFile)
-                                .getName(), project.getAntProperties());
+                                .getName(), antProperties.length() == 0 ? null : antProperties.toString());
                         if (ant.perform(IvyModuleSetBuild.this, launcher, listener))
                             return Result.SUCCESS;
 

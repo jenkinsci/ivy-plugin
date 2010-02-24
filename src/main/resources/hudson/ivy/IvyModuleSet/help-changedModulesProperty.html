@@ -1,0 +1,14 @@
+<div>
+  <p>
+  The name of the property used to pass the names of the changed modules
+  to the build.
+  
+  <p>
+  Only required when "Incremental build" is selected and "Build modules as
+  separate jobs" is <b>not</b> selected.  If left empty in this case, then
+  the dafualt value of "hudson.ivy.changedModules" will be used.
+  
+  <p>
+  The property specified here can then be used in your branch-level build
+  script for the "leaf" attribute of the "ivy:buildlist" task.
+</div>

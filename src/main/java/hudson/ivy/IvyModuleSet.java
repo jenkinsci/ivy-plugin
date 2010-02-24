@@ -151,6 +151,13 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet,IvyModul
     private boolean incrementalBuild = false;
 
     /**
+     * The name of the property used to pass the names of the changed modules
+     * to the build when both incremental build and aggregated build options are
+     * selected.
+     */
+    private String changedModulesProperty;
+
+    /**
      * If true, do not automatically schedule a build when one of the project
      * dependencies is built.
      */
@@ -283,6 +290,10 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet,IvyModul
 
     public boolean isIncrementalBuild() {
         return incrementalBuild;
+    }
+
+    public String getChangedModulesProperty() {
+        return changedModulesProperty;
     }
 
     public boolean isAggregatorStyleBuild() {
@@ -624,6 +635,8 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet,IvyModul
         antProperties = Util.fixEmptyAndTrim(json.getString("antProperties"));
         aggregatorStyleBuild = !req.hasParameter("perModuleBuild");
         incrementalBuild = req.hasParameter("incrementalBuild");
+        if (incrementalBuild)
+            changedModulesProperty = Util.fixEmptyAndTrim(json.getJSONObject("incrementalBuild").getString("changedModulesProperty"));
 
         publishers.rebuild(req,json,BuildStepDescriptor.filter(Publisher.all(),this.getClass()));
         buildWrappers.rebuild(req,json,BuildWrappers.getFor(this));
