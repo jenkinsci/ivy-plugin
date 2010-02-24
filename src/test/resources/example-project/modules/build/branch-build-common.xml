@@ -19,7 +19,8 @@
     <macrodef name="run-module-builds">
         <element name="targets" />
         <sequential>
-            <ivy:buildlist reference="build.path" ivyfilepath="ivy.xml" onMissingDescriptor="warn">
+            <property name="hudson.ivy.changedModules" value=""/>
+            <ivy:buildlist reference="build.path" ivyfilepath="ivy.xml" onMissingDescriptor="warn" leaf="${hudson.ivy.changedModules}">
                 <fileset dir="${basedir}" includes="*/build.xml" />
             </ivy:buildlist>
 
