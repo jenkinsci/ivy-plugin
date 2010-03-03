@@ -1,4 +1,4 @@
-<project xmlns:ivy="antlib:org.apache.ivy.ant" basedir="." name="core-utils">
+<project xmlns:ivy="antlib:org.apache.ivy.ant" basedir="." name="core-utils" default="build">
 	<property file="build.properties"/>
 	<property file="../branch.properties"/>
     <property file="${build-infrastructure.dir}/common.properties" />
