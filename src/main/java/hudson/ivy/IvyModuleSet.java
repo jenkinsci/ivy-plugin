@@ -627,7 +627,7 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet,IvyModul
         ignoreUpstreamChanges = !json.has("triggerByDependency");
         ivyFilePattern = Util.fixEmptyAndTrim(json.getString("ivyFilePattern"));
         ivyFileExcludesPattern = Util.fixEmptyAndTrim(json.getString("ivyFileExcludesPattern"));
-        targets = Util.fixEmptyAndTrim(json.getString("targets"));
+        targets = json.getString("targets").trim();
         ivyBranch = Util.fixEmptyAndTrim(json.getString("ivyBranch"));
         relativePathToDescriptorFromModuleRoot = Util.fixEmptyAndTrim(json.getString("relativePathToDescriptorFromModuleRoot"));
         antName = Util.fixEmptyAndTrim(json.getString("antName"));
