@@ -504,10 +504,6 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet,IvyModul
         buildWrappers.buildDependencyGraph(this,graph);
     }
 
-    public AntInstallation inferAntInstallation() {
-        return getAnt();
-    }
-
     @Override
     protected Set<ResourceActivity> getResourceActivities() {
         final Set<ResourceActivity> activities = new HashSet<ResourceActivity>();
@@ -574,14 +570,9 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet,IvyModul
 
     /**
      * Gets the Ant to invoke.
-     * If null, we pick any random Ant installation.
      */
-    public AntInstallation getAnt() {
-        for( AntInstallation i : DESCRIPTOR.getAntDescriptor().getInstallations() ) {
-            if(antName==null || i.getName().equals(antName))
-                return i;
-        }
-        return null;
+    public String getAnt() {
+        return antName;
     }
 
     public void setAnt(String antName) {
@@ -630,7 +621,7 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet,IvyModul
         targets = json.getString("targets").trim();
         ivyBranch = Util.fixEmptyAndTrim(json.getString("ivyBranch"));
         relativePathToDescriptorFromModuleRoot = Util.fixEmptyAndTrim(json.getString("relativePathToDescriptorFromModuleRoot"));
-        antName = Util.fixEmptyAndTrim(json.getString("antName"));
+        antName = json.has("antName") ? Util.fixEmptyAndTrim(json.getString("antName")) : null;
         buildFile = Util.fixEmptyAndTrim(json.getString("buildFile"));
         antOpts = Util.fixEmptyAndTrim(json.getString("antOpts"));
         antProperties = Util.fixEmptyAndTrim(json.getString("antProperties"));

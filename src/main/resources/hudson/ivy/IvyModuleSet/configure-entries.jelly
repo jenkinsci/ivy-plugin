@@ -53,15 +53,6 @@ THE SOFTWARE.
       <f:textbox />
     </f:entry>
     <j:set var="ants" value="${it.descriptor.antDescriptor.installations}" />
-    <j:if test="${empty(ants)}">
-      <!-- no Ant installation is configured. this will be an error, so warn the user now -->
-      <f:entry title="${%Ant Version}">
-        <div class="error">
-          ${%Ant Version.error.1}&lt;br>
-          ${%Ant Version.error.2(rootURL)}
-        </div>
-      </f:entry>
-    </j:if>
     <j:if test="${!empty(ants)}">
       <f:entry title="${%Ant Version}">
         <select class="setting-input" name="ant.antName">
@@ -90,9 +81,8 @@ THE SOFTWARE.
           <f:textbox />
         </f:entry>
       </f:optionalBlock>
-      <f:entry title="${%Build modules as separate jobs}" help="/plugin/ivy/aggregator.html">
-        <f:checkbox name="perModuleBuild" checked="${!it.aggregatorStyleBuild}" />
-      </f:entry>
+      <f:optionalBlock title="${%Build modules as separate jobs}" name="perModuleBuild" checked="${!it.aggregatorStyleBuild}" help="/plugin/ivy/aggregator.html">
+      </f:optionalBlock>
     </f:advanced>
   </f:section>
   

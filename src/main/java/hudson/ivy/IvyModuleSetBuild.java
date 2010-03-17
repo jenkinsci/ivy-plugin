@@ -364,10 +364,6 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
             PrintStream logger = listener.getLogger();
             try {
                 EnvVars envVars = getEnvironment(listener);
-                AntInstallation antInstallation = project.getAnt();
-                if (antInstallation == null)
-                    throw new AbortException("An Ant installation needs to be available for this project to be built.\n"
-                            + "Either your server has no Ant installations defined, or the requested Ant version does not exist.");
 
                 parseIvyDescriptorFiles(listener, logger, envVars);
 
@@ -472,9 +468,8 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
                                     .getChangedModulesProperty());
                             antProperties.append("=").append(StringUtils.join(changedModules, ','));
                         }
-                        String buildFile = (project.getBuildFile() == null) ? "build.xml" : project.getBuildFile();
-                        Ant ant = new Ant(getProject().getTargets(), antInstallation.getName(), project.getAntOpts(), getModuleRoot().child(buildFile)
-                                .getName(), antProperties.length() == 0 ? null : antProperties.toString());
+                        Ant ant = new Ant(getProject().getTargets(), project.getAnt(), project.getAntOpts(), project.getBuildFile(), antProperties
+                                .length() == 0 ? null : antProperties.toString());
                         if (ant.perform(IvyModuleSetBuild.this, launcher, listener))
                             return Result.SUCCESS;
 
