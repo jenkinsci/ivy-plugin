@@ -58,7 +58,7 @@ THE SOFTWARE.
         <select class="setting-input" name="ant.antName">
           <option value="(Default)">(${%Default})</option>
           <j:forEach var="inst" items="${ants}">
-            <f:option selected="${inst.name==it.ant.name}" value="${inst.name}">${inst.name}</f:option>
+            <f:option selected="${inst.name==it.ant}" value="${inst.name}">${inst.name}</f:option>
           </j:forEach>
         </select>
       </f:entry>
