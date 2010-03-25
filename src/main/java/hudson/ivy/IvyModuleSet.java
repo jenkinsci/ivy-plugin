@@ -47,6 +47,7 @@ import hudson.model.TopLevelItem;
 import hudson.model.TopLevelItemDescriptor;
 import hudson.model.Descriptor.FormException;
 import hudson.model.Queue.Task;
+import hudson.model.queue.CauseOfBlockage;
 import hudson.search.CollectionSearchIndex;
 import hudson.search.SearchIndexBuilder;
 import hudson.tasks.Ant;
@@ -513,6 +514,33 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet,IvyModul
         activities.addAll(Util.filter(buildWrappers,ResourceActivity.class));
 
         return activities;
+    }
+
+    /**
+     * Because one of our own modules is currently building.
+     */
+    public static class BecauseOfModuleBuildInProgress extends CauseOfBlockage {
+        public final IvyModule module;
+
+        public BecauseOfModuleBuildInProgress(IvyModule module) {
+            this.module = module;
+        }
+
+        public String getShortDescription() {
+            return Messages.IvyModuleSet_ModuleBuildInProgress(module.getName());
+        }
+    }
+
+    @Override
+    public CauseOfBlockage getCauseOfBlockage() {
+        CauseOfBlockage cob = super.getCauseOfBlockage();
+        if (cob != null) return cob;
+        
+        for (IvyModule module : modules.values()) {
+            if (module.isBuilding() || module.isInQueue())
+                return new BecauseOfModuleBuildInProgress(module);
+        }
+        return null;
     }
 
     public AbstractProject<?,?> asProject() {

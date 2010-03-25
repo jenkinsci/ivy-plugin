@@ -368,20 +368,23 @@ public final class IvyModule extends AbstractIvyProject<IvyModule, IvyBuild> imp
 
     @Override
     protected void buildDependencyGraph(DependencyGraph graph) {
-        if (isDisabled() || getParent().ignoreUpstreamChanges())
+        if (isDisabled() || (getParent().ignoreUpstreamChanges() && getParent().isAggregatorStyleBuild()))
             return;
-
+        
         Map<ModuleDependency, IvyModule> modules = new HashMap<ModuleDependency, IvyModule>();
-
-        for (IvyModule m : Hudson.getInstance().getAllItems(IvyModule.class)) {
-            if (m.isDisabled())
-                continue;
-            modules.put(m.asDependency(), m);
-            modules.put(m.asDependency().withUnknownRevision(), m);
+        if (!getParent().ignoreUpstreamChanges()) {
+            for (IvyModule m : Hudson.getInstance().getAllItems(IvyModule.class)) {
+                if (m.isDisabled())
+                    continue;
+                modules.put(m.asDependency(), m);
+                modules.put(m.asDependency().withUnknownRevision(), m);
+            }
         }
 
-        // in case two modules with the same name is defined, modules in the
-        // same IvyModuleSet takes precedence.
+        // Even if ignoreUpstreamChanges is true we still need to calculate the
+        // dependencies between the modules of this project. Also, in case two
+        // modules with the same name are defined, modules in the same
+        // IvyModuleSet takes precedence.
 
         for (IvyModule m : getParent().getModules()) {
             if (m.isDisabled())
@@ -403,13 +406,20 @@ public final class IvyModule extends AbstractIvyProject<IvyModule, IvyBuild> imp
                 continue;
 
             AbstractProject upstream;
-            if (src.getParent().isAggregatorStyleBuild())
+            if (src.getParent().isAggregatorStyleBuild()) {
                 upstream = src.getParent();
-            else
+            } else {
+                // Add a virtual dependency from the parent project to the
+                // downstream one to make the
+                // "Block build when upstream project is building" option behave
+                // properly
+                if (!this.getParent().equals(src.getParent()) && !hasDependency(graph, src.getParent(), downstream))
+                    graph.addDependency(new IvyVirtualDependency(src.getParent(), downstream));
                 upstream = src;
+            }
 
             if (!hasDependency(graph, upstream, downstream))
-                graph.addDependency(new IvyDependency(upstream, downstream, Result.SUCCESS));
+                graph.addDependency(new IvyThresholdDependency(upstream, downstream, Result.SUCCESS));
         }
     }
 

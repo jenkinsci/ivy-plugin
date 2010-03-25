@@ -403,7 +403,7 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
                 // Such a project might not exist
                 if (p != null && p instanceof Project) {
                     if (captures(rid, (Project) p)) {
-                        graph.addDependency(new IvyDependency(p, owner, triggerWhenUnstable ? Result.UNSTABLE : Result.SUCCESS));
+                        graph.addDependency(new IvyThresholdDependency(p, owner, triggerWhenUnstable ? Result.UNSTABLE : Result.SUCCESS));
                     }
                 }
             }

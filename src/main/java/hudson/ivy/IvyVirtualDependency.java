@@ -16,18 +16,33 @@
  */
 package hudson.ivy;
 
+import java.util.List;
+
+import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
-import hudson.model.DependencyGraph.Dependency;
+import hudson.model.Action;
+import hudson.model.TaskListener;
 
 /**
- * Base class representing an Ivy Project build dependency.
+ * Represents a dependency that never triggers a downstream build.
+ * 
+ * Used to represent the association between an Ivy Project configured to build
+ * its modules as separate jobs and downstream projects depending on its
+ * modules. This is required to make downstream projects behave properly when
+ * they have their "Block build when upstream project is building" option
+ * enabled.
  * 
  * @author tbingaman
  */
-public abstract class IvyDependency extends Dependency {
+public class IvyVirtualDependency extends IvyDependency {
 
-    public IvyDependency(AbstractProject<?, ?> upstream, AbstractProject<?, ?> downstream) {
+    public IvyVirtualDependency(AbstractProject<?, ?> upstream, AbstractProject<?, ?> downstream) {
         super(upstream, downstream);
+    }
+
+    @Override
+    public boolean shouldTriggerBuild(AbstractBuild build, TaskListener listener, List<Action> actions) {
+        return false;
     }
 
 }

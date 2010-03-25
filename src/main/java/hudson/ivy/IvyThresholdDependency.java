@@ -16,18 +16,34 @@
  */
 package hudson.ivy;
 
+import java.util.List;
+
+import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
-import hudson.model.DependencyGraph.Dependency;
+import hudson.model.Action;
+import hudson.model.Result;
+import hudson.model.TaskListener;
 
 /**
- * Base class representing an Ivy Project build dependency.
+ * Invoke downstream projects with applicable parameters using Hudson's
+ * DependencyGraph.Dependency interface.
  * 
  * @author tbingaman
  */
-public abstract class IvyDependency extends Dependency {
+public class IvyThresholdDependency extends IvyDependency {
 
-    public IvyDependency(AbstractProject<?, ?> upstream, AbstractProject<?, ?> downstream) {
+    private Result threshold;
+
+    public IvyThresholdDependency(AbstractProject<?, ?> upstream, AbstractProject<?, ?> downstream, Result threshold) {
         super(upstream, downstream);
+        this.threshold = threshold;
+    }
+
+    @Override
+    public boolean shouldTriggerBuild(AbstractBuild build, TaskListener listener, List<Action> actions) {
+        if (build.getResult().isBetterOrEqualTo(threshold))
+            return true;
+        return false;
     }
 
 }
