@@ -573,11 +573,17 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet,IvyModul
      * If antOpts is null or empty, we'll return the globally-defined ANT_OPTS.
      */
     public String getAntOpts() {
-        if ((antOpts!=null) && (antOpts.trim().length()>0)) {
-            return antOpts;
+        if ((antOpts!=null) && (antOpts.trim().length()>0)) { 
+            return antOpts.replaceAll("[\t\r\n]+"," ");
         }
         else {
-            return DESCRIPTOR.getGlobalAntOpts();
+            String globalOpts = DESCRIPTOR.getGlobalAntOpts();
+            if (globalOpts!=null) {
+                return globalOpts.replaceAll("[\t\r\n]+"," ");
+            }
+            else {
+                return globalOpts;
+            }
         }
     }
 
@@ -586,6 +592,18 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet,IvyModul
      */
     public void setAntOpts(String antOpts) {
         this.antOpts = antOpts;
+    }
+
+    /**
+     * Gets the ANT_OPTS specified by the user, without taking
+     * global inheritance into account.
+     *
+     * <p>
+     * This is only used to present the UI screen, and in all the other cases
+     * {@link #getAntOpts()} should be used.
+     */
+    public String getUserConfiguredAntOpts() {
+        return antOpts;
     }
 
     public String getBuildFile() {
@@ -713,11 +731,12 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet,IvyModul
         return FormValidation.ok();
     }
 
-    public TopLevelItemDescriptor getDescriptor() {
+    @Override
+    public DescriptorImpl getDescriptor() {
         return DESCRIPTOR;
     }
 
-    @Extension(ordinal=900)
+    @Extension(ordinal=890)
     public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
     public static final class DescriptorImpl extends AbstractProjectDescriptor {
@@ -725,6 +744,11 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet,IvyModul
          * Globally-defined ANT_OPTS.
          */
         private String globalAntOpts;
+
+        public DescriptorImpl() {
+            super();
+            load();
+        }
 
         public String getGlobalAntOpts() {
             return globalAntOpts;
@@ -747,6 +771,14 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet,IvyModul
 
         public Ant.DescriptorImpl getAntDescriptor() {
             return Hudson.getInstance().getDescriptorByType(Ant.DescriptorImpl.class);
+        }
+
+        @Override
+        public boolean configure( StaplerRequest req, JSONObject o ) {
+            globalAntOpts = Util.fixEmptyAndTrim(o.getString("globalAntOpts"));
+            save();
+
+            return true;
         }
     }
 }

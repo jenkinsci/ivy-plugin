@@ -74,7 +74,7 @@ THE SOFTWARE.
         <f:textarea name="antProperties" value="${it.antProperties}"/>
       </f:entry>
       <f:entry title="${%Java Options}" help="/help/ant/ant-opts.html">
-        <f:expandableTextbox name="antOpts" value="${it.antOpts}"/>
+        <f:expandableTextbox name="antOpts" value="${it.userConfiguredAntOpts}"/>
       </f:entry>
       <f:optionalBlock title="${%Incremental build - only build changed modules}" name="incrementalBuild" checked="${it.incrementalBuild}" help="/plugin/ivy/incremental.html">
         <f:entry title="${%Changed modules property}" field="changedModulesProperty">
