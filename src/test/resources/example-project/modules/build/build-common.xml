@@ -1,5 +1,6 @@
 <project xmlns:ivy="antlib:org.apache.ivy.ant" name="common-build-infrastructure">
     <target name="resolve" description="Retrieve dependencies with ivy">
+        <ivy:settings/>
         <ivy:retrieve pattern="${lib.dir}/[conf]/[artifact].[ext]" />
     </target>
 
