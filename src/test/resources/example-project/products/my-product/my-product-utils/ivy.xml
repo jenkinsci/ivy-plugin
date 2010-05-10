@@ -2,7 +2,7 @@
     <info organisation="hudson.ivy.example" module="my-product-utils"/>
     
     <dependencies>
-        <dependency name="core-utils" rev="latest.integration"/>
-        <dependency name="common-lib" rev="latest.integration"/>
+        <dependency name="core-utils" rev="latest.integration" branch="trunk"/>
+        <dependency name="common-lib" rev="latest.integration" branch="trunk"/>
     </dependencies>
 </ivy-module>

@@ -20,6 +20,7 @@
         <element name="targets" />
         <sequential>
             <property name="hudson.ivy.changedModules" value=""/>
+            <ivy:settings/>
             <ivy:buildlist reference="build.path" ivyfilepath="ivy.xml" onMissingDescriptor="warn" leaf="${hudson.ivy.changedModules}">
                 <fileset dir="${basedir}" includes="*/build.xml" />
             </ivy:buildlist>

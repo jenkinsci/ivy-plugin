@@ -1,3 +1,5 @@
 <project xmlns:ivy="antlib:org.apache.ivy.ant" basedir="." name="my-product" default="publish-local">
-	<import file="../../modules/build/branch-build-common.xml"/>
+    <property name="build-infrastructure.dir" value="../../modules/build"/>
+    <property file="branch.properties"/>
+	<import file="${build-infrastructure.dir}/branch-build-common.xml"/>
 </project>

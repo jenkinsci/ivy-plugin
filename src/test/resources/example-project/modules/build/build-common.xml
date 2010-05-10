@@ -15,7 +15,7 @@
 
     <target name="publish-local" depends="build" description="Publish module to local repository">
         <ivy:buildnumber organisation="${ivy.organisation}" module="${ivy.module}" revision="${module.version}" />
-        <ivy:publish resolver="local" pubrevision="${ivy.new.revision}" forcedeliver="true">
+        <ivy:publish resolver="local" pubrevision="${ivy.new.revision}" forcedeliver="true" pubbranch="${branch.name}">
             <artifacts pattern="target/artifacts/[artifact].[ext]" />
         </ivy:publish>
     </target>
