@@ -52,6 +52,9 @@ THE SOFTWARE.
     <f:entry title="${%Ivy branch}" field="ivyBranch">
       <f:textbox />
     </f:entry>
+    <f:entry title="${%Ivy settings}" field="ivySettingsFile">
+      <f:textbox checkUrl="'checkIvySettingsFile?value='+escape(this.value)"/>
+    </f:entry>
     <j:set var="ants" value="${it.descriptor.antDescriptor.installations}" />
     <j:if test="${!empty(ants)}">
       <f:entry title="${%Ant Version}">

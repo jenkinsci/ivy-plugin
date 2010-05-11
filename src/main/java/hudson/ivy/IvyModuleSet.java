@@ -114,6 +114,8 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet,IvyModul
 
     private String relativePathToDescriptorFromModuleRoot;
 
+    private String ivySettingsFile;
+
     /**
      * Identifies {@link AntInstallation} to be used.
      */
@@ -327,6 +329,14 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet,IvyModul
 
     public void setIvyFileExcludesPattern(String ivyFileExcludesPattern) {
         this.ivyFileExcludesPattern = ivyFileExcludesPattern;
+    }
+
+    public String getIvySettingsFile() {
+        return ivySettingsFile;
+    }
+
+    public void setIvySettingsFile(String ivySettingsFile) {
+        this.ivySettingsFile = ivySettingsFile;
     }
 
     public String getIvyBranch() {
@@ -664,6 +674,7 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet,IvyModul
         ignoreUpstreamChanges = !json.has("triggerByDependency");
         ivyFilePattern = Util.fixEmptyAndTrim(json.getString("ivyFilePattern"));
         ivyFileExcludesPattern = Util.fixEmptyAndTrim(json.getString("ivyFileExcludesPattern"));
+        ivySettingsFile = Util.fixEmptyAndTrim(json.getString("ivySettingsFile"));
         targets = json.getString("targets").trim();
         ivyBranch = Util.fixEmptyAndTrim(json.getString("ivyBranch"));
         relativePathToDescriptorFromModuleRoot = Util.fixEmptyAndTrim(json.getString("relativePathToDescriptorFromModuleRoot"));
@@ -712,19 +723,19 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet,IvyModul
     /**
      * Check that the provided file is a relative path. And check that it exists, just in case.
      */
-    public FormValidation doCheckFileRelative(@QueryParameter String value) throws IOException, ServletException {
+    public FormValidation doCheckIvySettingsFile(@QueryParameter String value) throws IOException, ServletException {
         String v = fixEmpty(value);
         if ((v == null) || (v.length() == 0)) {
             // Null values are allowed.
             return FormValidation.ok();
         }
         if ((v.startsWith("/")) || (v.startsWith("\\")) || (v.matches("^\\w\\:\\\\.*"))) {
-            return FormValidation.error("Alternate settings file must be a relative path.");
+            return FormValidation.error("Ivy settings file must be a relative path.");
         }
 
         IvyModuleSetBuild lb = getLastBuild();
         if (lb!=null) {
-            FilePath ws = lb.getModuleRoot();
+            FilePath ws = lb.getWorkspace();
             if(ws!=null)
                 return ws.validateRelativePath(value,true,true);
         }

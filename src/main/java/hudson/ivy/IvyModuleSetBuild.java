@@ -47,7 +47,6 @@ import hudson.scm.ChangeLogSet;
 import hudson.tasks.Ant;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.Publisher;
-import hudson.tasks.Ant.AntInstallation;
 import hudson.util.StreamTaskListener;
 
 import java.io.File;
@@ -751,8 +750,10 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
         private final boolean verbose = debug;
         private final String ivyFilePattern;
         private final String ivyFileExcludePattern;
+        private final String ivySettingsFile;
         private final String ivyBranch;
         private final String workspace;
+        private final String workspaceProper;
 
         public IvyXmlParser(BuildListener listener, IvyModuleSet project, String workspace) {
             // project cannot be shipped to the remote JVM, so all the relevant
@@ -762,6 +763,8 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
             this.ivyFileExcludePattern = project.getIvyFileExcludesPattern();
             this.ivyBranch = project.getIvyBranch();
             this.workspace = workspace;
+            this.ivySettingsFile = project.getIvySettingsFile();
+            this.workspaceProper = project.getLastBuild().getWorkspace().getRemote();
         }
 
 		public List<IvyModuleInfo> call() throws Throwable {
@@ -812,18 +815,32 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
         /**
          *
          * @return the Ivy instance based on the {@link #ivyConfName}
+         * @throws AbortException 
          *
          * @throws ParseException
          * @throws IOException
          */
-        public Ivy getIvy(PrintStream logger) {
+        public Ivy getIvy(PrintStream logger) throws AbortException {
             Message.setDefaultLogger(new IvyMessageImpl());
-            Ivy ivy = Ivy.newInstance();
+            
+            File settingsLoc = (ivySettingsFile == null) ? null : new File(workspaceProper, ivySettingsFile);
+
+            if ((settingsLoc != null) && (!settingsLoc.exists())) {
+                throw new AbortException(Messages.IvyModuleSetBuild_NoSuchIvySettingsFile(settingsLoc.getAbsolutePath()));
+            }
+            
             Ivy configured = null;
             try {
-                ivy.configureDefault();
-                if (verbose)
-                    logger.println("Configured Ivy using default 2.1 settings");
+                Ivy ivy = Ivy.newInstance();
+                if (settingsLoc != null) {
+                    ivy.configure(settingsLoc);
+                    if (verbose)
+                        logger.println("Configured Ivy using custom settings" + settingsLoc.getAbsolutePath());
+                } else {
+                    ivy.configureDefault();
+                    if (verbose)
+                        logger.println("Configured Ivy using default 2.1 settings");
+                }
                 if (ivyBranch != null)
                     ivy.getSettings().setDefaultBranch(ivyBranch);
                 configured = ivy;
