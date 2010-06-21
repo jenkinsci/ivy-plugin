@@ -1,0 +1,7 @@
+<project xmlns:ivy="antlib:org.apache.ivy.ant" basedir="." name="my-product-utils" default="build">
+	<property file="build.properties"/>
+	<property file="../branch.properties"/>
+    <property file="${build-infrastructure.dir}/common.properties" />
+
+	<import file="${build-infrastructure.dir}/build-common.xml"/>
+</project>
