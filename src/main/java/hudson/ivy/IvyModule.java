@@ -418,7 +418,8 @@ public final class IvyModule extends AbstractIvyProject<IvyModule, IvyBuild> imp
                 upstream = src;
             }
 
-            if (!hasDependency(graph, upstream, downstream))
+            // Create the build dependency, ignoring self-referencing or already existing deps
+            if (upstream != downstream && !hasDependency(graph, upstream, downstream))
                 graph.addDependency(new IvyThresholdDependency(upstream, downstream, Result.SUCCESS));
         }
     }
