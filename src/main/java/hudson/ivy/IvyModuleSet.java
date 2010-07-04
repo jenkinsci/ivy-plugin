@@ -29,6 +29,9 @@ import hudson.CopyOnWrite;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Util;
+import hudson.ivy.builder.AntIvyBuilderType;
+import hudson.ivy.builder.IvyBuilderType;
+import hudson.ivy.builder.NAntIvyBuilderType;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.BuildableItemWithBuildWrappers;
@@ -44,13 +47,11 @@ import hudson.model.ResourceActivity;
 import hudson.model.SCMedItem;
 import hudson.model.Saveable;
 import hudson.model.TopLevelItem;
-import hudson.model.TopLevelItemDescriptor;
 import hudson.model.Descriptor.FormException;
 import hudson.model.Queue.Task;
 import hudson.model.queue.CauseOfBlockage;
 import hudson.search.CollectionSearchIndex;
 import hudson.search.SearchIndexBuilder;
-import hudson.tasks.Ant;
 import hudson.tasks.BuildStep;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildWrapper;
@@ -115,6 +116,8 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet,IvyModul
     private String relativePathToDescriptorFromModuleRoot;
 
     private String ivySettingsFile;
+    
+    private IvyBuilderType ivyBuilderType;
 
     /**
      * Identifies {@link AntInstallation} to be used.
@@ -347,6 +350,10 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet,IvyModul
         this.ivyBranch = ivyBranch;
     }
 
+    public IvyBuilderType getIvyBuilderType() {
+        return ivyBuilderType;
+    }
+
     public void setAggregatorStyleBuild(boolean aggregatorStyleBuild) {
         this.aggregatorStyleBuild = aggregatorStyleBuild;
     }
@@ -557,82 +564,12 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet,IvyModul
         return this;
     }
 
-    /**
-     * Gets the list of targets to execute.
-     */
-    public String getTargets() {
-        return targets;
-    }
-
-    public void setTargets(String targets) {
-        this.targets = targets;
-    }
-
     public String getRelativePathToDescriptorFromModuleRoot() {
         return relativePathToDescriptorFromModuleRoot;
     }
 
     public void setRelativePathToDescriptorFromModuleRoot(String relativePathToDescriptorFromModuleRoot) {
         this.relativePathToDescriptorFromModuleRoot = relativePathToDescriptorFromModuleRoot;
-    }
-
-    /**
-     * Possibly null, whitespace-separated (including TAB, NL, etc) VM options
-     * to be used to launch Ant process.
-     *
-     * If antOpts is null or empty, we'll return the globally-defined ANT_OPTS.
-     */
-    public String getAntOpts() {
-        if ((antOpts!=null) && (antOpts.trim().length()>0)) { 
-            return antOpts.replaceAll("[\t\r\n]+"," ");
-        }
-        else {
-            String globalOpts = DESCRIPTOR.getGlobalAntOpts();
-            if (globalOpts!=null) {
-                return globalOpts.replaceAll("[\t\r\n]+"," ");
-            }
-            else {
-                return globalOpts;
-            }
-        }
-    }
-
-    /**
-     * Set ANT_OPTS.
-     */
-    public void setAntOpts(String antOpts) {
-        this.antOpts = antOpts;
-    }
-
-    /**
-     * Gets the ANT_OPTS specified by the user, without taking
-     * global inheritance into account.
-     *
-     * <p>
-     * This is only used to present the UI screen, and in all the other cases
-     * {@link #getAntOpts()} should be used.
-     */
-    public String getUserConfiguredAntOpts() {
-        return antOpts;
-    }
-
-    public String getBuildFile() {
-        return buildFile;
-    }
-
-    public String getAntProperties() {
-        return antProperties;
-    }
-
-    /**
-     * Gets the Ant to invoke.
-     */
-    public String getAnt() {
-        return antName;
-    }
-
-    public void setAnt(String antName) {
-        this.antName = antName;
     }
 
     /**
@@ -646,18 +583,6 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet,IvyModul
                 r.add(item);
         }
         return r;
-    }
-
-    /**
-     * Gets the list of targets specified by the user,
-     * without taking inheritance into account.
-     *
-     * <p>
-     * This is only used to present the UI screen, and in
-     * all the other cases {@link #getTargets()} should be used.
-     */
-    public String getUserConfiguredTargets() {
-        return targets;
     }
 
 //
@@ -675,13 +600,14 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet,IvyModul
         ivyFilePattern = Util.fixEmptyAndTrim(json.getString("ivyFilePattern"));
         ivyFileExcludesPattern = Util.fixEmptyAndTrim(json.getString("ivyFileExcludesPattern"));
         ivySettingsFile = Util.fixEmptyAndTrim(json.getString("ivySettingsFile"));
-        targets = json.getString("targets").trim();
         ivyBranch = Util.fixEmptyAndTrim(json.getString("ivyBranch"));
         relativePathToDescriptorFromModuleRoot = Util.fixEmptyAndTrim(json.getString("relativePathToDescriptorFromModuleRoot"));
-        antName = json.has("antName") ? Util.fixEmptyAndTrim(json.getString("antName")) : null;
-        buildFile = Util.fixEmptyAndTrim(json.getString("buildFile"));
-        antOpts = Util.fixEmptyAndTrim(json.getString("antOpts"));
-        antProperties = Util.fixEmptyAndTrim(json.getString("antProperties"));
+        JSONObject ivyBuilderTypeJson = json.getJSONObject("ivyBuilderType");
+        try {
+            ivyBuilderType = (IvyBuilderType) req.bindJSON(Class.forName(ivyBuilderTypeJson.getString("stapler-class")), ivyBuilderTypeJson);
+        } catch (ClassNotFoundException e) {
+            throw new FormException("Error creating specified builder type.", e, "ivyBuilderType");
+        }
         aggregatorStyleBuild = !req.hasParameter("perModuleBuild");
         incrementalBuild = req.hasParameter("incrementalBuild");
         if (incrementalBuild)
@@ -742,6 +668,16 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet,IvyModul
         return FormValidation.ok();
     }
 
+    @SuppressWarnings("unchecked")
+    public ArrayList<Descriptor<IvyBuilderType>> getBuilderTypeDescriptors() {
+        ArrayList<Descriptor<IvyBuilderType>> buildTypeDescriptors = new ArrayList<Descriptor<IvyBuilderType>>();
+        buildTypeDescriptors.add(Hudson.getInstance().getDescriptor(AntIvyBuilderType.class));
+        if (Hudson.getInstance().getPlugin("nant") != null) {
+            buildTypeDescriptors.add(Hudson.getInstance().getDescriptor(NAntIvyBuilderType.class));
+        }
+        return buildTypeDescriptors;
+    }
+
     @Override
     public DescriptorImpl getDescriptor() {
         return DESCRIPTOR;
@@ -780,10 +716,6 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet,IvyModul
             return new IvyModuleSet(name);
         }
 
-        public Ant.DescriptorImpl getAntDescriptor() {
-            return Hudson.getInstance().getDescriptorByType(Ant.DescriptorImpl.class);
-        }
-
         @Override
         public boolean configure( StaplerRequest req, JSONObject o ) {
             globalAntOpts = Util.fixEmptyAndTrim(o.getString("globalAntOpts"));
@@ -791,5 +723,12 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet,IvyModul
 
             return true;
         }
+    }
+
+    protected Object readResolve() {
+        if (ivyBuilderType == null) {
+            ivyBuilderType = new AntIvyBuilderType(antName, buildFile, targets, antProperties, antOpts);
+        }
+        return this;
     }
 }

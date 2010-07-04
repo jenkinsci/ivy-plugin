@@ -55,30 +55,16 @@ THE SOFTWARE.
     <f:entry title="${%Ivy settings}" field="ivySettingsFile">
       <f:textbox checkUrl="'checkIvySettingsFile?value='+escape(this.value)"/>
     </f:entry>
-    <j:set var="ants" value="${it.descriptor.antDescriptor.installations}" />
-    <j:if test="${!empty(ants)}">
-      <f:entry title="${%Ant Version}">
-        <select class="setting-input" name="ant.antName">
-          <option value="(Default)">(${%Default})</option>
-          <j:forEach var="inst" items="${ants}">
-            <f:option selected="${inst.name==it.ant}" value="${inst.name}">${inst.name}</f:option>
-          </j:forEach>
-        </select>
-      </f:entry>
-    </j:if>
-    <f:entry title="${%Targets}" field="targets">
-      <f:textbox />
-    </f:entry>
+    <f:dropdownList name="ivyBuilderType" title="${%Build with}">
+      <j:forEach var="descriptor" items="${it.builderTypeDescriptors}" varStatus="loop">
+        <j:set var="instance" value="${descriptor==it.ivyBuilderType.descriptor?it.ivyBuilderType:null}"/>
+        <f:dropdownListBlock title="${descriptor.displayName}" value="${loop.index}"
+                             selected="${instance!=null}" staplerClass="${descriptor.clazz.name}">
+          <st:include page="${descriptor.configPage}" from="${descriptor}"/>
+        </f:dropdownListBlock>
+      </j:forEach>
+    </f:dropdownList>
     <f:advanced>
-      <f:entry title="${%Build File}">
-        <f:textbox name="buildFile" value="${it.buildFile}"/>
-      </f:entry>
-      <f:entry title="${%Properties}">
-        <f:textarea name="antProperties" value="${it.antProperties}"/>
-      </f:entry>
-      <f:entry title="${%Java Options}" help="/help/ant/ant-opts.html">
-        <f:expandableTextbox name="antOpts" value="${it.userConfiguredAntOpts}"/>
-      </f:entry>
       <f:optionalBlock title="${%Incremental build - only build changed modules}" name="incrementalBuild" checked="${it.incrementalBuild}" help="/plugin/ivy/incremental.html">
         <f:entry title="${%Changed modules property}" field="changedModulesProperty">
           <f:textbox />

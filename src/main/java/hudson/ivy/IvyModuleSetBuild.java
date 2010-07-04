@@ -28,6 +28,7 @@ import hudson.EnvVars;
 import hudson.Launcher;
 import hudson.Util;
 import hudson.ivy.IvyBuild.ProxyImpl2;
+import hudson.ivy.builder.IvyBuilderType;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.Build;
@@ -44,7 +45,6 @@ import hudson.model.Cause.UpstreamCause;
 import hudson.remoting.Callable;
 import hudson.remoting.Channel;
 import hudson.scm.ChangeLogSet;
-import hudson.tasks.Ant;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.Publisher;
 import hudson.util.StreamTaskListener;
@@ -63,6 +63,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.Map.Entry;
 import java.util.logging.Level;
@@ -125,9 +126,7 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
     @Override
     public EnvVars getEnvironment(TaskListener log) throws IOException, InterruptedException {
         EnvVars envs = super.getEnvironment(log);
-        String opts = project.getAntOpts();
-        if (opts != null)
-            envs.put("ANT_OPTS", opts);
+        envs.putAll(project.getIvyBuilderType().getEnvironment());
         return envs;
     }
 
@@ -458,18 +457,18 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
                             }
                         }
 
-                        StringBuilder antProperties = new StringBuilder();
-                        if (project.getAntProperties() != null)
-                            antProperties.append(project.getAntProperties()).append("\n");
-
+                        Properties additionalProperties = null;
                         if (project.isAggregatorStyleBuild() && project.isIncrementalBuild()) {
-                            antProperties.append(project.getChangedModulesProperty() == null ? "hudson.ivy.changedModules" : project
-                                    .getChangedModulesProperty());
-                            antProperties.append("=").append(StringUtils.join(changedModules, ','));
-                        }
-                        Ant ant = new Ant(getProject().getTargets(), project.getAnt(), project.getAntOpts(), project.getBuildFile(), antProperties
-                                .length() == 0 ? null : antProperties.toString());
-                        if (ant.perform(IvyModuleSetBuild.this, launcher, listener))
+                            additionalProperties = new Properties();
+                            additionalProperties.put(project.getChangedModulesProperty() == null ? "hudson.ivy.changedModules" : project
+                                    .getChangedModulesProperty(), StringUtils.join(changedModules, ','));
+                        }     
+                        
+                        IvyBuilderType ivyBuilderType = project.getIvyBuilderType();
+                        hudson.tasks.Builder builder = ivyBuilderType.getBuilder(additionalProperties);
+                        logger.println("Building project with " + ivyBuilderType.getDescriptor().getDisplayName());
+                        
+                        if (builder.perform(IvyModuleSetBuild.this, launcher, listener))
                             return Result.SUCCESS;
 
                         return Result.FAILURE;

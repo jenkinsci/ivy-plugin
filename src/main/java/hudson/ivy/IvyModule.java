@@ -115,7 +115,6 @@ public final class IvyModule extends AbstractIvyProject<IvyModule, IvyBuild> imp
      */
     private String targets;
 
-
     /**
      * Relative path from the workspace to the ivy descriptor file for this
      * module.
@@ -229,15 +228,6 @@ public final class IvyModule extends AbstractIvyProject<IvyModule, IvyBuild> imp
         return ivyBranch;
     }
 
-    /**
-     * Gets the list of targets to execute for this module.
-     */
-    public String getTargets() {
-        if (targets != null)
-            return targets;
-        return getParent().getTargets();
-    }
-
     public String getRelativePathToDescriptorFromModuleRoot() {
         if (relativePathToDescriptorFromModuleRoot != null)
             return relativePathToDescriptorFromModuleRoot;
@@ -251,18 +241,6 @@ public final class IvyModule extends AbstractIvyProject<IvyModule, IvyBuild> imp
     public String getRelativePathToModuleRoot() {
         return StringUtils.removeEnd(relativePathToDescriptorFromWorkspace, StringUtils.defaultString(getRelativePathToDescriptorFromModuleRoot(),
                 IVY_XML_PATH));
-    }
-
-    /**
-     * Gets the list of targets specified by the user, without taking
-     * inheritance and into account.
-     *
-     * <p>
-     * This is only used to present the UI screen, and in all the other cases
-     * {@link #getTargets()} should be used.
-     */
-    public String getUserConfiguredTargets() {
-        return targets;
     }
 
     @Override
@@ -464,7 +442,6 @@ public final class IvyModule extends AbstractIvyProject<IvyModule, IvyBuild> imp
     protected void submit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, FormException {
         super.submit(req, rsp);
 
-        targets = Util.fixEmptyAndTrim(req.getParameter("targets"));
         relativePathToDescriptorFromModuleRoot = Util.fixEmptyAndTrim(req.getParameter("relativePathToDescriptorFromModuleRoot"));
 
         publishers.rebuild(req,req.getSubmittedForm(),BuildStepDescriptor.filter(Publisher.all(),this.getClass()));

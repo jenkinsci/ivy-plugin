@@ -36,7 +36,6 @@ import hudson.scm.ChangeLogSet;
 import hudson.scm.ChangeLogSet.Entry;
 import hudson.slaves.WorkspaceList;
 import hudson.slaves.WorkspaceList.Lease;
-import hudson.tasks.Ant;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.Publisher;
 
@@ -422,8 +421,8 @@ public class IvyBuild extends AbstractIvyBuild<IvyModule, IvyBuild> {
                 buildEnvironments.add(e);
             }
 
-            Ant ant = new Ant(getProject().getTargets(), mms.getAnt(), mms.getAntOpts(), mms.getBuildFile(), mms.getAntProperties());
-            if (ant.perform(IvyBuild.this, launcher, listener))
+            hudson.tasks.Builder builder = getProject().getParent().getIvyBuilderType().getBuilder(null);
+            if (builder.perform(IvyBuild.this, launcher, listener))
                 return Result.SUCCESS;
 
             return Result.FAILURE;
