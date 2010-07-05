@@ -23,6 +23,7 @@
  */
 package hudson.ivy;
 
+import hudson.console.ConsoleNote;
 import hudson.model.BuildListener;
 import hudson.model.Cause;
 import hudson.model.Result;
@@ -129,6 +130,10 @@ final class SplittableBuildListener implements BuildListener, Serializable {
     public PrintWriter fatalError(String format, Object... args) {
         core.fatalError(format,args);
         return new PrintWriter(logger);
+    }
+
+    public void annotate(ConsoleNote ann) throws IOException {
+        core.annotate(ann);
     }
 
     private Object writeReplace() {
