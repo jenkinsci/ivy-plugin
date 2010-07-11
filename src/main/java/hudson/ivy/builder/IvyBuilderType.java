@@ -3,12 +3,13 @@ package hudson.ivy.builder;
 import java.util.Map;
 import java.util.Properties;
 
+import hudson.ExtensionPoint;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.Hudson;
 import hudson.tasks.Builder;
 
-public abstract class IvyBuilderType implements Describable<IvyBuilderType> {
+public abstract class IvyBuilderType implements Describable<IvyBuilderType>, ExtensionPoint {
 
     @Override
     public Descriptor<IvyBuilderType> getDescriptor() {
