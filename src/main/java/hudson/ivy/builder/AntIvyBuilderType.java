@@ -94,7 +94,7 @@ public class AntIvyBuilderType extends IvyBuilderType {
     }
 
     @Override
-    public Builder getBuilder(Properties additionalProperties) {
+    public Builder getBuilder(Properties additionalProperties, String overrideTargets) {
         StringBuilder properties = new StringBuilder();
         
         if (antProperties != null)
@@ -106,7 +106,7 @@ public class AntIvyBuilderType extends IvyBuilderType {
                 properties.append(key).append("=").append(additionalProperties.getProperty(key));
             }
         }
-        return new Ant(targets, antName, getFormattedAntOptsWithFallback(), buildFile, properties
+        return new Ant(overrideTargets == null ? targets : overrideTargets, antName, getFormattedAntOptsWithFallback(), buildFile, properties
                 .length() == 0 ? null : properties.toString());
     }
 

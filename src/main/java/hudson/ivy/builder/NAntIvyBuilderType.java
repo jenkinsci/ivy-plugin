@@ -68,7 +68,7 @@ public class NAntIvyBuilderType extends IvyBuilderType {
     }
 
     @Override
-    public Builder getBuilder(Properties additionalProperties) {
+    public Builder getBuilder(Properties additionalProperties, String overrideTargets) {
         StringBuilder properties = new StringBuilder();
         
         if (nantProperties != null)
@@ -80,7 +80,7 @@ public class NAntIvyBuilderType extends IvyBuilderType {
                 properties.append(key).append("=").append(additionalProperties.getProperty(key));
             }
         }
-        return new NantBuilder(buildFile, nantName, targets, properties
+        return new NantBuilder(buildFile, nantName, overrideTargets == null ? targets : overrideTargets, properties
                 .length() == 0 ? null : properties.toString());
     }
 

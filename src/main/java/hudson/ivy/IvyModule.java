@@ -228,6 +228,13 @@ public final class IvyModule extends AbstractIvyProject<IvyModule, IvyBuild> imp
         return ivyBranch;
     }
 
+    /**
+     * Gets the list of targets to execute for this module.
+     */
+    public String getTargets() {
+        return targets;
+    }
+
     public String getRelativePathToDescriptorFromModuleRoot() {
         if (relativePathToDescriptorFromModuleRoot != null)
             return relativePathToDescriptorFromModuleRoot;
@@ -442,6 +449,7 @@ public final class IvyModule extends AbstractIvyProject<IvyModule, IvyBuild> imp
     protected void submit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, FormException {
         super.submit(req, rsp);
 
+        targets = Util.fixEmptyAndTrim(req.getParameter("targets"));
         relativePathToDescriptorFromModuleRoot = Util.fixEmptyAndTrim(req.getParameter("relativePathToDescriptorFromModuleRoot"));
 
         publishers.rebuild(req,req.getSubmittedForm(),BuildStepDescriptor.filter(Publisher.all(),this.getClass()));

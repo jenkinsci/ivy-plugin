@@ -465,7 +465,7 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
                         }     
                         
                         IvyBuilderType ivyBuilderType = project.getIvyBuilderType();
-                        hudson.tasks.Builder builder = ivyBuilderType.getBuilder(additionalProperties);
+                        hudson.tasks.Builder builder = ivyBuilderType.getBuilder(additionalProperties, null);
                         logger.println("Building project with " + ivyBuilderType.getDescriptor().getDisplayName());
                         
                         if (builder.perform(IvyModuleSetBuild.this, launcher, listener))

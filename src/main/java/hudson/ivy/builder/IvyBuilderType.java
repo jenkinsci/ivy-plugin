@@ -18,6 +18,6 @@ public abstract class IvyBuilderType implements Describable<IvyBuilderType>, Ext
 
     public abstract Map<String, String> getEnvironment();
 
-    public abstract Builder getBuilder(Properties additionalProperties);
+    public abstract Builder getBuilder(Properties additionalProperties, String overrideTargets);
 
 }

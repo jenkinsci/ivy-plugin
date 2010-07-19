@@ -33,7 +33,7 @@ THE SOFTWARE.
       <f:textbox name="relativePathToDescriptorFromModuleRoot" value="${it.userConfiguredRelativePathToDescriptorFromModuleRoot}"/>
     </f:entry>
     <f:entry title="${%Targets}">
-      <f:textbox name="targets" value="${it.userConfiguredTargets}"/>
+      <f:textbox name="targets" value="${it.targets}"/>
     </f:entry>
   </f:section>
   
