@@ -4,7 +4,7 @@
     <dependencies>
         <dependency name="my-product-utils" rev="latest.integration"/>
         <dependency name="my-product-api" rev="latest.integration"/>
-        <dependency name="common-lib" rev="latest.integration"/>
+        <dependency name="common-lib" rev="latest.integration" branch="${infrastructure.branch.name}"/>
         <conflict manager="custom-conflict-manager"/>
     </dependencies>
 </ivy-module>

@@ -1,0 +1,22 @@
+<project xmlns:ivy="antlib:org.apache.ivy.ant" name="common-build-infrastructure">
+    <target name="resolve" description="Retrieve dependencies with ivy">
+        <ivy:settings/>
+        <ivy:retrieve pattern="${lib.dir}/[conf]/[artifact].[ext]" />
+    </target>
+
+    <target name="build" depends="resolve" description="Build this module">
+        <mkdir dir="target/artifacts"/>
+        <jar destfile="target/artifacts/${ivy.module}.jar" />
+    </target>
+
+    <target name="clean" description="Removes all generated artifacts">
+        <delete dir="target"/>
+    </target>
+
+    <target name="publish-local" depends="build" description="Publish module to local repository">
+        <ivy:buildnumber organisation="${ivy.organisation}" module="${ivy.module}" revision="${module.version}" branch="${branch.name}"/>
+        <ivy:publish resolver="local" pubrevision="${ivy.new.revision}" forcedeliver="true" pubbranch="${branch.name}">
+            <artifacts pattern="target/artifacts/[artifact].[ext]" />
+        </ivy:publish>
+    </target>
+</project>

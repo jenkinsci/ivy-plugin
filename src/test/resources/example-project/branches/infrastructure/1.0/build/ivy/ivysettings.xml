@@ -1,0 +1,27 @@
+<ivysettings>
+  <!--
+    All these settings are just to test different functional aspects of the Ivy Hudson plugin. If
+    you're using these example projects as a starting point for your own Ivy setup, you probably
+    don't need this.
+  -->
+  <settings defaultResolver="local" />
+  <latest-strategies>
+    <latest-revision name="custom-latest-strategy" usedefaultspecialmeanings="false">
+      <specialMeaning name="DEV" value="-15" />
+      <specialMeaning name="SNAPSHOT" value="-10" />
+      <specialMeaning name="M" value="-5" />
+    </latest-revision>
+  </latest-strategies>
+  <conflict-managers>
+    <latest-cm name="custom-conflict-manager" latest="custom-latest-strategy" />
+  </conflict-managers>
+  <resolvers>
+    <filesystem name="local" latest="custom-latest-strategy">
+      <ivy pattern="${ivy.default.ivy.user.dir}/[organisation]/[branch]/[module]/ivy-[revision].xml" />
+      <artifact pattern="${ivy.default.ivy.user.dir}/[organisation]/[branch]/[module]/[artifact]-[revision].[ext]" />
+    </filesystem>
+  </resolvers>
+  <modules>
+    <module organisation="hudson.ivy.example" name=".*" resolver="local" branch="${branch.name}" />
+  </modules>
+</ivysettings>
