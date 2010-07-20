@@ -116,6 +116,8 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet,IvyModul
     private String relativePathToDescriptorFromModuleRoot;
 
     private String ivySettingsFile;
+
+    private String ivySettingsPropertyFiles;
     
     private IvyBuilderType ivyBuilderType;
 
@@ -340,6 +342,14 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet,IvyModul
 
     public void setIvySettingsFile(String ivySettingsFile) {
         this.ivySettingsFile = ivySettingsFile;
+    }
+
+    public String getIvySettingsPropertyFiles() {
+        return ivySettingsPropertyFiles;
+    }
+
+    public void setIvySettingsPropertyFiles(String ivySettingsPropertyFiles) {
+        this.ivySettingsPropertyFiles = ivySettingsPropertyFiles;
     }
 
     public String getIvyBranch() {
@@ -600,6 +610,7 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet,IvyModul
         ivyFilePattern = Util.fixEmptyAndTrim(json.getString("ivyFilePattern"));
         ivyFileExcludesPattern = Util.fixEmptyAndTrim(json.getString("ivyFileExcludesPattern"));
         ivySettingsFile = Util.fixEmptyAndTrim(json.getString("ivySettingsFile"));
+        ivySettingsPropertyFiles = Util.fixEmptyAndTrim(json.getString("ivySettingsPropertyFiles"));
         ivyBranch = Util.fixEmptyAndTrim(json.getString("ivyBranch"));
         relativePathToDescriptorFromModuleRoot = Util.fixEmptyAndTrim(json.getString("relativePathToDescriptorFromModuleRoot"));
         JSONObject ivyBuilderTypeJson = json.getJSONObject("ivyBuilderType");

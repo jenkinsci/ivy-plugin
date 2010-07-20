@@ -74,6 +74,7 @@ import org.apache.ivy.Ivy;
 import org.apache.ivy.Ivy.IvyCallback;
 import org.apache.ivy.core.IvyContext;
 import org.apache.ivy.core.module.descriptor.ModuleDescriptor;
+import org.apache.ivy.core.settings.IvySettings;
 import org.apache.ivy.core.sort.SortOptions;
 import org.apache.ivy.plugins.parser.ModuleDescriptorParserRegistry;
 import org.apache.ivy.util.Message;
@@ -584,9 +585,9 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
 //                b.save();
 
             if (project.isAggregatorStyleBuild()) {
-                performAllBuildStep(listener, project.getPublishers(), true);
+                performAllBuildSteps(listener, project.getPublishers(), true);
             }
-            performAllBuildStep(listener, project.getProperties(), true);
+            performAllBuildSteps(listener, project.getProperties(), true);
 
             // aggregate all module fingerprints to us,
             // so that dependencies between module builds can be understood as
@@ -603,10 +604,10 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
                 // schedule downstream builds. for non aggregator style builds,
                 // this is done by each module
                 scheduleDownstreamBuilds(listener);
-                performAllBuildStep(listener, project.getPublishers(), false);
+                performAllBuildSteps(listener, project.getPublishers(), false);
             }
 
-            performAllBuildStep(listener, project.getProperties(), false);
+            performAllBuildSteps(listener, project.getProperties(), false);
         }
     }
 
@@ -750,6 +751,7 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
         private final String ivyFilePattern;
         private final String ivyFileExcludePattern;
         private final String ivySettingsFile;
+        private final String ivySettingsPropertyFiles;
         private final String ivyBranch;
         private final String workspace;
         private final String workspaceProper;
@@ -763,10 +765,12 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
             this.ivyBranch = project.getIvyBranch();
             this.workspace = workspace;
             this.ivySettingsFile = project.getIvySettingsFile();
+            this.ivySettingsPropertyFiles = project.getIvySettingsPropertyFiles();
             this.workspaceProper = project.getLastBuild().getWorkspace().getRemote();
         }
 
-		public List<IvyModuleInfo> call() throws Throwable {
+		@SuppressWarnings("unchecked")
+        public List<IvyModuleInfo> call() throws Throwable {
 			File ws = new File(workspace);
             FileSet ivyFiles = Util.createFileSet(ws, ivyFilePattern, ivyFileExcludePattern);
             final PrintStream logger = listener.getLogger();
@@ -828,26 +832,40 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
                 throw new AbortException(Messages.IvyModuleSetBuild_NoSuchIvySettingsFile(settingsLoc.getAbsolutePath()));
             }
             
-            Ivy configured = null;
+            ArrayList<File> propertyFiles = new ArrayList<File>();
+            if (StringUtils.isNotBlank(ivySettingsPropertyFiles)) {
+                for (String file : ivySettingsPropertyFiles.split(",")) {
+                    File propertyFile = new File(workspaceProper, file.trim());
+                    if (!propertyFile.exists()) {
+                        throw new AbortException(Messages.IvyModuleSetBuild_NoSuchPropertyFile(propertyFile.getAbsolutePath()));
+                    }
+                    propertyFiles.add(propertyFile);
+                }
+            }
+            
             try {
-                Ivy ivy = Ivy.newInstance();
+                IvySettings ivySettings = new IvySettings();
+                for (File file : propertyFiles) {
+                    ivySettings.loadProperties(file);
+                }
                 if (settingsLoc != null) {
-                    ivy.configure(settingsLoc);
+                    ivySettings.load(settingsLoc);
                     if (verbose)
-                        logger.println("Configured Ivy using custom settings" + settingsLoc.getAbsolutePath());
+                        logger.println("Configured Ivy using custom settings " + settingsLoc.getAbsolutePath());
                 } else {
-                    ivy.configureDefault();
+                    ivySettings.loadDefault();
                     if (verbose)
                         logger.println("Configured Ivy using default 2.1 settings");
                 }
-                if (ivyBranch != null)
-                    ivy.getSettings().setDefaultBranch(ivyBranch);
-                configured = ivy;
+                if (ivyBranch != null) {
+                    ivySettings.setDefaultBranch(ivyBranch);
+                }
+                return Ivy.newInstance(ivySettings);
             } catch (Exception e) {
                 logger.println("Error while reading the default Ivy 2.1 settings: " + e.getMessage());
                 logger.println(e.getStackTrace());
             }
-            return configured;
+            return null;
         }
 
         private static final long serialVersionUID = 1L;
