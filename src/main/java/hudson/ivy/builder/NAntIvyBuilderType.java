@@ -1,9 +1,11 @@
 package hudson.ivy.builder;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import hudson.model.Environment;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import hudson.Extension;
@@ -68,7 +70,7 @@ public class NAntIvyBuilderType extends IvyBuilderType {
     }
 
     @Override
-    public Builder getBuilder(Properties additionalProperties, String overrideTargets) {
+    public Builder getBuilder(Properties additionalProperties, String overrideTargets, List<Environment> environments) {
         StringBuilder properties = new StringBuilder();
         
         if (nantProperties != null)

@@ -421,7 +421,7 @@ public class IvyBuild extends AbstractIvyBuild<IvyModule, IvyBuild> {
                 buildEnvironments.add(e);
             }
 
-            hudson.tasks.Builder builder = getProject().getParent().getIvyBuilderType().getBuilder(null, getProject().getTargets());
+            hudson.tasks.Builder builder = getProject().getParent().getIvyBuilderType().getBuilder(null, getProject().getTargets(), buildEnvironments);
             if (builder.perform(IvyBuild.this, launcher, listener))
                 return Result.SUCCESS;
 

@@ -1,13 +1,17 @@
 package hudson.ivy.builder;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import hudson.Extension;
+import hudson.ivy.AntIvyBuildWrapper;
 import hudson.ivy.IvyModuleSet;
+import hudson.model.Environment;
 import hudson.model.Hudson;
 import hudson.tasks.Ant;
 import hudson.tasks.Builder;
@@ -24,13 +28,11 @@ public class AntIvyBuilderType extends IvyBuilderType {
      */
     private String antOpts;
     /**
-     * Optional build script path relative to the workspace. Used for the Ant
-     * '-f' option.
+     * Optional build script path relative to the workspace. Used for the Ant '-f' option.
      */
     private String buildFile;
     /**
-     * Optional properties to be passed to Ant. Follows {@link Properties}
-     * syntax.
+     * Optional properties to be passed to Ant. Follows {@link Properties} syntax.
      */
     private String antProperties;
 
@@ -47,6 +49,14 @@ public class AntIvyBuilderType extends IvyBuilderType {
         return targets;
     }
 
+    protected String getCalculatedTargets(String targets, List<Environment> buildEnvironments) {
+        String additionalTargets = getAdditionalAntTargets(buildEnvironments);
+        if (StringUtils.isNotBlank(additionalTargets)) {
+            return StringUtils.isNotBlank(targets) ? additionalTargets + targets : additionalTargets;
+        }
+        return targets;
+    }
+
     public String getAntName() {
         return antName;
     }
@@ -56,23 +66,28 @@ public class AntIvyBuilderType extends IvyBuilderType {
     }
 
     /**
-     * Possibly null, whitespace-separated (including TAB, NL, etc) VM options
-     * to be used to launch Ant process.
+     * Possibly null, whitespace-separated (including TAB, NL, etc) VM options to be used to launch Ant process.
+     * <p/>
+     * If antOpts is null or empty, we'll return the globally-defined ANT_OPTS. Also prepend any build-specific
+     * ANT_OPTS.
      *
-     * If antOpts is null or empty, we'll return the globally-defined ANT_OPTS.
+     * @param environment
      */
-    public String getFormattedAntOptsWithFallback() {
-        if ((antOpts!=null) && (antOpts.trim().length()>0)) { 
-            return antOpts.replaceAll("[\t\r\n]+"," ");
-        }
-        else {
+    protected String getCalculatedAntOpts(List<Environment> buildEnvironments) {
+        String antOpts = null;
+        if ((this.antOpts != null) && (this.antOpts.trim().length() > 0)) {
+            antOpts = this.antOpts.replaceAll("[\t\r\n]+", " ");
+        } else {
             String globalOpts = IvyModuleSet.DESCRIPTOR.getGlobalAntOpts();
-            if (globalOpts!=null) {
-                return globalOpts.replaceAll("[\t\r\n]+"," ");
+            if (globalOpts != null) {
+                antOpts = globalOpts.replaceAll("[\t\r\n]+", " ");
             }
-            else {
-                return globalOpts;
-            }
+        }
+        String additionalArgs = getAddtionalAntOpts(buildEnvironments);
+        if (StringUtils.isNotBlank(additionalArgs)) {
+            return StringUtils.isNotBlank(antOpts) ? additionalArgs + antOpts : additionalArgs;
+        } else {
+            return antOpts;
         }
     }
 
@@ -87,18 +102,19 @@ public class AntIvyBuilderType extends IvyBuilderType {
     @Override
     public Map<String, String> getEnvironment() {
         Map<String, String> envs = new HashMap<String, String>();
-        String opts = getFormattedAntOptsWithFallback();
-        if (opts != null)
+        String opts = getCalculatedAntOpts(null);
+        if (opts != null) {
             envs.put("ANT_OPTS", opts);
+        }
         return envs;
     }
 
     @Override
-    public Builder getBuilder(Properties additionalProperties, String overrideTargets) {
+    public Builder getBuilder(Properties additionalProperties, String overrideTargets, List<Environment> environments) {
         StringBuilder properties = new StringBuilder();
-        
-        if (antProperties != null)
+        if (antProperties != null) {
             properties.append(antProperties);
+        }
 
         if (additionalProperties != null) {
             for (String key : additionalProperties.stringPropertyNames()) {
@@ -106,8 +122,8 @@ public class AntIvyBuilderType extends IvyBuilderType {
                 properties.append(key).append("=").append(additionalProperties.getProperty(key));
             }
         }
-        return new Ant(overrideTargets == null ? targets : overrideTargets, antName, getFormattedAntOptsWithFallback(), buildFile, properties
-                .length() == 0 ? null : properties.toString());
+        return new Ant(getCalculatedTargets(overrideTargets == null ? targets : overrideTargets, environments), antName,
+                getCalculatedAntOpts(environments), buildFile, properties.length() == 0 ? null : properties.toString());
     }
 
     @Extension
@@ -122,5 +138,33 @@ public class AntIvyBuilderType extends IvyBuilderType {
             return Hudson.getInstance().getDescriptorByType(Ant.DescriptorImpl.class).getInstallations();
         }
 
+    }
+
+    private String getAdditionalAntTargets(List<Environment> buildEnvironments) {
+        if (buildEnvironments != null) {
+            StringBuilder additionalAntTargets = new StringBuilder();
+            for (Environment environment : buildEnvironments) {
+                if (environment instanceof AntIvyBuildWrapper.AntIvyBuilderEnvironment) {
+                    additionalAntTargets.append(((AntIvyBuildWrapper.AntIvyBuilderEnvironment) environment).getAdditionalArgs())
+                            .append(" ");
+                }
+            }
+            return additionalAntTargets.toString();
+        }
+        return null;
+    }
+
+    private String getAddtionalAntOpts(List<Environment> buildEnvironments) {
+        if (buildEnvironments != null) {
+            StringBuilder addtionalAntOpts = new StringBuilder();
+            for (Environment environment : buildEnvironments) {
+                if (environment instanceof AntIvyBuildWrapper.AntIvyBuilderEnvironment) {
+                    addtionalAntOpts.append(((AntIvyBuildWrapper.AntIvyBuilderEnvironment) environment).getAdditionalOpts())
+                            .append(" ");
+                }
+            }
+            return addtionalAntOpts.toString();
+        }
+        return null;
     }
 }
