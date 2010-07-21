@@ -738,7 +738,14 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet,IvyModul
 
     protected Object readResolve() {
         if (ivyBuilderType == null) {
+            // Convert builder settings to new format
             ivyBuilderType = new AntIvyBuilderType(antName, buildFile, targets, antProperties, antOpts);
+            // Wipe out old builder settings to avoid confusion
+            antName = null;
+            buildFile = null;
+            targets = null;
+            antProperties = null;
+            antOpts = null;
         }
         return this;
     }
