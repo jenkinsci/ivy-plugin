@@ -24,9 +24,12 @@
 package hudson.ivy;
 
 import hudson.AbortException;
+import hudson.EnvVars;
 import hudson.FilePath;
+import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
 import hudson.model.Environment;
+import hudson.model.EnvironmentContributingAction;
 import hudson.model.Executor;
 import hudson.model.Node;
 import hudson.model.Result;
@@ -157,6 +160,7 @@ public class IvyBuild extends AbstractIvyBuild<IvyModule, IvyBuild> {
 
     @Override
     public void run() {
+        addAction(new IvyModuleEnvironmentAction());
         run(new RunnerImpl());
 
         getProject().updateTransientActions();
@@ -450,5 +454,28 @@ public class IvyBuild extends AbstractIvyBuild<IvyModule, IvyBuild> {
     @Override
     public IvyModule getParent() {// don't know why, but javac wants this
         return super.getParent();
+    }
+
+    public static class IvyModuleEnvironmentAction implements EnvironmentContributingAction {
+        @Override
+        public String getUrlName() {
+            return null;
+        }
+
+        @Override
+        public String getIconFileName() {
+            return null;
+        }
+
+        @Override
+        public String getDisplayName() {
+            return null;
+        }
+
+        @Override
+        public void buildEnvVars(AbstractBuild<?, ?> build, EnvVars env) {
+            env.put("IVY_MODULE_NAME", ((IvyModule) build.getParent()).getModuleName().name);
+            env.put("IVY_MODULE_ORGANISATION", ((IvyModule) build.getParent()).getModuleName().organisation);
+        }
     }
 }
