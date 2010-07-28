@@ -434,14 +434,14 @@ public class IvyBuild extends AbstractIvyBuild<IvyModule, IvyBuild> {
 
         @Override
         public void post2(BuildListener listener) throws Exception {
-            performAllBuildStep(listener, reporters,true);
-            performAllBuildStep(listener, project.getProperties(),true);
+            performAllBuildSteps(listener, reporters,true);
+            performAllBuildSteps(listener, project.getProperties(),true);
         }
 
         @Override
         public void cleanUp(BuildListener listener) throws Exception {
-            performAllBuildStep(listener, reporters,false);
-            performAllBuildStep(listener, project.getProperties(),false);
+            performAllBuildSteps(listener, reporters,false);
+            performAllBuildSteps(listener, project.getProperties(),false);
             scheduleDownstreamBuilds(listener);
         }
     }

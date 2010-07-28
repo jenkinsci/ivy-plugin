@@ -340,10 +340,9 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
 
             // symlink to this module build
             String moduleFsName = newBuild.getProject().getModuleName().toFileSystemName();
-            Util.createSymlink(getRootDir(), "../../modules/" + moduleFsName + "/builds/" + newBuild.getId() /*
-                                                                                                              * ugly!
-                                                                                                              */, moduleFsName,
-                    new StreamTaskListener());
+            Util.createSymlink(getRootDir(),
+                    "../../modules/" + moduleFsName + "/builds/" + newBuild.getId() /*ugly!*/,
+                    moduleFsName, StreamTaskListener.NULL);
         } catch (IOException e) {
             LOGGER.log(Level.WARNING, "Failed to update " + this, e);
         } catch (InterruptedException e) {
