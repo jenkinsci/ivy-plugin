@@ -42,6 +42,7 @@ import hudson.model.Result;
 import hudson.model.Saveable;
 import hudson.model.DependencyGraph.Dependency;
 import hudson.model.Descriptor.FormException;
+import hudson.model.queue.CauseOfBlockage;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.LogRotator;
 import hudson.tasks.Publisher;
@@ -415,6 +416,39 @@ public final class IvyModule extends AbstractIvyProject<IvyModule, IvyBuild> imp
                 return true;
         }
         return false;
+    }
+
+    @Override
+    public CauseOfBlockage getCauseOfBlockage() {
+        CauseOfBlockage cob = super.getCauseOfBlockage();
+        if (cob != null)
+            return cob;
+
+        if (!getParent().isAggregatorStyleBuild()) {
+            DependencyGraph graph = Hudson.getInstance().getDependencyGraph();
+            for (AbstractProject tup : graph.getTransitiveUpstream(this)) {
+                if(getParent() == tup.getParent() && (tup.isBuilding() || tup.isInQueue()))
+                        return new BecauseOfUpstreamModuleBuildInProgress(tup);
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Because the upstream module build is in progress, and we are configured to wait for that.
+     */
+    public static class BecauseOfUpstreamModuleBuildInProgress extends CauseOfBlockage {
+        public final AbstractProject<?,?> up;
+
+        public BecauseOfUpstreamModuleBuildInProgress(AbstractProject<?,?> up) {
+            this.up = up;
+        }
+
+        @Override
+        public String getShortDescription() {
+            return Messages.IvyModule_UpstreamModuleBuildInProgress(up.getName());
+        }
     }
 
     @Override
