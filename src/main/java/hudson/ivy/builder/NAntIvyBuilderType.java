@@ -86,7 +86,7 @@ public class NAntIvyBuilderType extends IvyBuilderType {
                 .length() == 0 ? null : properties.toString());
     }
 
-    @Extension
+    @Extension(optional = true)
     public static class DescriptorImpl extends IvyBuilderTypeDescriptor {
 
         @Override
