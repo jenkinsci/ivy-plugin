@@ -172,6 +172,12 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet,IvyModul
     private boolean ignoreUpstreamChanges = false;
 
     /**
+     * If true, allow this project to trigger downstream projects based on
+     * Ivy dependencies.
+     */
+    private Boolean allowedToTriggerDownstream = true;
+
+    /**
      * If true, do not archive artifacts to the master.
      */
     private boolean archivingDisabled = false;
@@ -310,6 +316,14 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet,IvyModul
 
     public boolean ignoreUpstreamChanges() {
         return ignoreUpstreamChanges;
+    }
+
+    public boolean isAllowedToTriggerDownstream() {
+        return allowedToTriggerDownstream;
+    }
+
+    public void setAllowedToTriggerDownstream(boolean allowedToTriggerDownstream) {
+        this.allowedToTriggerDownstream = allowedToTriggerDownstream;
     }
 
     public boolean isArchivingDisabled() {
@@ -607,6 +621,7 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet,IvyModul
         JSONObject json = req.getSubmittedForm();
 
         ignoreUpstreamChanges = !json.has("triggerByDependency");
+        allowedToTriggerDownstream = json.has("allowedToTriggerDownstream");
         ivyFilePattern = Util.fixEmptyAndTrim(json.getString("ivyFilePattern"));
         ivyFileExcludesPattern = Util.fixEmptyAndTrim(json.getString("ivyFileExcludesPattern"));
         ivySettingsFile = Util.fixEmptyAndTrim(json.getString("ivySettingsFile"));
@@ -746,6 +761,9 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet,IvyModul
             targets = null;
             antProperties = null;
             antOpts = null;
+        }
+        if (allowedToTriggerDownstream == null) {
+            allowedToTriggerDownstream = true;
         }
         return this;
     }

@@ -34,6 +34,9 @@ THE SOFTWARE.
         help="/plugin/ivy/ignore-upstream-changes.html"
         title="${%Build whenever an Ivy dependency is built}"
         checked="${h.defaultToTrue(!it.ignoreUpstreamChanges())}" />
+    <f:optionalBlock name="allowedToTriggerDownstream"
+        title="${%Allow this project to trigger downstream Ivy projects}"
+        checked="${h.defaultToTrue(it.allowedToTriggerDownstream)}" />
     <p:config-upstream-pseudo-trigger />
   </p:config-trigger>
 

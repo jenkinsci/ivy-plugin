@@ -360,7 +360,7 @@ public final class IvyModule extends AbstractIvyProject<IvyModule, IvyBuild> imp
         Map<ModuleDependency, IvyModule> modules = new HashMap<ModuleDependency, IvyModule>();
         if (!getParent().ignoreUpstreamChanges()) {
             for (IvyModule m : Hudson.getInstance().getAllItems(IvyModule.class)) {
-                if (m.isDisabled())
+                if (m.isDisabled() || !m.getParent().isAllowedToTriggerDownstream())
                     continue;
                 modules.put(m.asDependency(), m);
                 modules.put(m.asDependency().withUnknownRevision(), m);
