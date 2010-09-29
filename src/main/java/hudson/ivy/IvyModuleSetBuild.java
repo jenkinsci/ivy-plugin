@@ -796,7 +796,7 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
                         }
                     }
                 });
-                moduleDescriptors.put(module, ivyFilePath);
+                moduleDescriptors.put(module, ivyFilePath.replace('\\', '/'));
             }
 
             List<IvyModuleInfo> infos = new ArrayList<IvyModuleInfo>();
