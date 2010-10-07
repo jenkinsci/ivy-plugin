@@ -16,4 +16,8 @@
     <f:checkbox id="ivy.triggerWhenUnstable"/>
     <label class="attach-previous">${%Trigger when unstable}</label>
   </f:entry>
+   <f:entry title="" field="useUpstreamParameters">
+    <f:checkbox id="useUpstreamParameters" />
+    <label class="attach-previous">${%useUpstreamParameters}</label>
+  </f:entry>
 </j:jelly>

@@ -23,14 +23,18 @@
  */
 package hudson.ivy;
 
+import hudson.ivy.AbstractIvyBuild.UpstreamParameterCause;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
+import hudson.model.Cause;
 import hudson.model.ItemGroup;
+import hudson.model.ParametersAction;
 import hudson.triggers.Trigger;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -66,4 +70,25 @@ public abstract class AbstractIvyProject<P extends AbstractProject<P,R>,R extend
 
     protected abstract void addTransientActionsFromBuild(R lastBuild, Set<Class> added);
 
+    public abstract boolean isUseUpstreamParameters();
+    
+	@Override
+	public boolean scheduleBuild(Cause c) {
+		if (c instanceof UpstreamParameterCause) {
+			
+			UpstreamParameterCause upc = (UpstreamParameterCause)c;
+			
+			if (isUseUpstreamParameters()) {
+				List<ParametersAction> upStreamParams = upc
+						.getUpStreamParameters();
+
+				return scheduleBuild(getQuietPeriod(), c,
+						upStreamParams
+								.toArray(new ParametersAction[upStreamParams
+										.size()]));
+			}
+		}
+
+		return scheduleBuild(c);
+	}
 }

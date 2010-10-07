@@ -30,6 +30,7 @@ import hudson.model.BuildListener;
 import hudson.model.DependencyGraph;
 import hudson.model.Hudson;
 import hudson.model.Result;
+import hudson.model.ParametersAction;
 import hudson.model.Run;
 import hudson.model.Cause.UpstreamCause;
 import hudson.tasks.BuildTrigger;
@@ -37,6 +38,7 @@ import hudson.tasks.BuildTrigger;
 import java.io.File;
 import java.io.IOException;
 import java.util.Calendar;
+import java.util.List;
 import java.util.Set;
 
 public abstract class AbstractIvyBuild<P extends AbstractIvyProject<P,B>,B extends AbstractIvyBuild<P,B>> extends AbstractBuild<P, B>  {
@@ -131,10 +133,26 @@ public abstract class AbstractIvyBuild<P extends AbstractIvyProject<P,B>,B exten
             
             if(trigger) {
                 listener.getLogger().println(Messages.IvyBuild_Triggering(down.getName()));
-                down.scheduleBuild(new UpstreamCause((Run<?,?>)this));
+                down.scheduleBuild(new UpstreamParameterCause((Run<?,?>)this, this.getActions(ParametersAction.class)));
             }
         }
+    }    
+    
+    public static class UpstreamParameterCause extends UpstreamCause
+    {
+    	private final List<ParametersAction> upStreamParameters;
+    	
+		public UpstreamParameterCause(Run<?, ?> arg0, List<ParametersAction> upStreamParams) {
+			super(arg0);
+			upStreamParameters = upStreamParams;
+		}
+    	
+		public List<ParametersAction> getUpStreamParameters()
+		{
+			return upStreamParameters;
+		}
     }
+    
     
     private boolean inDownstreamProjects(AbstractProject downstreamProject) {
         DependencyGraph graph = Hudson.getInstance().getDependencyGraph();

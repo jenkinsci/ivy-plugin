@@ -78,9 +78,10 @@ THE SOFTWARE.
       </f:optionalBlock>
       <f:optionalBlock title="${%Build modules as separate jobs}" name="perModuleBuild" checked="${!it.aggregatorStyleBuild}" help="/plugin/ivy/aggregator.html">
       </f:optionalBlock>
+      <f:optionalBlock title="${%Use parameters from upstream builds}" name="useUpstreamParameters" checked="${it.useUpstreamParameters}" help="/plugin/ivy/use-upstream-parameters.html">
+      </f:optionalBlock>
     </f:advanced>
   </f:section>
-  
   <p:config-buildWrappers />
   <p:config-publishers />
 </j:jelly>

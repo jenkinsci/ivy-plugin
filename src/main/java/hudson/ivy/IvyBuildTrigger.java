@@ -99,7 +99,9 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
     private final String ivyConfName;
     
     private final boolean triggerWhenUnstable;
-
+    
+    private final boolean useUpstreamParameters;
+    
     /**
      * The last modified time of the backup copy of the ivy file on the master.
      */
@@ -132,12 +134,14 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
      * @param triggerWhenUnstable
      *            true if this build should be triggered even when an upstream build in Unstable.
      *            false if this build should be triggered only when an upstream build is Successful.
+     * @param passPropertiesDownstream           
      */
     @DataBoundConstructor
-    public IvyBuildTrigger(final String ivyFile, final String ivyConfName, final boolean triggerWhenUnstable) {
+    public IvyBuildTrigger(final String ivyFile, final String ivyConfName, final boolean triggerWhenUnstable, final boolean useUpstreamParameters) {
         this.ivyFile = ivyFile;
         this.ivyConfName = ivyConfName;
         this.triggerWhenUnstable = triggerWhenUnstable;
+        this.useUpstreamParameters = useUpstreamParameters;
     }
 
     /**
@@ -151,7 +155,7 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
      */
     @Deprecated
     public IvyBuildTrigger(final String ivyFile, final String ivyConfName) {
-        this(ivyFile, ivyConfName, false);
+        this(ivyFile, ivyConfName, false, false);
     }
 
     /**
@@ -191,6 +195,11 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
         return triggerWhenUnstable;
     }
 
+    public boolean isUseUpstreamParameters()
+    {
+    	return useUpstreamParameters;
+    }
+    
     /**
      *
      * @return the Ivy instance based on the {@link #ivyConfName}
@@ -403,7 +412,7 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
                 // Such a project might not exist
                 if (p != null && p instanceof Project) {
                     if (captures(rid, (Project) p)) {
-                        graph.addDependency(new IvyThresholdDependency(p, owner, triggerWhenUnstable ? Result.UNSTABLE : Result.SUCCESS));
+                        graph.addDependency(new IvyThresholdDependency(p, owner, triggerWhenUnstable ? Result.UNSTABLE : Result.SUCCESS, useUpstreamParameters));
                     }
                 }
             }

@@ -388,7 +388,7 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
 
                             if (triggerBuild) {
                                 logger.println("Triggering " + module.getModuleName());
-                                module.scheduleBuild(new UpstreamCause((Run<?, ?>) IvyModuleSetBuild.this));
+                                module.scheduleBuild(new UpstreamParameterCause(((Run<?, ?>) IvyModuleSetBuild.this), IvyModuleSetBuild.this.getActions(ParametersAction.class)));
                             }
                             triggeredModules.add(module);
                         }
@@ -415,7 +415,7 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
 
                             if (triggerBuild) {
                                 logger.println("Triggering " + module.getModuleName());
-                                module.scheduleBuild(new UpstreamCause((Run<?, ?>) IvyModuleSetBuild.this));
+                                module.scheduleBuild(new UpstreamParameterCause(((Run<?, ?>) IvyModuleSetBuild.this), IvyModuleSetBuild.this.getActions(ParametersAction.class)));
                                 triggeredModules.add(module);
                             }
                         }
