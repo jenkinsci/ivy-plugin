@@ -26,10 +26,8 @@ package hudson.ivy;
 import hudson.CopyOnWrite;
 import hudson.Functions;
 import hudson.Util;
-import hudson.ivy.AbstractIvyBuild.UpstreamParameterCause;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
-import hudson.model.Cause;
 import hudson.model.DependencyGraph;
 import hudson.model.Descriptor;
 import hudson.model.Hudson;
@@ -39,7 +37,6 @@ import hudson.model.JDK;
 import hudson.model.Job;
 import hudson.model.Label;
 import hudson.model.Node;
-import hudson.model.ParametersAction;
 import hudson.model.Resource;
 import hudson.model.Result;
 import hudson.model.Saveable;
@@ -409,7 +406,7 @@ public final class IvyModule extends AbstractIvyProject<IvyModule, IvyBuild> imp
 
             // Create the build dependency, ignoring self-referencing or already existing deps
             if (upstream != downstream && !hasDependency(graph, upstream, downstream))
-                graph.addDependency(new IvyThresholdDependency(upstream, downstream, Result.SUCCESS, this.getParent().isUseUpstreamParameters()));
+                graph.addDependency(new IvyThresholdDependency(upstream, downstream, Result.SUCCESS));
         }
     }
 
@@ -515,12 +512,5 @@ public final class IvyModule extends AbstractIvyProject<IvyModule, IvyBuild> imp
         return modulePublisherList;
     }
 
-    
-    
-    @Override
-	public boolean isUseUpstreamParameters() {
-		return getParent().isUseUpstreamParameters();
-	}
-    
     private static final Logger LOGGER = Logger.getLogger(IvyModule.class.getName());
 }

@@ -20,11 +20,9 @@ import java.util.List;
 
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
-import hudson.model.ParametersAction;
 import hudson.model.Action;
 import hudson.model.Result;
 import hudson.model.TaskListener;
-import hudson.util.ReflectionUtils.Parameter;
 
 /**
  * Invoke downstream projects with applicable parameters using Hudson's
@@ -35,28 +33,16 @@ import hudson.util.ReflectionUtils.Parameter;
 public class IvyThresholdDependency extends IvyDependency {
 
     private Result threshold;
-    private boolean useUpstreamParameters;
 
-    public IvyThresholdDependency(AbstractProject<?, ?> upstream, AbstractProject<?, ?> downstream, Result threshold, boolean useUpstreamParameters) {
+    public IvyThresholdDependency(AbstractProject<?, ?> upstream, AbstractProject<?, ?> downstream, Result threshold) {
         super(upstream, downstream);
         this.threshold = threshold;
-        this.useUpstreamParameters = useUpstreamParameters;
     }
 
     @Override
     public boolean shouldTriggerBuild(AbstractBuild build, TaskListener listener, List<Action> actions) {
         if (build.getResult().isBetterOrEqualTo(threshold))
-        {
-        	if(useUpstreamParameters)
-        	{
-        		List<ParametersAction> paramActions = build.getActions(ParametersAction.class);
-        	
-        		for (ParametersAction parametersAction : paramActions) {
-        			actions.add(parametersAction);
-        		}
-        	}
             return true;
-        }
         return false;
     }
 
