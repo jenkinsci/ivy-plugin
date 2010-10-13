@@ -20,6 +20,7 @@ import java.util.List;
 
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
+import hudson.model.ParametersAction;
 import hudson.model.Action;
 import hudson.model.Result;
 import hudson.model.TaskListener;
@@ -33,16 +34,28 @@ import hudson.model.TaskListener;
 public class IvyThresholdDependency extends IvyDependency {
 
     private Result threshold;
+    private boolean useUpstreamParameters;
 
-    public IvyThresholdDependency(AbstractProject<?, ?> upstream, AbstractProject<?, ?> downstream, Result threshold) {
+    public IvyThresholdDependency(AbstractProject<?, ?> upstream, AbstractProject<?, ?> downstream, Result threshold, boolean useUpstreamParameters) {
         super(upstream, downstream);
         this.threshold = threshold;
+        this.useUpstreamParameters = useUpstreamParameters;
     }
 
     @Override
     public boolean shouldTriggerBuild(AbstractBuild build, TaskListener listener, List<Action> actions) {
         if (build.getResult().isBetterOrEqualTo(threshold))
+        {
+        	if(useUpstreamParameters)
+        	{
+        		List<ParametersAction> paramActions = build.getActions(ParametersAction.class);
+        	
+        		for (ParametersAction parametersAction : paramActions) {
+        			actions.add(parametersAction);
+        		}
+        	}
             return true;
+        }
         return false;
     }
 

@@ -178,6 +178,19 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet,IvyModul
     private Boolean allowedToTriggerDownstream = true;
 
     /**
+     * If true properties this build will use parameters specified on the triggering build
+     */
+    private boolean useUpstreamParameters = false;
+
+    public boolean isUseUpstreamParameters() {
+        return useUpstreamParameters;
+    }
+
+    public void setUseUpstreamParameters(boolean useUpstreamParameters) {
+        this.useUpstreamParameters = useUpstreamParameters;
+    }
+
+    /**
      * If true, do not archive artifacts to the master.
      */
     private boolean archivingDisabled = false;
@@ -622,6 +635,7 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet,IvyModul
 
         ignoreUpstreamChanges = !json.has("triggerByDependency");
         allowedToTriggerDownstream = json.has("allowedToTriggerDownstream");
+        useUpstreamParameters = json.has("useUpstreamParameters");
         ivyFilePattern = Util.fixEmptyAndTrim(json.getString("ivyFilePattern"));
         ivyFileExcludesPattern = Util.fixEmptyAndTrim(json.getString("ivyFileExcludesPattern"));
         ivySettingsFile = Util.fixEmptyAndTrim(json.getString("ivySettingsFile"));

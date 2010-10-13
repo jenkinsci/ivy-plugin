@@ -406,7 +406,7 @@ public final class IvyModule extends AbstractIvyProject<IvyModule, IvyBuild> imp
 
             // Create the build dependency, ignoring self-referencing or already existing deps
             if (upstream != downstream && !hasDependency(graph, upstream, downstream))
-                graph.addDependency(new IvyThresholdDependency(upstream, downstream, Result.SUCCESS));
+                graph.addDependency(new IvyThresholdDependency(upstream, downstream, Result.SUCCESS, isUseUpstreamParameters()));
         }
     }
 
@@ -512,5 +512,12 @@ public final class IvyModule extends AbstractIvyProject<IvyModule, IvyBuild> imp
         return modulePublisherList;
     }
 
+    
+    
+    @Override
+    public boolean isUseUpstreamParameters() {
+        return getParent().isUseUpstreamParameters();
+    }
+    
     private static final Logger LOGGER = Logger.getLogger(IvyModule.class.getName());
 }
