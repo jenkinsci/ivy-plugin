@@ -23,6 +23,7 @@
  */
 package hudson.ivy;
 
+import static hudson.model.Result.FAILURE;
 import hudson.AbortException;
 import hudson.EnvVars;
 import hudson.FilePath;
@@ -32,6 +33,7 @@ import hudson.model.Environment;
 import hudson.model.EnvironmentContributingAction;
 import hudson.model.Executor;
 import hudson.model.Node;
+import hudson.model.ParametersAction;
 import hudson.model.Result;
 import hudson.model.Run;
 import hudson.remoting.Channel;
@@ -413,33 +415,60 @@ public class IvyBuild extends AbstractIvyBuild<IvyModule, IvyBuild> {
         protected Result doRun(BuildListener listener) throws Exception {
             // pick up a list of reporters to run
             reporters = getProject().createModulePublishers();
-            IvyModuleSet mms = getProject().getParent();
             if (debug)
                 listener.getLogger().println("Reporters=" + reporters);
+            if (!preBuild(listener, reporters))
+                return FAILURE;
 
-            for (BuildWrapper w : mms.getBuildWrappersList()) {
-                Environment e = w.setUp(IvyBuild.this, launcher, listener);
-                if (e == null) {
-                    return Result.FAILURE;
+            IvyModuleSet mms = getProject().getParent();
+            Result r = null;
+            try {
+                List<BuildWrapper> wrappers = new ArrayList<BuildWrapper>(mms.getBuildWrappersList().toList());
+
+                ParametersAction parameters = getAction(ParametersAction.class);
+                if (parameters != null)
+                    parameters.createBuildWrappers(IvyBuild.this, wrappers);
+
+                for (BuildWrapper w : wrappers) {
+                    Environment e = w.setUp(IvyBuild.this, launcher, listener);
+                    if (e == null)
+                        return (r = FAILURE);
+                    buildEnvironments.add(e);
                 }
-                buildEnvironments.add(e);
+
+                hudson.tasks.Builder builder = getProject().getParent().getIvyBuilderType()
+                        .getBuilder(null, getProject().getTargets(), buildEnvironments);
+                if (!builder.perform(IvyBuild.this, launcher, listener))
+                    r = FAILURE;
+            } finally {
+                if (r != null)
+                    setResult(r);
+                // tear down in reverse order
+                boolean failed = false;
+                for (int i = buildEnvironments.size() - 1; i >= 0; i--) {
+                    if (!buildEnvironments.get(i).tearDown(IvyBuild.this, listener)) {
+                        failed = true;
+                    }
+                }
+                // WARNING The return in the finally clause will trump any return before
+                if (failed)
+                    return FAILURE;
             }
 
-            hudson.tasks.Builder builder = getProject().getParent().getIvyBuilderType().getBuilder(null, getProject().getTargets(), buildEnvironments);
-            if (builder.perform(IvyBuild.this, launcher, listener))
-                return Result.SUCCESS;
-
-            return Result.FAILURE;
+            return r;
         }
 
         @Override
         public void post2(BuildListener listener) throws Exception {
-            performAllBuildSteps(listener, reporters,true);
-            performAllBuildSteps(listener, project.getProperties(),true);
+            if (!performAllBuildSteps(listener, reporters, true))
+                setResult(FAILURE);
+            if (!performAllBuildSteps(listener, project.getProperties(), true))
+                setResult(FAILURE);
         }
 
         @Override
         public void cleanUp(BuildListener listener) throws Exception {
+            // at this point it's too late to mark the build as a failure, so ignore return value.
             performAllBuildSteps(listener, reporters,false);
             performAllBuildSteps(listener, project.getProperties(),false);
             scheduleDownstreamBuilds(listener);
