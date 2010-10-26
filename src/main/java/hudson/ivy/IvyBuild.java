@@ -420,10 +420,9 @@ public class IvyBuild extends AbstractIvyBuild<IvyModule, IvyBuild> {
             if (!preBuild(listener, reporters))
                 return FAILURE;
 
-            IvyModuleSet mms = getProject().getParent();
             Result r = null;
             try {
-                List<BuildWrapper> wrappers = new ArrayList<BuildWrapper>(mms.getBuildWrappersList().toList());
+                List<BuildWrapper> wrappers = new ArrayList<BuildWrapper>(getProject().getBuildWrappersList().toList());
 
                 ParametersAction parameters = getAction(ParametersAction.class);
                 if (parameters != null)

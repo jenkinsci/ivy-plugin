@@ -44,6 +44,7 @@ import hudson.model.DependencyGraph.Dependency;
 import hudson.model.Descriptor.FormException;
 import hudson.model.queue.CauseOfBlockage;
 import hudson.tasks.BuildStepDescriptor;
+import hudson.tasks.BuildWrapper;
 import hudson.tasks.LogRotator;
 import hudson.tasks.Publisher;
 import hudson.util.DescribableList;
@@ -125,6 +126,18 @@ public final class IvyModule extends AbstractIvyProject<IvyModule, IvyBuild> imp
      */
     private String relativePathToDescriptorFromModuleRoot;
 
+    private DescribableList<BuildWrapper,Descriptor<BuildWrapper>> buildWrappers =
+        new DescribableList<BuildWrapper, Descriptor<BuildWrapper>>(this);
+    
+    public DescribableList<BuildWrapper, Descriptor<BuildWrapper>> getBuildWrappersList() {
+        if(buildWrappers == null)
+        {
+            buildWrappers =
+                new DescribableList<BuildWrapper, Descriptor<BuildWrapper>>(this);
+        }
+        return buildWrappers;
+    }
+    
     /**
      * List of modules that this module declares direct dependencies on.
      */
@@ -135,8 +148,32 @@ public final class IvyModule extends AbstractIvyProject<IvyModule, IvyBuild> imp
         super(parent, moduleInfo.name.toFileSystemName());
         reconfigure(moduleInfo);
         updateNextBuildNumber(firstBuildNumber);
+        copyParentBuildWrappers(parent);
     }
 
+    private void copyParentBuildWrappers(IvyModuleSet parent)
+    {
+        if(!parent.isAggregatorStyleBuild())
+        {
+            List<BuildWrapper> parentWrappers = parent.getBuildWrappersList().getAll(BuildWrapper.class);
+        
+            
+            
+            for (BuildWrapper buildWrapper : parentWrappers) {
+                try
+                {
+                    IvyClonerWrapper cloner = new IvyClonerWrapper();
+                    cloner.dontClone(Descriptor.class);
+                    getBuildWrappersList().add(cloner.deepClone(buildWrapper));
+                }
+                catch(IOException e)
+                {
+                    throw new RuntimeException("Could not copy build wrappers", e);
+                }
+            }
+        }
+    }
+    
     /**
      * {@link IvyModule} follows the same log rotation schedule as its parent.
      */

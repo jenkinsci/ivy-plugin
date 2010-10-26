@@ -487,6 +487,18 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet,IvyModul
     public boolean isFingerprintConfigured() {
         return true;
     }
+    
+    @Override
+    public synchronized void save() throws IOException {
+        super.save();
+        
+        if(!isAggregatorStyleBuild())
+        {
+            for (IvyModule module : getModules()) {
+                module.save();
+            }
+        }
+    }
 
     @Override
     public void onLoad(ItemGroup<? extends Item> parent, String name) throws IOException {
@@ -656,6 +668,13 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet,IvyModul
         publishers.rebuild(req,json,BuildStepDescriptor.filter(Publisher.all(),this.getClass()));
         buildWrappers.rebuild(req,json,BuildWrappers.getFor(this));
 
+        if(!isAggregatorStyleBuild())
+        {
+            for (IvyModule module : getModules()) {
+                module.getBuildWrappersList().rebuild(req,json,BuildWrappers.getFor(module));
+            }
+        }
+        
         updateTransientActions(); // to pick up transient actions from builder, publisher, etc.
     }
 
