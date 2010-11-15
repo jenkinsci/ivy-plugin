@@ -20,6 +20,18 @@
       <ivy pattern="${ivy.default.ivy.user.dir}/[organisation]/[branch]/[module]/ivy-[revision].xml" />
       <artifact pattern="${ivy.default.ivy.user.dir}/[organisation]/[branch]/[module]/[artifact]-[revision].[ext]" />
     </filesystem>
+    <sftp name="sftp-resolver-test" user="user" userPassword="password" host="localhost">
+      <ivy pattern="ivy/[organisation]/[branch]/[module]/ivy-[revision].xml"/>
+      <artifact pattern="ivy/[organisation]/[branch]/[module]/[artifact]-[revision].[ext]"/>
+    </sftp>
+    <vfs name="vfs-resolver-test">
+      <ivy pattern="sftp://user:password@localhost/[organisation]/[branch]/[module]/ivy-[revision].xml" />
+      <artifact pattern="sftp://user:password@localhost/[organisation]/[branch]/[module]/[artifact]-[revision].[ext]" />
+    </vfs>
+    <url name="url-resolver-test">
+      <ivy pattern="http://localhost/[organisation]/[branch]/[module]/ivy-[revision].xml" />
+      <artifact pattern="http://localhost/[organisation]/[branch]/[module]/[artifact]-[revision].[ext]" />
+    </url>
   </resolvers>
   <modules>
     <module organisation="hudson.ivy.example" name=".*" resolver="local" branch="${branch.name}" />
