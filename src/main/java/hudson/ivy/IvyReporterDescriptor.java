@@ -103,6 +103,6 @@ public abstract class IvyReporterDescriptor extends Descriptor<IvyReporter> {
      */
     public static Collection<IvyReporterDescriptor> all() {
         // use getDescriptorList and not getExtensionList to pick up legacy instances
-        return (Collection)Hudson.getInstance().getDescriptorList(IvyReporter.class);
+        return Hudson.getInstance().<IvyReporter,IvyReporterDescriptor>getDescriptorList(IvyReporter.class);
     }
 }
