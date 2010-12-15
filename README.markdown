@@ -1,4 +1,4 @@
-Ivy Hudson Plugin
+Hudson Ivy Plugin
 =================
 
 Provides Hudson integration with [Apache Ivy](http://ant.apache.org/ivy/).
