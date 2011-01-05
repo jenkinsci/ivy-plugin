@@ -13,7 +13,7 @@ import hudson.tasks.Builder;
 
 public abstract class IvyBuilderType implements Describable<IvyBuilderType>, ExtensionPoint {
 
-    @Override
+    @SuppressWarnings("unchecked")
     public Descriptor<IvyBuilderType> getDescriptor() {
         return Hudson.getInstance().getDescriptor(getClass());
     }

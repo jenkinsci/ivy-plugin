@@ -485,22 +485,18 @@ public class IvyBuild extends AbstractIvyBuild<IvyModule, IvyBuild> {
     }
 
     public static class IvyModuleEnvironmentAction implements EnvironmentContributingAction {
-        @Override
         public String getUrlName() {
             return null;
         }
 
-        @Override
         public String getIconFileName() {
             return null;
         }
 
-        @Override
         public String getDisplayName() {
             return null;
         }
 
-        @Override
         public void buildEnvVars(AbstractBuild<?, ?> build, EnvVars env) {
             env.put("IVY_MODULE_NAME", ((IvyModule) build.getParent()).getModuleName().name);
             env.put("IVY_MODULE_ORGANISATION", ((IvyModule) build.getParent()).getModuleName().organisation);

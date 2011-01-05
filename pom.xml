@@ -3,7 +3,7 @@
   <parent>
     <groupId>org.jvnet.hudson.plugins</groupId>
     <artifactId>plugin</artifactId>
-    <version>1.358</version>
+    <version>1.388</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
   
@@ -28,6 +28,12 @@
       <name>Timothy Bingaman</name>
     </developer>
   </developers>
+
+  <scm>
+    <connection>scm:git:git://github.com/hudson/ivy-plugin.git</connection>
+    <developerConnection>scm:git:git@github.com:hudson/ivy-plugin.git</developerConnection>
+    <url>http://github.com/hudson/ivy-plugin</url>
+  </scm>
   
   <dependencies>
     <dependency>

@@ -448,6 +448,10 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet,IvyModul
         return new File(getModulesDir(),child.getModuleName().toFileSystemName());
     }
 
+    public void onRenamed(IvyModule item, String oldName, String newName) throws IOException {
+        throw new UnsupportedOperationException();
+    }
+
     @Override
     public Collection<Job> getAllJobs() {
         Set<Job> jobs = new HashSet<Job>(getItems());
@@ -737,7 +741,6 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet,IvyModul
         return buildTypeDescriptors;
     }
 
-    @Override
     public DescriptorImpl getDescriptor() {
         return DESCRIPTOR;
     }
