@@ -41,6 +41,7 @@ import hudson.scm.ChangeLogSet;
 import hudson.scm.ChangeLogSet.Entry;
 import hudson.slaves.WorkspaceList;
 import hudson.slaves.WorkspaceList.Lease;
+import hudson.tasks.BuildTrigger;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.Publisher;
 
@@ -470,7 +471,7 @@ public class IvyBuild extends AbstractIvyBuild<IvyModule, IvyBuild> {
             // at this point it's too late to mark the build as a failure, so ignore return value.
             performAllBuildSteps(listener, reporters,false);
             performAllBuildSteps(listener, project.getProperties(),false);
-            scheduleDownstreamBuilds(listener);
+            super.cleanUp(listener);
         }
     }
 

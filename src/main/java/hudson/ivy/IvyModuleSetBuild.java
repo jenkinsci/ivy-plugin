@@ -41,10 +41,12 @@ import hudson.model.ParametersAction;
 import hudson.model.Result;
 import hudson.model.Run;
 import hudson.model.TaskListener;
+import hudson.model.Cause;
 import hudson.model.Cause.UpstreamCause;
 import hudson.remoting.Callable;
 import hudson.remoting.Channel;
 import hudson.scm.ChangeLogSet;
+import hudson.tasks.BuildTrigger;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.Publisher;
 import hudson.util.StreamTaskListener;
@@ -367,9 +369,27 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
 
                 if (!project.isAggregatorStyleBuild()) {
                     // start module builds
-                    DependencyGraph graph = Hudson.getInstance().getDependencyGraph();
+                    Set<String> upstreamCauses = new HashSet<String>();
+                    for (Cause cause : IvyModuleSetBuild.this.getCauses()) {
+                        if (cause instanceof UpstreamCause) {
+                            upstreamCauses.add(((UpstreamCause) cause).getUpstreamProject());
+                        }
+                    }
+                    Set<IvyModule> modulesTriggeredByUpstream = new HashSet<IvyModule>();
+                    if (!upstreamCauses.isEmpty()) {
+                        for (IvyModule module : project.sortedActiveModules) {
+                            for (AbstractProject upstreamDep : module.getUpstreamProjects()) {
+                                if (upstreamCauses.contains(upstreamDep.getFullName())) {
+                                    modulesTriggeredByUpstream.add(module);
+                                    logger.println("Will trigger " + module.getModuleName() + " because we were triggered by one of its dependencies (" + upstreamDep.getFullName() + ")");
+                                }
+                            }
+                        }
+                    }
+                    
                     Set<IvyModule> triggeredModules = new HashSet<IvyModule>();
-                    if (!project.isIncrementalBuild() || IvyModuleSetBuild.this.getChangeSet().isEmptySet()) {
+                    List<ParametersAction> actions = IvyModuleSetBuild.this.getActions(ParametersAction.class);
+                    if (modulesTriggeredByUpstream.isEmpty() && (!project.isIncrementalBuild() || IvyModuleSetBuild.this.getChangeSet().isEmptySet())) {
                         for (IvyModule module : project.sortedActiveModules) {
                             // Don't trigger builds if we've already triggered
                             // one
@@ -388,7 +408,7 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
 
                             if (triggerBuild) {
                                 logger.println("Triggering " + module.getModuleName());
-                                module.scheduleBuild(new ParameterizedUpstreamCause(((Run<?, ?>) IvyModuleSetBuild.this), IvyModuleSetBuild.this.getActions(ParametersAction.class)));
+                                module.scheduleBuild(new UpstreamCause((Run<?, ?>) IvyModuleSetBuild.this), actions.toArray(new ParametersAction[actions.size()]));
                             }
                             triggeredModules.add(module);
                         }
@@ -400,8 +420,10 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
                             // or if the previous build of this module
                             // failed or was unstable.
                             boolean triggerBuild = false;
-                            if ((module.getLastBuild() == null) || (!getChangeSetFor(module).isEmpty())
-                                    || (module.getLastBuild().getResult().isWorseThan(Result.SUCCESS))) {
+                            if (modulesTriggeredByUpstream.contains(module)) {
+                                triggerBuild = true;
+                            } else if (module.getLastBuild() == null || !getChangeSetFor(module).isEmpty()
+                                    || module.getLastBuild().getResult().isWorseThan(Result.SUCCESS)) {
                                 triggerBuild = true;
                                 List<AbstractProject> ups = module.getUpstreamProjects();
                                 for (AbstractProject upstreamDep : ups) {
@@ -415,7 +437,7 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
 
                             if (triggerBuild) {
                                 logger.println("Triggering " + module.getModuleName());
-                                module.scheduleBuild(new ParameterizedUpstreamCause(((Run<?, ?>) IvyModuleSetBuild.this), IvyModuleSetBuild.this.getActions(ParametersAction.class)));
+                                module.scheduleBuild(new UpstreamCause((Run<?, ?>) IvyModuleSetBuild.this), actions.toArray(new ParametersAction[actions.size()]));
                                 triggeredModules.add(module);
                             }
                         }
@@ -600,13 +622,10 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
         @Override
         public void cleanUp(BuildListener listener) throws Exception {
             if (project.isAggregatorStyleBuild()) {
-                // schedule downstream builds. for non aggregator style builds,
-                // this is done by each module
-                scheduleDownstreamBuilds(listener);
                 performAllBuildSteps(listener, project.getPublishers(), false);
             }
-
             performAllBuildSteps(listener, project.getProperties(), false);
+            super.cleanUp(listener);
         }
     }
 

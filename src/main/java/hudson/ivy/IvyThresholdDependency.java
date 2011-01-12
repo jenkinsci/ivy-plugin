@@ -17,9 +17,12 @@
 package hudson.ivy;
 
 import java.util.List;
+import java.util.Set;
 
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
+import hudson.model.DependencyGraph;
+import hudson.model.Hudson;
 import hudson.model.ParametersAction;
 import hudson.model.Action;
 import hudson.model.Result;
@@ -32,7 +35,6 @@ import hudson.model.TaskListener;
  * @author tbingaman
  */
 public class IvyThresholdDependency extends IvyDependency {
-
     private Result threshold;
     private boolean useUpstreamParameters;
 
@@ -42,19 +44,43 @@ public class IvyThresholdDependency extends IvyDependency {
         this.useUpstreamParameters = useUpstreamParameters;
     }
 
+    @SuppressWarnings("rawtypes")
     @Override
     public boolean shouldTriggerBuild(AbstractBuild build, TaskListener listener, List<Action> actions) {
-        if (build.getResult().isBetterOrEqualTo(threshold))
-        {
-        	if(useUpstreamParameters)
-        	{
-        		List<ParametersAction> paramActions = build.getActions(ParametersAction.class);
-        	
-        		for (ParametersAction parametersAction : paramActions) {
-        			actions.add(parametersAction);
-        		}
-        	}
-            return true;
+        if (!build.getResult().isBetterOrEqualTo(threshold))
+            return false;
+        
+        AbstractProject<?,?> p = build.getProject();
+        if (AbstractIvyBuild.debug)
+            listener.getLogger().println("Considering whether to trigger " + p + " or not");
+
+        if (inDownstreamProjects(p)) {
+            if (AbstractIvyBuild.debug)
+                listener.getLogger().println(" -> No, because downstream has dependencies in the downstream projects list");
+            return false;
+        }
+        
+        if (useUpstreamParameters) {
+            List<ParametersAction> paramActions = build.getActions(ParametersAction.class);
+
+            for (ParametersAction parametersAction : paramActions) {
+                actions.add(parametersAction);
+            }
+        }
+        return true;
+    }
+    
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    private boolean inDownstreamProjects(AbstractProject<?,?> downstreamProject) {
+        DependencyGraph graph = Hudson.getInstance().getDependencyGraph();
+        Set<AbstractProject> tups = graph.getTransitiveUpstream(downstreamProject);
+        
+        List<AbstractProject<?,?>> downstreamProjects = getUpstreamProject().getDownstreamProjects();
+        for (AbstractProject<?,?> tup : tups) {
+            for (AbstractProject<?,?> dp : downstreamProjects) {
+                if(dp!=getUpstreamProject() && dp!=downstreamProject && dp==tup) 
+                    return true;
+            }
         }
         return false;
     }

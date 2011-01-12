@@ -27,6 +27,7 @@ import hudson.CopyOnWrite;
 import hudson.Functions;
 import hudson.Util;
 import hudson.model.AbstractProject;
+import hudson.model.Cause.UpstreamCause;
 import hudson.model.Action;
 import hudson.model.DependencyGraph;
 import hudson.model.Descriptor;
@@ -37,6 +38,7 @@ import hudson.model.JDK;
 import hudson.model.Job;
 import hudson.model.Label;
 import hudson.model.Node;
+import hudson.model.ParametersAction;
 import hudson.model.Resource;
 import hudson.model.Result;
 import hudson.model.Saveable;
@@ -421,11 +423,6 @@ public final class IvyModule extends AbstractIvyProject<IvyModule, IvyBuild> imp
             modules.put(m.asDependency().withUnknownRevision(), m);
         }
 
-        // if the build style is the aggregator build, define dependencies
-        // against project,
-        // not module.
-        AbstractProject downstream = getParent().isAggregatorStyleBuild() ? getParent() : this;
-
         for (ModuleDependency d : dependencies) {
             IvyModule src = modules.get(d);
             if (src == null)
@@ -433,22 +430,36 @@ public final class IvyModule extends AbstractIvyProject<IvyModule, IvyBuild> imp
             if (src == null)
                 continue;
 
-            AbstractProject upstream;
-            if (src.getParent().isAggregatorStyleBuild()) {
-                upstream = src.getParent();
-            } else {
-                // Add a virtual dependency from the parent project to the
-                // downstream one to make the
-                // "Block build when upstream project is building" option behave
-                // properly
-                if (!this.getParent().equals(src.getParent()) && !hasDependency(graph, src.getParent(), downstream))
-                    graph.addDependency(new IvyVirtualDependency(src.getParent(), downstream));
-                upstream = src;
-            }
+            // easy case, if this is a dependency in the same project
+            if (this.getParent().equals(src.getParent())) {
+                if (!getParent().isAggregatorStyleBuild() && !src.equals(this) && !hasDependency(graph, src, this))
+                    graph.addDependency(new IvyThresholdDependency(src, this, Result.SUCCESS, isUseUpstreamParameters()));
+            } else { // dependency in a different project
+                AbstractProject upstream;
+                if (src.getParent().isAggregatorStyleBuild()) {
+                    upstream = src.getParent();
+                    if (!getParent().isAggregatorStyleBuild() && !hasDependency(graph, src.getParent(), this)) {
+                        graph.addDependency(new IvyVirtualDependency(src.getParent(), this));
+                    }
+                } else {
+                    // Add a virtual dependency from the parent project to the
+                    // downstream one to make the
+                    // "Block build when upstream project is building" option
+                    // behave
+                    // properly
+                    if (!hasDependency(graph, src.getParent(), getParent())) {
+                        graph.addDependency(new IvyVirtualDependency(src.getParent(), getParent()));
+                    }
+                    if (!getParent().isAggregatorStyleBuild() && !hasDependency(graph, src, this)) {
+                        graph.addDependency(new IvyVirtualDependency(src, this));
+                    }
+                    upstream = src;
+                }
 
-            // Create the build dependency, ignoring self-referencing or already existing deps
-            if (upstream != downstream && !hasDependency(graph, upstream, downstream))
-                graph.addDependency(new IvyThresholdDependency(upstream, downstream, Result.SUCCESS, isUseUpstreamParameters()));
+                // Create the build dependency
+                if (!hasDependency(graph, upstream, getParent()))
+                    graph.addDependency(new IvyThresholdDependency(upstream, getParent(), Result.SUCCESS, isUseUpstreamParameters()));
+            }
         }
     }
 
@@ -554,12 +565,23 @@ public final class IvyModule extends AbstractIvyProject<IvyModule, IvyBuild> imp
         return modulePublisherList;
     }
 
-    
-    
     @Override
     public boolean isUseUpstreamParameters() {
         return getParent().isUseUpstreamParameters();
     }
     
+    @Override
+    public int getQuietPeriod() {
+        return getParent().getQuietPeriod();
+    }
+
     private static final Logger LOGGER = Logger.getLogger(IvyModule.class.getName());
+
+    public void scheduleBuild(UpstreamCause upstreamCause, ParametersAction... actions) {
+        if (isUseUpstreamParameters()) {
+            scheduleBuild(getQuietPeriod(), upstreamCause, actions);
+        } else {
+            scheduleBuild(getQuietPeriod(), upstreamCause);
+        }
+    }
 }
