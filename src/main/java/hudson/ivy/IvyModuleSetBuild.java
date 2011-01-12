@@ -359,6 +359,7 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
     private class RunnerImpl extends AbstractRunner {
         private Map<ModuleName,IvyBuild.ProxyImpl2> proxies;
 
+        @SuppressWarnings("rawtypes")
         @Override
         protected Result doRun(final BuildListener listener) throws Exception {
             PrintStream logger = listener.getLogger();
@@ -369,19 +370,22 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
 
                 if (!project.isAggregatorStyleBuild()) {
                     // start module builds
-                    Set<String> upstreamCauses = new HashSet<String>();
-                    for (Cause cause : IvyModuleSetBuild.this.getCauses()) {
-                        if (cause instanceof UpstreamCause) {
-                            upstreamCauses.add(((UpstreamCause) cause).getUpstreamProject());
-                        }
-                    }
                     Set<IvyModule> modulesTriggeredByUpstream = new HashSet<IvyModule>();
-                    if (!upstreamCauses.isEmpty()) {
-                        for (IvyModule module : project.sortedActiveModules) {
-                            for (AbstractProject upstreamDep : module.getUpstreamProjects()) {
-                                if (upstreamCauses.contains(upstreamDep.getFullName())) {
-                                    modulesTriggeredByUpstream.add(module);
-                                    logger.println("Will trigger " + module.getModuleName() + " because we were triggered by one of its dependencies (" + upstreamDep.getFullName() + ")");
+                    if (project.isIncrementalBuild()) {
+                        Set<String> upstreamCauses = new HashSet<String>();
+                        for (Cause cause : IvyModuleSetBuild.this.getCauses()) {
+                            if (cause instanceof UpstreamCause) {
+                                upstreamCauses.add(((UpstreamCause) cause).getUpstreamProject());
+                            }
+                        }
+                        if (!upstreamCauses.isEmpty()) {
+                            for (IvyModule module : project.sortedActiveModules) {
+                                for (AbstractProject upstreamDep : module.getUpstreamProjects()) {
+                                    if (upstreamCauses.contains(upstreamDep.getFullName())) {
+                                        modulesTriggeredByUpstream.add(module);
+                                        logger.println("Will trigger " + module.getModuleName()
+                                                + " because we were triggered by one of its dependencies (" + upstreamDep.getFullName() + ")");
+                                    }
                                 }
                             }
                         }
@@ -389,7 +393,7 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
                     
                     Set<IvyModule> triggeredModules = new HashSet<IvyModule>();
                     List<ParametersAction> actions = IvyModuleSetBuild.this.getActions(ParametersAction.class);
-                    if (modulesTriggeredByUpstream.isEmpty() && (!project.isIncrementalBuild() || IvyModuleSetBuild.this.getChangeSet().isEmptySet())) {
+                    if (!project.isIncrementalBuild() || (IvyModuleSetBuild.this.getChangeSet().isEmptySet() && modulesTriggeredByUpstream.isEmpty())) {
                         for (IvyModule module : project.sortedActiveModules) {
                             // Don't trigger builds if we've already triggered
                             // one
