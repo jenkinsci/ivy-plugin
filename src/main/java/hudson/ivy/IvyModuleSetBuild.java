@@ -373,18 +373,15 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
                     Set<IvyModule> modulesTriggeredByUpstream = new HashSet<IvyModule>();
                     if (project.isIncrementalBuild()) {
                         Set<String> upstreamCauses = new HashSet<String>();
-                        for (Cause cause : IvyModuleSetBuild.this.getCauses()) {
-                            if (cause instanceof UpstreamCause) {
-                                upstreamCauses.add(((UpstreamCause) cause).getUpstreamProject());
-                            }
-                        }
+                        collectTransientCauses(IvyModuleSetBuild.this, upstreamCauses);
                         if (!upstreamCauses.isEmpty()) {
                             for (IvyModule module : project.sortedActiveModules) {
                                 for (AbstractProject upstreamDep : module.getUpstreamProjects()) {
                                     if (upstreamCauses.contains(upstreamDep.getFullName())) {
                                         modulesTriggeredByUpstream.add(module);
-                                        logger.println("Will trigger " + module.getModuleName()
-                                                + " because we were triggered by one of its dependencies (" + upstreamDep.getFullName() + ")");
+                                        if (AbstractIvyBuild.debug)
+                                            logger.println("Added " + module.getName() + " to modules triggered by upstream builds.");
+                                        break;
                                     }
                                 }
                             }
@@ -424,10 +421,9 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
                             // or if the previous build of this module
                             // failed or was unstable.
                             boolean triggerBuild = false;
-                            if (modulesTriggeredByUpstream.contains(module)) {
-                                triggerBuild = true;
-                            } else if (module.getLastBuild() == null || !getChangeSetFor(module).isEmpty()
-                                    || module.getLastBuild().getResult().isWorseThan(Result.SUCCESS)) {
+                            if (module.getLastBuild() == null || !getChangeSetFor(module).isEmpty()
+                                    || module.getLastBuild().getResult().isWorseThan(Result.SUCCESS)
+                                    || modulesTriggeredByUpstream.contains(module)) {
                                 triggerBuild = true;
                                 List<AbstractProject> ups = module.getUpstreamProjects();
                                 for (AbstractProject upstreamDep : ups) {
@@ -536,6 +532,23 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
                 logger.println("project=" + project);
                 logger.println("project.getModules()=" + project.getModules());
                 throw e;
+            }
+        }
+
+        @SuppressWarnings({ "unchecked", "rawtypes" })
+        private void collectTransientCauses(Run build, Set<String> upstreamCauses) {
+            for (Cause cause : (List<Cause>) build.getCauses()) {
+                if (cause instanceof UpstreamCause) {
+                    UpstreamCause upstreamCause = (UpstreamCause) cause;
+                    AbstractIvyProject upstreamProject = Hudson.getInstance().getItemByFullName(upstreamCause.getUpstreamProject(), AbstractIvyProject.class);
+                    if (upstreamProject != null) {
+                        upstreamCauses.add(upstreamCause.getUpstreamProject());
+                        Run upstreamBuild = upstreamProject.getBuildByNumber(upstreamCause.getUpstreamBuild());
+                        if (upstreamBuild != null) {
+                            collectTransientCauses(upstreamBuild, upstreamCauses);
+                        }
+                    }
+                }
             }
         }
 

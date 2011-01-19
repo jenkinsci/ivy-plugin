@@ -488,6 +488,12 @@ public final class IvyModule extends AbstractIvyProject<IvyModule, IvyBuild> imp
         return null;
     }
 
+    @Override
+    public boolean blockBuildWhenUpstreamBuilding() {
+        // delegate to IvyModuleSet setting
+        return getParent().blockBuildWhenUpstreamBuilding();
+    }
+
     /**
      * Because the upstream module build is in progress, and we are configured to wait for that.
      */

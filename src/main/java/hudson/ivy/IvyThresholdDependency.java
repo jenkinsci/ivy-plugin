@@ -50,11 +50,11 @@ public class IvyThresholdDependency extends IvyDependency {
         if (!build.getResult().isBetterOrEqualTo(threshold))
             return false;
         
-        AbstractProject<?,?> p = build.getProject();
+        AbstractProject<?,?> down = getDownstreamProject();
         if (AbstractIvyBuild.debug)
-            listener.getLogger().println("Considering whether to trigger " + p + " or not");
-
-        if (inDownstreamProjects(p)) {
+            listener.getLogger().println("Considering whether to trigger " + down + " or not");
+        
+        if (inDownstreamProjects(down)) {
             if (AbstractIvyBuild.debug)
                 listener.getLogger().println(" -> No, because downstream has dependencies in the downstream projects list");
             return false;
@@ -84,5 +84,4 @@ public class IvyThresholdDependency extends IvyDependency {
         }
         return false;
     }
-
 }
