@@ -78,10 +78,14 @@ public class IvyThresholdDependency extends IvyDependency {
         List<AbstractProject<?,?>> downstreamProjects = getUpstreamProject().getDownstreamProjects();
         for (AbstractProject<?,?> tup : tups) {
             for (AbstractProject<?,?> dp : downstreamProjects) {
-                if(dp!=getUpstreamProject() && dp!=downstreamProject && dp==tup) 
+                if(dp!=getUpstreamProject() && dp!=downstreamProject && !isIvyModuleOfDownstreamProject(dp, downstreamProject) && dp==tup) 
                     return true;
             }
         }
         return false;
+    }
+
+    private boolean isIvyModuleOfDownstreamProject(AbstractProject<?, ?> dp, AbstractProject<?, ?> downstreamProject) {
+        return dp instanceof IvyModule && ((IvyModule) dp).getParent() == downstreamProject;
     }
 }

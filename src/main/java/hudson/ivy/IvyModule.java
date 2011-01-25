@@ -442,14 +442,6 @@ public final class IvyModule extends AbstractIvyProject<IvyModule, IvyBuild> imp
                         graph.addDependency(new IvyVirtualDependency(src.getParent(), this));
                     }
                 } else {
-                    // Add a virtual dependency from the parent project to the
-                    // downstream one to make the
-                    // "Block build when upstream project is building" option
-                    // behave
-                    // properly
-                    if (!hasDependency(graph, src.getParent(), getParent())) {
-                        graph.addDependency(new IvyVirtualDependency(src.getParent(), getParent()));
-                    }
                     if (!getParent().isAggregatorStyleBuild() && !hasDependency(graph, src, this)) {
                         graph.addDependency(new IvyVirtualDependency(src, this));
                     }

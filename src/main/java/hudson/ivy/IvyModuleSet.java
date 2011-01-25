@@ -613,6 +613,25 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet,IvyModul
         return null;
     }
 
+    /**
+     * Returns the upstream project (or wrapper project) if any of them are
+     * building or in the queue.
+     */
+    @Override
+    protected AbstractProject getBuildingUpstream() {
+        DependencyGraph graph = Hudson.getInstance().getDependencyGraph();
+        Set<AbstractProject> tups = graph.getTransitiveUpstream(this);
+        for (AbstractProject tup : tups) {
+            if(tup!=this) {
+                if (tup.isBuilding() || tup.isInQueue())
+                    return tup;
+                if (tup instanceof IvyModule && (((IvyModule) tup).getParent().isBuilding() || ((IvyModule) tup).getParent().isInQueue()))
+                    return ((IvyModule) tup).getParent();
+            }
+        }
+        return null;
+    }
+
     public AbstractProject<?,?> asProject() {
         return this;
     }
