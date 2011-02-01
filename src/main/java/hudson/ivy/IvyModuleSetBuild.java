@@ -29,19 +29,17 @@ import hudson.Launcher;
 import hudson.Util;
 import hudson.ivy.IvyBuild.ProxyImpl2;
 import hudson.ivy.builder.IvyBuilderType;
-import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.Build;
 import hudson.model.BuildListener;
 import hudson.model.DependencyGraph;
 import hudson.model.Environment;
+import hudson.model.Result;
+import hudson.model.TaskListener;
+import hudson.model.AbstractProject;
 import hudson.model.Fingerprint;
 import hudson.model.Hudson;
 import hudson.model.ParametersAction;
-import hudson.model.Result;
-import hudson.model.Run;
-import hudson.model.TaskListener;
-import hudson.model.Cause.UpstreamCause;
 import hudson.remoting.Callable;
 import hudson.remoting.Channel;
 import hudson.scm.ChangeLogSet;
@@ -63,11 +61,12 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
-import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.ivy.Ivy;
@@ -388,7 +387,7 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
 
                             if (triggerBuild) {
                                 logger.println("Triggering " + module.getModuleName());
-                                module.scheduleBuild(new ParameterizedUpstreamCause(((Run<?, ?>) IvyModuleSetBuild.this), IvyModuleSetBuild.this.getActions(ParametersAction.class)));
+                                module.scheduleBuild(new ParameterizedUpstreamCause((IvyModuleSetBuild.this), IvyModuleSetBuild.this.getActions(ParametersAction.class)));
                             }
                             triggeredModules.add(module);
                         }
@@ -415,7 +414,7 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
 
                             if (triggerBuild) {
                                 logger.println("Triggering " + module.getModuleName());
-                                module.scheduleBuild(new ParameterizedUpstreamCause(((Run<?, ?>) IvyModuleSetBuild.this), IvyModuleSetBuild.this.getActions(ParametersAction.class)));
+                                module.scheduleBuild(new ParameterizedUpstreamCause((IvyModuleSetBuild.this), IvyModuleSetBuild.this.getActions(ParametersAction.class)));
                                 triggeredModules.add(module);
                             }
                         }
@@ -754,6 +753,7 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
         private final String ivyBranch;
         private final String workspace;
         private final String workspaceProper;
+        private final Pattern unknownRevisionPattern;
 
         public IvyXmlParser(BuildListener listener, IvyModuleSet project, String workspace) {
             // project cannot be shipped to the remote JVM, so all the relevant
@@ -766,6 +766,7 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
             this.ivySettingsFile = project.getIvySettingsFile();
             this.ivySettingsPropertyFiles = project.getIvySettingsPropertyFiles();
             this.workspaceProper = project.getLastBuild().getWorkspace().getRemote();
+            this.unknownRevisionPattern = project.getDescriptor().getUnknownRevisionPattern();
         }
 
 		@SuppressWarnings("unchecked")
@@ -802,7 +803,7 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
             List<IvyModuleInfo> infos = new ArrayList<IvyModuleInfo>();
             List<ModuleDescriptor> sortedModuleDescriptors = ivy.sortModuleDescriptors(moduleDescriptors.keySet(), SortOptions.DEFAULT);
             for (ModuleDescriptor moduleDescriptor : sortedModuleDescriptors) {
-                infos.add(new IvyModuleInfo(moduleDescriptor, moduleDescriptors.get(moduleDescriptor)));
+                infos.add(new IvyModuleInfo(moduleDescriptor, moduleDescriptors.get(moduleDescriptor), unknownRevisionPattern));
             }
 
             if (verbose) {

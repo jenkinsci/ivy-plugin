@@ -24,6 +24,7 @@
 package hudson.ivy;
 
 import java.io.Serializable;
+import java.util.regex.Pattern;
 
 import org.apache.ivy.core.module.descriptor.DependencyDescriptor;
 import org.apache.ivy.core.module.descriptor.ModuleDescriptor;
@@ -40,25 +41,25 @@ public final class ModuleDependency implements Serializable {
     public final String revision;
     public final String branch;
 
-    public ModuleDependency(String organisation, String name, String revision, String branch) {
+    public ModuleDependency(String organisation, String name, String revision, String branch, Pattern unknownRevisionPattern) {
         this.organisation = organisation;
         this.name = name;
-        this.revision = (revision == null || revision.startsWith("latest.") || revision.startsWith("working@") || revision.contains("${")) ? UNKNOWN : revision;
+        this.revision = (revision == null || (unknownRevisionPattern != null && unknownRevisionPattern.matcher(revision).matches())) ? UNKNOWN : revision;
         this.branch = (branch == null || branch.contains("${")) ? UNKNOWN : branch;
     }
 
-    public ModuleDependency(ModuleName name, String revision, String branch) {
-        this(name.organisation, name.name, revision, branch);
+    public ModuleDependency(ModuleName name, String revision, String branch, Pattern unknownRevisionPattern) {
+        this(name.organisation, name.name, revision, branch, unknownRevisionPattern);
     }
 
-    public ModuleDependency(DependencyDescriptor dep) {
+    public ModuleDependency(DependencyDescriptor dep, Pattern unknownRevisionPattern) {
         this(dep.getDependencyRevisionId().getOrganisation(), dep.getDependencyRevisionId().getName(), dep.getDependencyRevisionId().getRevision(),
-                dep.getDependencyRevisionId().getBranch());
+                dep.getDependencyRevisionId().getBranch(), unknownRevisionPattern);
     }
 
     public ModuleDependency(ModuleDescriptor module) {
         this(module.getModuleRevisionId().getOrganisation(), module.getModuleRevisionId().getName(), module.getModuleRevisionId().getRevision(),
-                module.getModuleRevisionId().getBranch());
+                module.getModuleRevisionId().getBranch(), null);
     }
 
     public ModuleName getName() {
@@ -69,14 +70,14 @@ public final class ModuleDependency implements Serializable {
      * Returns organisation+name+branch with unknown revision.
      */
     public ModuleDependency withUnknownRevision() {
-        return new ModuleDependency(organisation, name, UNKNOWN, branch);
+        return new ModuleDependency(organisation, name, UNKNOWN, branch, null);
     }
 
     /**
      * Returns organisation+name with unknown revision and branch.
      */
     public ModuleDependency withUnknownRevisionAndBranch() {
-        return new ModuleDependency(organisation, name, UNKNOWN, UNKNOWN);
+        return new ModuleDependency(organisation, name, UNKNOWN, UNKNOWN, null);
     }
 
     @Override

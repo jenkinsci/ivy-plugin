@@ -30,5 +30,8 @@ THE SOFTWARE.
     <f:entry title="${%Global ANT_OPTS}">
       <f:expandableTextbox name="globalAntOpts" value="${descriptor.globalAntOpts}" />
     </f:entry>
+    <f:entry title="${%Unknown Revision Pattern}">
+      <f:textbox name="unknownRevisionPattern" value="${descriptor.unknownRevision}" />
+    </f:entry>
   </f:section>
 </j:jelly>

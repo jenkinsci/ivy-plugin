@@ -26,27 +26,27 @@ package hudson.ivy;
 import hudson.CopyOnWrite;
 import hudson.Functions;
 import hudson.Util;
-import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.DependencyGraph;
+import hudson.model.DependencyGraph.Dependency;
 import hudson.model.Descriptor;
-import hudson.model.Hudson;
+import hudson.model.Descriptor.FormException;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
+import hudson.model.Resource;
+import hudson.model.Result;
+import hudson.model.Saveable;
+import hudson.model.AbstractProject;
+import hudson.model.Hudson;
 import hudson.model.JDK;
 import hudson.model.Job;
 import hudson.model.Label;
 import hudson.model.Node;
-import hudson.model.Resource;
-import hudson.model.Result;
-import hudson.model.Saveable;
-import hudson.model.DependencyGraph.Dependency;
-import hudson.model.Descriptor.FormException;
 import hudson.model.queue.CauseOfBlockage;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildWrapper;
-import hudson.tasks.LogRotator;
 import hudson.tasks.Publisher;
+import hudson.tasks.LogRotator;
 import hudson.util.DescribableList;
 
 import java.io.IOException;
@@ -328,7 +328,7 @@ public final class IvyModule extends AbstractIvyProject<IvyModule, IvyBuild> imp
      */
     public ModuleDependency asDependency() {
         return new ModuleDependency(moduleName, Functions.defaulted(revision, ModuleDependency.UNKNOWN), Functions.defaulted(ivyBranch,
-                ModuleDependency.UNKNOWN));
+                ModuleDependency.UNKNOWN), getParent().getDescriptor().getUnknownRevisionPattern());
     }
 
     @Override
