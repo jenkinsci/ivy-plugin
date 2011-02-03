@@ -9,9 +9,9 @@
   
   <artifactId>ivy</artifactId>
   <packaging>hpi</packaging>
-  <name>Hudson Ivy plugin</name>
+  <name>Ivy Plugin</name>
   <version>1.15-SNAPSHOT</version>
-  <url>http://wiki.hudson-ci.org/display/HUDSON/Ivy+Plugin</url>
+  <url>http://wiki.jenkins-ci.org/display/JENKINS/Ivy+Plugin</url>
   <developers>
     <developer>
       <id>hibou</id>
@@ -30,9 +30,9 @@
   </developers>
 
   <scm>
-    <connection>scm:git:git://github.com/hudson/ivy-plugin.git</connection>
-    <developerConnection>scm:git:git@github.com:hudson/ivy-plugin.git</developerConnection>
-    <url>http://github.com/hudson/ivy-plugin</url>
+    <connection>scm:git:git://github.com/jenkinsci/ivy-plugin.git</connection>
+    <developerConnection>scm:git:git@github.com:jenkinsci/ivy-plugin.git</developerConnection>
+    <url>http://github.com/jenkinsci/ivy-plugin</url>
   </scm>
   
   <dependencies>
