@@ -9,9 +9,9 @@
   
   <artifactId>ivy</artifactId>
   <packaging>hpi</packaging>
-  <name>Hudson Ivy plugin</name>
-  <version>1.15-SNAPSHOT</version>
-  <url>http://wiki.hudson-ci.org/display/HUDSON/Ivy+Plugin</url>
+  <name>Ivy Plugin</name>
+  <version>1.16-SNAPSHOT</version>
+  <url>http://wiki.jenkins-ci.org/display/JENKINS/Ivy+Plugin</url>
   <developers>
     <developer>
       <id>hibou</id>
@@ -28,18 +28,31 @@
       <name>Timothy Bingaman</name>
     </developer>
   </developers>
+  
+  <licenses>
+    <license>
+      <name>The MIT license</name>
+      <url>http://www.opensource.org/licenses/mit-license.php</url>
+      <distribution>repo</distribution>
+    </license>
+    <license>
+      <name>Apache 2</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
 
   <scm>
-    <connection>scm:git:git://github.com/hudson/ivy-plugin.git</connection>
-    <developerConnection>scm:git:git@github.com:hudson/ivy-plugin.git</developerConnection>
-    <url>http://github.com/hudson/ivy-plugin</url>
+    <connection>scm:git:git://github.com/jenkinsci/ivy-plugin.git</connection>
+    <developerConnection>scm:git:git@github.com:jenkinsci/ivy-plugin.git</developerConnection>
+    <url>http://github.com/jenkinsci/ivy-plugin</url>
   </scm>
   
   <dependencies>
     <dependency>
       <groupId>uk.com.robust-it</groupId> 
       <artifactId>cloning</artifactId> 
-      <version>1.7.1</version> 
+      <version>1.7.4</version> 
     </dependency>
     <dependency>
       <groupId>org.apache.ivy</groupId>
@@ -69,17 +82,12 @@
       <optional>true</optional>
     </dependency>
   </dependencies>
-  
-  <repositories>
+ 
+  <distributionManagement>
     <repository>
-        <id>central</id>
-        <url>http://oss.sonatype.org/service/local/repositories/ukcomrobust-it-049/content</url>
-        <releases>
-            <enabled>true</enabled>
-        </releases>
-        <snapshots>
-            <enabled>true</enabled>
-        </snapshots>
+      <id>java.net-m2-repository</id>
+      <url>http://maven.jenkins-ci.org:8081/content/repositories/releases/</url>
     </repository>
-</repositories>
+  </distributionManagement>
+ 
 </project>

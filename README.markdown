@@ -1,6 +1,6 @@
-Hudson Ivy Plugin
-=================
+Jenkins Ivy Plugin
+==================
 
-Provides Hudson integration with [Apache Ivy](http://ant.apache.org/ivy/).
+Provides Jenkins integration with [Apache Ivy](http://ant.apache.org/ivy/).
 
-See [Ivy Plugin](http://wiki.hudson-ci.org/display/HUDSON/Ivy+Plugin) on the Hudson wiki for more information.
+See [Ivy Plugin](http://wiki.jenkins-ci.org/display/JENKINS/Ivy+Plugin) on the Jenkins wiki for more information.
