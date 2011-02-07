@@ -208,7 +208,11 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet,IvyModul
         new DescribableList<BuildWrapper, Descriptor<BuildWrapper>>(this);
 
     public IvyModuleSet(String name) {
-        super(Hudson.getInstance(),name);
+        this(Hudson.getInstance(),name);
+    }
+
+    public IvyModuleSet(ItemGroup parent, String name) {
+        super(parent, name);
     }
 
     public String getUrlChildPrefix() {
@@ -450,6 +454,10 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet,IvyModul
 
     public void onRenamed(IvyModule item, String oldName, String newName) throws IOException {
         throw new UnsupportedOperationException();
+    }
+
+    public void onDeleted(IvyModule item) throws IOException {
+        // noop
     }
 
     @Override
@@ -774,8 +782,12 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet,IvyModul
         }
 
         @Override
-        public IvyModuleSet newInstance(String name) {
+        public TopLevelItem newInstance(String name) {
             return new IvyModuleSet(name);
+        }
+
+        public TopLevelItem newInstance(ItemGroup parent, String name) {
+            return new IvyModuleSet(parent, name);
         }
 
         @Override
