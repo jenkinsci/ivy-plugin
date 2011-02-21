@@ -42,10 +42,13 @@ THE SOFTWARE.
           </j:choose>
         </j:when>
         <j:otherwise>
-          <j:set var="needsView" value="${it.hasDisabledModule()}" />
-          <t:projectView jobs="${it.getDisabledModules(false)}" showViewTabs="${needsView}" indenter="${it.createIndenter()}">
+          <j:set var="hasDisabled" value="${it.hasDisabledModule()}" />
+          <j:if test="${hasDisabled}">
+            <j:set var="showViewTabs" value="true"/>
+          </j:if>
+          <t:projectView jobs="${it.getDisabledModules(false)}" showViewTabs="${showViewTabs}">
             <!-- view tab bar -->
-            <j:if test="${needsView}">
+            <j:if test="${hasDisabled}">
               <l:tabBar>
                 <l:tab name="${%Modules}" active="${true}" />
                 <l:tab name="${%Disabled}" active="${false}" href="./disabled" />
