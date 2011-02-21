@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2010-2011, Timothy Bingaman
+Copyright (c) 2011, Timothy Bingaman
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,17 +22,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<div>
-  <p>
-  The name of the property used to pass the names of the changed modules
-  to the build.
-  
-  <p>
-  Only required when "Incremental build" is selected and "Build modules as
-  separate jobs" is <b>not</b> selected.  If left empty in this case, then
-  the dafualt value of "hudson.ivy.changedModules" will be used.
-  
-  <p>
-  The property specified here can then be used in your branch-level build
-  script for the "leaf" attribute of the "ivy:buildlist" task.
-</div>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+  <j:set var="url" value="${h.getNearestAncestorUrl(request,it)}/.."/>
+  <l:task icon="plugin/ivy/images/24x24/tree-diagramm.png" href="${url}/modules" title="${%Back to Modules}" />
+
+  <!-- include super class definition -->
+  <st:include page="/hudson/model/Actionable/actions.jelly" />
+</j:jelly>

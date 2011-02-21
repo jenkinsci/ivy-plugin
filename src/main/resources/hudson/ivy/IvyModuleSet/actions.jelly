@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Daniel Dyer
+Copyright (c) 2004-2011, Sun Microsystems, Inc., Kohsuke Kawaguchi, Daniel Dyer, Timothy Bingaman
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -28,9 +28,8 @@ THE SOFTWARE.
       <l:task icon="images/24x24/delete-document.gif" href="deleteAllDisabledModules" title="${%Delete All Disabled Modules}" />
     </l:isAdmin>
   </j:if>
-  <!-- Icon TBD -->
   <j:set var="url" value="${h.getNearestAncestorUrl(request,it)}"/>
-  <l:task icon="images/24x24/document.gif" href="${url}/modules" title="${%Modules}" />
+  <l:task icon="plugin/ivy/images/24x24/tree-diagramm.png" href="${url}/modules" title="${%Modules}" />
 
   <!-- include super class definition -->
   <st:include page="/hudson/model/Actionable/actions.jelly" />

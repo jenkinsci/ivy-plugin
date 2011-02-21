@@ -1,7 +1,6 @@
-<!--
 The MIT License
 
-Copyright (c) 2010-2011, Timothy Bingaman
+Copyright (c) 2010-2011, Timothy Bingaman, and a number of other contributers
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -20,19 +19,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
--->
-
-<div>
-  <p>
-  The name of the property used to pass the names of the changed modules
-  to the build.
-  
-  <p>
-  Only required when "Incremental build" is selected and "Build modules as
-  separate jobs" is <b>not</b> selected.  If left empty in this case, then
-  the dafualt value of "hudson.ivy.changedModules" will be used.
-  
-  <p>
-  The property specified here can then be used in your branch-level build
-  script for the "leaf" attribute of the "ivy:buildlist" task.
-</div>
