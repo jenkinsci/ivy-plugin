@@ -235,7 +235,11 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet,IvyModul
     }
 
     public IvyModule getItem(String name) {
-        return modules.get(ModuleName.fromString(name));
+        try {
+            return modules.get(ModuleName.fromString(name));
+        } catch (IllegalArgumentException iae) {
+            return null;
+        }
     }
 
     public IvyModule getModule(String name) {
