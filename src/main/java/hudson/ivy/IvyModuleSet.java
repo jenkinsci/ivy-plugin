@@ -785,11 +785,6 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet,IvyModul
             return Messages.IvyModuleSet_DiplayName();
         }
 
-        @Override
-        public TopLevelItem newInstance(String name) {
-            return new IvyModuleSet(name);
-        }
-
         public TopLevelItem newInstance(ItemGroup parent, String name) {
             return new IvyModuleSet(parent, name);
         }
