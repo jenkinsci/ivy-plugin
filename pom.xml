@@ -10,7 +10,7 @@
   <artifactId>ivy</artifactId>
   <packaging>hpi</packaging>
   <name>Ivy Plugin</name>
-  <version>1.17</version>
+  <version>1.18-SNAPSHOT</version>
   <url>http://wiki.jenkins-ci.org/display/JENKINS/Ivy+Plugin</url>
   <developers>
     <developer>
