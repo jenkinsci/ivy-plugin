@@ -80,6 +80,7 @@ THE SOFTWARE.
       </f:optionalBlock>
       <f:optionalBlock title="${%Use parameters from upstream builds}" name="useUpstreamParameters" checked="${it.useUpstreamParameters}" help="/plugin/ivy/use-upstream-parameters.html">
       </f:optionalBlock>
+      <p:config-customWorkspace />
     </f:advanced>
   </f:section>
   
