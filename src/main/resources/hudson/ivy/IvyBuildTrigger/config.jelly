@@ -36,6 +36,9 @@ THE SOFTWARE.
   <f:entry title="${%ivy_file_title}" field="ivyFile">
     <f:textbox/>
   </f:entry>
+  <f:entry title="${%ivy_properties_title}" field="ivyPropertiesList">
+    <f:textbox/>
+  </f:entry>
   <f:entry title="" field="triggerWhenUnstable">
     <f:checkbox id="ivy.triggerWhenUnstable"/>
     <label class="attach-previous">${%Trigger when unstable}</label>
