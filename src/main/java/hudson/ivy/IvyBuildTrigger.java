@@ -368,7 +368,6 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
         }
 
         if (moduleDescriptor == null || fivyF.lastModified() > lastmodified) {
-            LOGGER.log(Level.INFO, "init module desc");
             lastmodified = fivyF.lastModified();
             setModuleDescriptor((ModuleDescriptor) ivy.execute(new IvyCallback(){
                 public Object doInIvyContext(Ivy ivy, IvyContext context) {
