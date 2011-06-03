@@ -89,6 +89,11 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
      * workspace may not always be accessible.
      */
     private static final String BACKUP_IVY_FILE_NAME = "ivy.xml";
+    /**
+     * The name of a copy of the ivy properties file relative to the projects root dir since the 
+     * workspace may not always be accessible.
+     */
+    private static final String BACKUP_IVY_PROPERTIES_NAME = "ivy.properties";
 
     private static final Logger LOGGER = Logger.getLogger(IvyBuildTrigger.class.getName());
 
@@ -96,6 +101,10 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
      * The name of the ivy file relative to the workspace as configured by the user.
      */
     private String ivyFile = "ivy.xml";
+    /**
+     * The name of the ivy properties file relative to the workspace as configured by the user.
+     */
+	private final String ivyProperties;
 
     /**
      * Identifies {@link IvyConfiguration} to be used.
@@ -106,7 +115,6 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
     
     private final boolean useUpstreamParameters;
 
-	private final String ivyPropertiesList;
     
     /**
      * The last modified time of the backup copy of the ivy file on the master.
@@ -137,18 +145,20 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
      *            the ivy.xml file path within the workspace
      * @param ivyConfName
      *            the Ivy configuration name to use
+     * @param ivyProperties
+     *            the Ivy properties file path within the workspace
      * @param triggerWhenUnstable
      *            true if this build should be triggered even when an upstream build in Unstable.
      *            false if this build should be triggered only when an upstream build is Successful.
      * @param passPropertiesDownstream           
      */
     @DataBoundConstructor
-    public IvyBuildTrigger(final String ivyFile, final String ivyConfName, final String ivyPropertiesList, final boolean triggerWhenUnstable, final boolean useUpstreamParameters) {
+    public IvyBuildTrigger(final String ivyFile, final String ivyConfName, final String ivyPropertiesFile, final boolean triggerWhenUnstable, final boolean useUpstreamParameters) {
         this.ivyFile = ivyFile;
         this.ivyConfName = ivyConfName;
+        this.ivyProperties = ivyPropertiesFile;
         this.triggerWhenUnstable = triggerWhenUnstable;
         this.useUpstreamParameters = useUpstreamParameters;
-this.ivyPropertiesList = ivyPropertiesList;
     }
 
     /**
@@ -165,9 +175,9 @@ this.ivyPropertiesList = ivyPropertiesList;
         this(ivyFile, ivyConfName, null, false, false);
     }
 
-public String getIvyPropertiesList() {
-return ivyPropertiesList;
-}
+	public String getIvyPropertiesFile() {
+		return ivyProperties;
+	}
     /**
      *
      * @return the ivy.xml file path within the workspace
@@ -217,15 +227,15 @@ return ivyPropertiesList;
      * @throws ParseException
      * @throws IOException
      */
-    public Ivy getIvy(File localFilePath, String[] propertyFiles) {
+    public Ivy getIvy(File localFilePath, String propertyFile) {
         Message.setDefaultLogger(new IvyMessageImpl());
         IvyConfiguration ivyConf = getIvyConfiguration();
             try {
                 IvySettings ivySettings = new IvySettings();
-                for (String file : propertyFiles) {
-                    File f = new File(localFilePath,file);
-                    ivySettings.loadProperties(f);
-                    LOGGER.log(Level.INFO,"Configured Ivy using custom properties " + f);
+                if (propertyFile != null) {
+	                File f = new File(localFilePath,propertyFile);
+	                ivySettings.loadProperties(f);
+	                LOGGER.log(Level.INFO,"Configured Ivy using custom properties " + f);
                 }
                 if (ivyConf != null) {
                     ivySettings.load(new File(ivyConf.getIvyConfPath()));
@@ -235,10 +245,11 @@ return ivyPropertiesList;
                     LOGGER.log(Level.INFO,"Configured Ivy using default 2.1 settings");
                 }
                 return Ivy.newInstance(ivySettings);
-            } catch (Exception e) {
+            } 
+            catch (Exception e) {
                 LOGGER.log(Level.SEVERE,"Error while reading the default Ivy 2.1 settings: " + e.getMessage(),e);
             }
-return null;
+            return null;
     }
 
     /**
@@ -268,25 +279,22 @@ return null;
      * @throws IOException   If unable to access/copy the workspace ivy file
      * @throws InterruptedException  If interrupted while accessing the workspace ivy file
      */
-    private boolean copyIvyFileFromWorkspaceIfNecessary(FilePath workspace, String[] filesToCopy, File localFile, String[] localDestFiles) throws IOException, InterruptedException {
+    private boolean copyFileFromWorkspaceIfNecessary(FilePath workspace, String fileToCopy, File localFile, String localDestFile) throws IOException, InterruptedException {
         boolean copied = false;
         if (workspace != null) { // Unless the workspace is non-null we can not copy a new ivy file
-        	int len = filesToCopy.length;
-        	for (int i=0; i<len; i++) {
-        		String copyThis = filesToCopy[i];
-        		String toThis = localDestFiles[i];
-        		FilePath f = workspace.child(copyThis);
-        		// Copy the ivy file from the workspace (possibly at a slave) to the projects dir (at Master)
-        		FilePath backupCopy = new FilePath(localFile).child(toThis);
-        		long flastModified = f.lastModified();
-        		if (flastModified == 0l) throw new FileNotFoundException("Can't stat file " + f);
-        		if (flastModified > lastmodified) {
-        			f.copyTo(backupCopy);
-        			localFile.setLastModified(flastModified);
-        			copied = true;
-        			LOGGER.info("Copied the workspace ivy file to backup");
-        		}
-            }
+    		String copyThis = fileToCopy;
+    		String toThis = localDestFile;
+    		FilePath f = workspace.child(copyThis);
+    		// Copy the ivy file from the workspace (possibly at a slave) to the projects dir (at Master)
+    		FilePath backupCopy = new FilePath(localFile).child(toThis);
+    		long flastModified = f.lastModified();
+    		if (flastModified == 0l) throw new FileNotFoundException("Can't stat file " + f);
+    		if (flastModified > lastmodified) {
+    			f.copyTo(backupCopy);
+    			localFile.setLastModified(flastModified);
+    			copied = true;
+    			LOGGER.info("Copied the workspace file "+fileToCopy+" to backup "+localFile.getCanonicalFile().toString()+"/"+localDestFile);
+    		}
         }
         return copied;
     }
@@ -303,66 +311,78 @@ return null;
         }
         LOGGER.fine("Recomputing Moduledescriptor for Project "+b.getProject().getFullDisplayName());
 
-	String csv = getIvyPropertiesList();
-	String[] propertyFiles = null;
-	if (csv != null) {
-	  propertyFiles = csv.split(",");
-        }
-        else {
-          propertyFiles = new String[0];
-        }
-        String[] copyFiles = new String[propertyFiles.length+1];
-        String[] destFiles = new String[propertyFiles.length+1];
-        int len = propertyFiles.length;
-        for (int i=0; i<len; i++) {
-        	File f = new File(propertyFiles[i]);
-        	destFiles[i] = f.getName();
-        	copyFiles[i] = propertyFiles[i];
-        }
-        copyFiles[len] = ivyFile;
-        destFiles[len] = BACKUP_IVY_FILE_NAME;
-        final File ivyLocal = b.getProject().getRootDir();
-        final File ivyF = new File(ivyLocal, BACKUP_IVY_FILE_NAME);
-        try {
-            copyIvyFileFromWorkspaceIfNecessary(b.getWorkspace(), copyFiles, ivyLocal, destFiles);
-        }
-        catch (IOException e) {
-            LOGGER.log(Level.WARNING, "Failed to access the workspace ivy file", e);
-            LOGGER.log(Level.WARNING, "Removing ModuleDescriptor");
-            setModuleDescriptor(null);
-            return;
-        }
-        catch (InterruptedException e) {
-            LOGGER.log(Level.WARNING, "Interupted while accessing the workspace ivy file", e);
-            if (ivyF.canRead()) LOGGER.log(Level.WARNING, "Will try to use use existing backup");
-        }
-        Ivy ivy = getIvy(ivyLocal, destFiles);
+		final File destDir = b.getProject().getRootDir();
+		
+		String propertyFile = getIvyPropertiesFile();
+		if (propertyFile != null) {
+			try {
+	            copyFileFromWorkspaceIfNecessary(b.getWorkspace(), propertyFile, destDir, BACKUP_IVY_PROPERTIES_NAME);
+	        }
+	        catch (IOException e) {
+	            LOGGER.log(Level.WARNING, "Failed to access the workspace ivy properties file", e);
+	            LOGGER.log(Level.WARNING, "Removing ModuleDescriptor");
+	            setModuleDescriptor(null);
+	            return;
+	        }
+	        catch (InterruptedException e) {
+	            LOGGER.log(Level.WARNING, "Interupted while accessing the workspace ivy properties file", e);
+	            File ivyP = new File(destDir, propertyFile);
+	            if (ivyP.canRead()) LOGGER.log(Level.WARNING, "Will try to use use existing ivy properties backup");
+	        }
+		}
+
+		Ivy ivy = getIvy(destDir, BACKUP_IVY_PROPERTIES_NAME);
         if (ivy == null) {
             setModuleDescriptor(null);
             return;
         }
+
         versionMatcher = ivy.getSettings().getVersionMatcher();
+
+		String ivyDesc = getIvyFile();
+        File ivyF = null;
+        
+		if (ivyDesc != null) {
+	        ivyF = new File(destDir, ivyDesc);
+			try {
+	            copyFileFromWorkspaceIfNecessary(b.getWorkspace(), ivyDesc, destDir, BACKUP_IVY_FILE_NAME);
+	        }
+	        catch (IOException e) {
+	            LOGGER.log(Level.WARNING, "Failed to access the workspace ivy file", e);
+	            LOGGER.log(Level.WARNING, "Removing ModuleDescriptor");
+	            setModuleDescriptor(null);
+	            return;
+	        }
+	        catch (InterruptedException e) {
+	            LOGGER.log(Level.WARNING, "Interupted while accessing the workspace ivy file", e);
+	            if (ivyF.canRead()) LOGGER.log(Level.WARNING, "Will try to use use existing ivy file backup");
+	        }
+		}
+
+        final File fivyF = ivyF;
         // Calculate ModuleDescriptor from the backup copy 
-        if (!ivyF.canRead()) {
+        if (fivyF == null || !fivyF.canRead()) {
             LOGGER.log(Level.WARNING, "Cannot read ivy file backup...removing ModuleDescriptor");
             setModuleDescriptor(null);
             return;
         }
-        if (moduleDescriptor == null || ivyF.lastModified() > lastmodified) {
-            lastmodified = ivyF.lastModified();
+
+        if (moduleDescriptor == null || fivyF.lastModified() > lastmodified) {
+            LOGGER.log(Level.INFO, "init module desc");
+            lastmodified = fivyF.lastModified();
             setModuleDescriptor((ModuleDescriptor) ivy.execute(new IvyCallback(){
                 public Object doInIvyContext(Ivy ivy, IvyContext context) {
                     try {
                         return  ModuleDescriptorParserRegistry.getInstance().parseDescriptor(ivy.getSettings(),
-                                ivyF.toURI().toURL(), ivy.getSettings().doValidate());
+                        		fivyF.toURI().toURL(), ivy.getSettings().doValidate());
                     } catch (MalformedURLException e) {
-                        LOGGER.log(Level.WARNING, "The URL is malformed : " + ivyF, e);
+                        LOGGER.log(Level.WARNING, "The URL is malformed : " + fivyF, e);
                         return null;
                     } catch (ParseException e) {
-                        LOGGER.log(Level.WARNING, "Parsing error while reading the ivy file " + ivyF, e);
+                        LOGGER.log(Level.WARNING, "Parsing error while reading the ivy file " + fivyF, e);
                         return null;
                     } catch (IOException e) {
-                        LOGGER.log(Level.WARNING, "I/O error while reading the ivy file " + ivyF, e);
+                        LOGGER.log(Level.WARNING, "I/O error while reading the ivy file " + fivyF, e);
                         return null;
                     }
                 }
@@ -384,7 +404,7 @@ return null;
         if ((old==null) || !old.equals(moduleDescriptor)) {
             DESCRIPTOR.invalidateProjectMap();
             Hudson.getInstance().rebuildDependencyGraph();
-        }
+         }
     }
 
     /**

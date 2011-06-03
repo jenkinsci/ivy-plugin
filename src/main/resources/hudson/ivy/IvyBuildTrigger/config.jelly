@@ -36,7 +36,7 @@ THE SOFTWARE.
   <f:entry title="${%ivy_file_title}" field="ivyFile">
     <f:textbox/>
   </f:entry>
-  <f:entry title="${%ivy_properties_title}" field="ivyPropertiesList">
+  <f:entry title="${%ivy_properties_title}" field="ivyPropertiesFile">
     <f:textbox/>
   </f:entry>
   <f:entry title="" field="triggerWhenUnstable">
