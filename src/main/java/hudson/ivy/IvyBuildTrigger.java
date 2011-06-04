@@ -282,11 +282,9 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
     private boolean copyFileFromWorkspaceIfNecessary(FilePath workspace, String fileToCopy, File localFile, String localDestFile) throws IOException, InterruptedException {
         boolean copied = false;
         if (workspace != null) { // Unless the workspace is non-null we can not copy a new ivy file
-    		String copyThis = fileToCopy;
-    		String toThis = localDestFile;
-    		FilePath f = workspace.child(copyThis);
+    		FilePath f = workspace.child(fileToCopy);
     		// Copy the ivy file from the workspace (possibly at a slave) to the projects dir (at Master)
-    		FilePath backupCopy = new FilePath(localFile).child(toThis);
+    		FilePath backupCopy = new FilePath(localFile).child(localDestFile);
     		long flastModified = f.lastModified();
     		if (flastModified == 0l) throw new FileNotFoundException("Can't stat file " + f);
     		if (flastModified > lastmodified) {
@@ -313,25 +311,31 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
 
 		final File destDir = b.getProject().getRootDir();
 		
+		String propertyFileToLoadIntoIvy = null;
+		
 		String propertyFile = getIvyPropertiesFile();
-		if (propertyFile != null) {
+		if (propertyFile != null && !propertyFile.trim().isEmpty()) {
 			try {
 	            copyFileFromWorkspaceIfNecessary(b.getWorkspace(), propertyFile, destDir, BACKUP_IVY_PROPERTIES_NAME);
+	            propertyFileToLoadIntoIvy = BACKUP_IVY_PROPERTIES_NAME;
 	        }
 	        catch (IOException e) {
-	            LOGGER.log(Level.WARNING, "Failed to access the workspace ivy properties file", e);
+	            LOGGER.log(Level.WARNING, "Failed to access the workspace ivy properties file '"+propertyFile+"'", e);
 	            LOGGER.log(Level.WARNING, "Removing ModuleDescriptor");
 	            setModuleDescriptor(null);
 	            return;
 	        }
 	        catch (InterruptedException e) {
-	            LOGGER.log(Level.WARNING, "Interupted while accessing the workspace ivy properties file", e);
-	            File ivyP = new File(destDir, propertyFile);
-	            if (ivyP.canRead()) LOGGER.log(Level.WARNING, "Will try to use use existing ivy properties backup");
+	            LOGGER.log(Level.WARNING, "Interupted while accessing the workspace ivy properties file '"+propertyFile+"'", e);
+	            File ivyP = new File(destDir, BACKUP_IVY_PROPERTIES_NAME);
+	            if (ivyP.canRead()) {
+	            	LOGGER.log(Level.WARNING, "Will try to use use existing ivy properties backup");
+	            	propertyFileToLoadIntoIvy = BACKUP_IVY_PROPERTIES_NAME;
+	        	}
 	        }
 		}
 
-		Ivy ivy = getIvy(destDir, BACKUP_IVY_PROPERTIES_NAME);
+		Ivy ivy = getIvy(destDir, propertyFileToLoadIntoIvy);
         if (ivy == null) {
             setModuleDescriptor(null);
             return;
@@ -342,24 +346,25 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
 		String ivyDesc = getIvyFile();
         File ivyF = null;
         
-		if (ivyDesc != null) {
+		if (ivyDesc != null && !ivyDesc.trim().isEmpty()) {
 	        ivyF = new File(destDir, ivyDesc);
 			try {
 	            copyFileFromWorkspaceIfNecessary(b.getWorkspace(), ivyDesc, destDir, BACKUP_IVY_FILE_NAME);
 	        }
 	        catch (IOException e) {
-	            LOGGER.log(Level.WARNING, "Failed to access the workspace ivy file", e);
+	            LOGGER.log(Level.WARNING, "Failed to access the workspace ivy file '"+ivyDesc+"'", e);
 	            LOGGER.log(Level.WARNING, "Removing ModuleDescriptor");
 	            setModuleDescriptor(null);
 	            return;
 	        }
 	        catch (InterruptedException e) {
-	            LOGGER.log(Level.WARNING, "Interupted while accessing the workspace ivy file", e);
+	            LOGGER.log(Level.WARNING, "Interupted while accessing the workspace ivy file '"+ivyDesc+"'", e);
 	            if (ivyF.canRead()) LOGGER.log(Level.WARNING, "Will try to use use existing ivy file backup");
 	        }
 		}
 
         final File fivyF = ivyF;
+
         // Calculate ModuleDescriptor from the backup copy 
         if (fivyF == null || !fivyF.canRead()) {
             LOGGER.log(Level.WARNING, "Cannot read ivy file backup...removing ModuleDescriptor");
