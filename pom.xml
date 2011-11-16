@@ -50,7 +50,7 @@
 
     <scm>
         <connection>scm:git:git://github.com/jenkinsci/ivy-plugin.git</connection>
-        <developerConnection>scm:git:git://github.com/jenkinsci/ivy-plugin.git</developerConnection>
+        <developerConnection>scm:git:git@github.com:jenkinsci/ivy-plugin.git</developerConnection>
     </scm>
 
     <dependencies>
