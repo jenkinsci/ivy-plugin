@@ -220,11 +220,6 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet,IvyModul
         return ".";
     }
 
-    @Override
-    public Hudson getParent() {
-        return Hudson.getInstance();
-    }
-
     public Collection<IvyModule> getItems() {
         return modules.values();
     }
