@@ -246,35 +246,38 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet,IvyModul
         return getItem(name);
     }
 
-    @Override
+    @Override   // to make this accessible from IvyModuleSetBuild
     protected void updateTransientActions() {
         super.updateTransientActions();
+    }
+
+    @Override
+    protected List<Action> createTransientActions() {
+        List<Action> r = super.createTransientActions();
         for (IvyModule module: modules.values()) {
             module.updateTransientActions();
         }
         if(publishers!=null)    // this method can be loaded from within the onLoad method, where this might be null
             for (BuildStep step : publishers) {
-                Collection<? extends Action> a = step.getProjectActions(this);
-                if(a!=null)
-                    transientActions.addAll(a);
+                r.addAll(step.getProjectActions(this));
             }
 
         if (buildWrappers!=null)
 	        for (BuildWrapper step : buildWrappers) {
-	            Collection<? extends Action> a = step.getProjectActions(this);
-	            if(a!=null)
-	                transientActions.addAll(a);
+                    r.addAll(step.getProjectActions(this));
 	        }
+
+        return r;
     }
 
     @Override
-    protected void addTransientActionsFromBuild(IvyModuleSetBuild build, Set<Class> added) {
+    protected void addTransientActionsFromBuild(IvyModuleSetBuild build, List<Action> collection, Set<Class> added) {
         if(build==null)    return;
 
         for (Action a : build.getActions())
             if(a instanceof IvyAggregatedReport)
                 if(added.add(a.getClass()))
-                    transientActions.add(((IvyAggregatedReport)a).getProjectAction(this));
+                    collection.add(((IvyAggregatedReport)a).getProjectAction(this));
 
         List<IvyReporter> list = build.projectActionReporters;
         if(list==null)   return;
@@ -283,7 +286,7 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet,IvyModul
             if(!added.add(step.getClass()))     continue;   // already added
             Action a = step.getAggregatedProjectAction(this);
             if(a!=null)
-                transientActions.add(a);
+                collection.add(a);
         }
     }
 
