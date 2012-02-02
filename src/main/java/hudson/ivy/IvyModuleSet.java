@@ -693,8 +693,6 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet,IvyModul
                 module.getBuildWrappersList().rebuild(req,json,BuildWrappers.getFor(module));
             }
         }
-        
-        updateTransientActions(); // to pick up transient actions from builder, publisher, etc.
     }
 
     public Class<? extends AbstractProject> getModuleClass() {
