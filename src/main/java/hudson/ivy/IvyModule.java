@@ -391,6 +391,11 @@ public final class IvyModule extends AbstractIvyProject<IvyModule, IvyBuild> imp
         return true;
     }
 
+    @Override // to make this accessible to IvyModuleSet
+    protected void updateTransientActions() {
+        super.updateTransientActions();
+    }
+
     @Override
     protected void buildDependencyGraph(DependencyGraph graph) {
         // Allow a module's publishers to add to the dependency graph.
@@ -503,7 +508,7 @@ public final class IvyModule extends AbstractIvyProject<IvyModule, IvyBuild> imp
     }
 
     @Override
-    protected void addTransientActionsFromBuild(IvyBuild build, Set<Class> added) {
+    protected void addTransientActionsFromBuild(IvyBuild build, List<Action> collection, Set<Class> added) {
         if (build == null)
             return;
         List<IvyReporter> list = build.projectActionReporters;
@@ -514,9 +519,7 @@ public final class IvyModule extends AbstractIvyProject<IvyModule, IvyBuild> imp
             if (!added.add(step.getClass()))
                 continue; // already added
             try {
-                Action a = step.getProjectAction(this);
-                if (a != null)
-                    transientActions.add(a);
+                collection.addAll(step.getProjectActions(this));
             } catch (Exception e) {
                 LOGGER.log(Level.WARNING, "Failed to getProjectAction from " + step + ". Report issue to plugin developers.", e);
             }
