@@ -1,86 +1,90 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <parent>
-    <groupId>org.jenkins-ci.plugins</groupId>
-    <artifactId>plugin</artifactId>
-    <version>1.410</version>
-    <relativePath>../pom.xml</relativePath>
-  </parent>
-  
-  <artifactId>ivy</artifactId>
-  <packaging>hpi</packaging>
-  <name>Ivy Plugin</name>
-  <version>1.19-SNAPSHOT</version>
-  <url>http://wiki.jenkins-ci.org/display/JENKINS/Ivy+Plugin</url>
-  <developers>
-    <developer>
-      <id>hibou</id>
-    </developer>
-    <developer>
-      <id>martinficker</id>
-      <name>Martin Ficker</name>
-    </developer>
-    <developer>
-      <id>jmetcalf</id>
-    </developer>
-    <developer>
-      <id>tbingaman</id>
-      <name>Timothy Bingaman</name>
-    </developer>
-  </developers>
-  
-  <licenses>
-    <license>
-      <name>The MIT license</name>
-      <url>http://www.opensource.org/licenses/mit-license.php</url>
-      <distribution>repo</distribution>
-    </license>
-    <license>
-      <name>Apache 2</name>
-      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-      <distribution>repo</distribution>
-    </license>
-  </licenses>
+    <modelVersion>4.0.0</modelVersion>
 
-  <scm>
-    <connection>scm:git:https://github.com/jenkinsci/ivy-plugin.git</connection>
-    <developerConnection>scm:git:https://git@github.com/jenkinsci/ivy-plugin.git</developerConnection>
-    <url>http://github.com/jenkinsci/ivy-plugin</url>
-  </scm>
-  
-  <dependencies>
-    <dependency>
-      <groupId>uk.com.robust-it</groupId> 
-      <artifactId>cloning</artifactId> 
-      <version>1.7.4</version> 
-    </dependency>
-    <dependency>
-      <groupId>org.apache.ivy</groupId>
-      <artifactId>ivy</artifactId>
-      <version>2.1.0</version>
-    </dependency>
-    <dependency>
-      <groupId>com.jcraft</groupId>
-      <artifactId>jsch</artifactId>
-      <version>0.1.31</version>
-    </dependency>
-    <dependency>
-      <groupId>commons-vfs</groupId>
-      <artifactId>commons-vfs</artifactId>
-      <version>1.0</version>
-      <exclusions>
-        <exclusion>
-          <artifactId>commons-logging</artifactId>
-          <groupId>commons-logging</groupId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.jvnet.hudson.plugins</groupId>
-      <artifactId>nant</artifactId>
-      <version>1.4.1</version>
-      <optional>true</optional>
-    </dependency>
-  </dependencies>
- 
+    <parent>
+        <groupId>org.jenkins-ci.plugins</groupId>
+        <artifactId>plugin</artifactId>
+        <version>1.410</version>
+    </parent>
+
+    <artifactId>ivy</artifactId>
+    <packaging>hpi</packaging>
+    <name>Ivy Plugin</name>
+    <version>1.21-SNAPSHOT</version>
+    <url>http://wiki.jenkins-ci.org/display/JENKINS/Ivy+Plugin</url>
+
+    <developers>
+        <developer>
+            <id>hibou</id>
+        </developer>
+        <developer>
+            <id>martinficker</id>
+            <name>Martin Ficker</name>
+        </developer>
+        <developer>
+            <id>jmetcalf</id>
+        </developer>
+        <developer>
+            <id>tbingaman</id>
+            <name>Timothy Bingaman</name>
+        </developer>
+        <developer>
+            <id>gboissinot</id>
+            <name>Gregory Boissinot</name>
+        </developer>
+    </developers>
+
+    <licenses>
+        <license>
+            <name>The MIT license</name>
+            <url>http://www.opensource.org/licenses/mit-license.php</url>
+            <distribution>repo</distribution>
+        </license>
+        <license>
+            <name>Apache 2</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <scm>
+        <connection>scm:git:git://github.com/jenkinsci/ivy-plugin.git</connection>
+        <developerConnection>scm:git:git@github.com:jenkinsci/ivy-plugin.git</developerConnection>
+    </scm>
+
+    <dependencies>
+        <dependency>
+            <groupId>uk.com.robust-it</groupId>
+            <artifactId>cloning</artifactId>
+            <version>1.7.4</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.ivy</groupId>
+            <artifactId>ivy</artifactId>
+            <version>2.2.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.jcraft</groupId>
+            <artifactId>jsch</artifactId>
+            <version>0.1.31</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-vfs</groupId>
+            <artifactId>commons-vfs</artifactId>
+            <version>1.0</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>commons-logging</artifactId>
+                    <groupId>commons-logging</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.jvnet.hudson.plugins</groupId>
+            <artifactId>nant</artifactId>
+            <version>1.4.1</version>
+            <optional>true</optional>
+        </dependency>
+    </dependencies>
+
 </project>

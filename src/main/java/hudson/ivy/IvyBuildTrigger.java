@@ -347,7 +347,7 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
         File ivyF = null;
         
 		if (ivyDesc != null && !ivyDesc.trim().isEmpty()) {
-	        ivyF = new File(destDir, ivyDesc);
+	        ivyF = new File(destDir, BACKUP_IVY_FILE_NAME);
 			try {
 	            copyFileFromWorkspaceIfNecessary(b.getWorkspace(), ivyDesc, destDir, BACKUP_IVY_FILE_NAME);
 	        }
