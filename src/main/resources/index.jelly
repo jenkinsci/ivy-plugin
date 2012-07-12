@@ -23,5 +23,5 @@ THE SOFTWARE.
 -->
 
 <div>
-  This plugin allows Hudson to configure project dependencies using the <a href="http://ant.apache.org/ivy/">Ivy</a> dependency management system.
+  This plugin allows Jenkins to automatically configure project dependencies using the <a href="http://ant.apache.org/ivy/">Ivy</a> dependency management system.
 </div>

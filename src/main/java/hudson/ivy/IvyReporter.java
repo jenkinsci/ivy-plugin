@@ -36,6 +36,8 @@ import hudson.tasks.Publisher;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.Collection;
+import java.util.Collections;
 
 import org.apache.ivy.core.module.descriptor.ModuleDescriptor;
 import org.apache.tools.ant.BuildEvent;
@@ -191,9 +193,38 @@ public abstract class IvyReporter implements Describable<IvyReporter>, Extension
      *
      * @return
      *      null not to contribute an action, which is the default.
+     * @deprecated as of 1.21
+     *      Use {@link #getProjectActions(IvyModule)} instead.
      */
     public Action getProjectAction(IvyModule module) {
         return null;
+    }
+
+    /**
+     * Equivalent of {@link BuildStep#getProjectActions(AbstractProject)}
+     * for {@link IvyReporter}.
+     *
+     * <p>
+     * Registers a transient action to {@link IvyModule} when it's rendered.
+     * This is useful if you'd like to display an action at the module level.
+     *
+     * <p>
+     * Since this contributes a transient action, the returned {@link Action}
+     * will not be serialized.
+     *
+     * <p>
+     * For this method to be invoked, your {@link IvyReporter} has to invoke
+     * {@link IvyBuildProxy#registerAsProjectAction(IvyReporter)} during the build.
+     *
+     * @return
+     *      can be empty but never null.
+     * @since 1.21
+     */
+    public Collection<? extends Action> getProjectActions(IvyModule module) {
+        // delegate to getProjectAction (singular) for backward compatible behavior
+        Action a = getProjectAction(module);
+        if (a==null)    return Collections.emptyList();
+        return Collections.singletonList(a);
     }
 
     /**
