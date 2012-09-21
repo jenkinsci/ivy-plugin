@@ -462,10 +462,20 @@ public final class IvyModule extends AbstractIvyProject<IvyModule, IvyBuild> imp
                     graph.addDependency(new IvyVirtualDependency(src.getParent(), downstream));
                 upstream = src;
             }
+            
+            AbstractProject revisedDownstream = downstream;                                                               
+            if(!getParent().equals(src.getParent()) && !getParent().isAggregatorStyleBuild())                             
+            {                                                                                                             
+                revisedDownstream = getParent();                                                                          
+                if (!src.getParent().isAggregatorStyleBuild() && !hasDependency(graph, src.getParent(),revisedDownstream))
+                {                                                                                                         
+                    graph.addDependency(new IvyVirtualDependency(src.getParent(), revisedDownstream));                    
+                }                                                                                                         
+            }                                                                                                             
 
             // Create the build dependency, ignoring self-referencing or already existing deps
-            if (upstream != downstream && !hasDependency(graph, upstream, downstream))
-                graph.addDependency(new IvyThresholdDependency(upstream, downstream, Result.SUCCESS, isUseUpstreamParameters()));
+            if (upstream != revisedDownstream && !hasDependency(graph, upstream, revisedDownstream))
+                graph.addDependency(new IvyThresholdDependency(upstream, revisedDownstream, Result.SUCCESS, isUseUpstreamParameters()));
         }
     }
 
