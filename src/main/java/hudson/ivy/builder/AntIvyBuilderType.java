@@ -106,7 +106,7 @@ public class AntIvyBuilderType extends IvyBuilderType {
                 antOpts = globalOpts.replaceAll("[\t\r\n]+", " ");
             }
         }
-        String additionalArgs = getAddtionalAntOpts(buildEnvironments);
+        String additionalArgs = getAdditionalAntOpts(buildEnvironments);
         if (StringUtils.isNotBlank(additionalArgs)) {
             return StringUtils.isNotBlank(antOpts) ? additionalArgs + antOpts : additionalArgs;
         } else {
@@ -177,16 +177,16 @@ public class AntIvyBuilderType extends IvyBuilderType {
         return null;
     }
 
-    private String getAddtionalAntOpts(List<Environment> buildEnvironments) {
+    private String getAdditionalAntOpts(List<Environment> buildEnvironments) {
         if (buildEnvironments != null) {
-            StringBuilder addtionalAntOpts = new StringBuilder();
+            StringBuilder additionalAntOpts = new StringBuilder();
             for (Environment environment : buildEnvironments) {
                 if (environment instanceof AntIvyBuildWrapper.AntIvyBuilderEnvironment) {
-                    addtionalAntOpts.append(((AntIvyBuildWrapper.AntIvyBuilderEnvironment) environment).getAdditionalOpts())
+                    additionalAntOpts.append(((AntIvyBuildWrapper.AntIvyBuilderEnvironment) environment).getAdditionalOpts())
                             .append(" ");
                 }
             }
-            return addtionalAntOpts.toString();
+            return additionalAntOpts.toString();
         }
         return null;
     }
