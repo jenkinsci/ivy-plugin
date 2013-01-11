@@ -28,6 +28,7 @@ import hudson.AbortException;
 import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.model.AbstractBuild;
+import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.model.Environment;
 import hudson.model.EnvironmentContributingAction;
@@ -498,8 +499,9 @@ public class IvyBuild extends AbstractIvyBuild<IvyModule, IvyBuild> {
         }
 
         public void buildEnvVars(AbstractBuild<?, ?> build, EnvVars env) {
-            env.put("IVY_MODULE_NAME", ((IvyModule) build.getParent()).getModuleName().name);
-            env.put("IVY_MODULE_ORGANISATION", ((IvyModule) build.getParent()).getModuleName().organisation);
+            AbstractProject<?,?> buildParent = build.getParent();
+            env.put("IVY_MODULE_NAME", ((IvyModule) buildParent).getModuleName().name);
+            env.put("IVY_MODULE_ORGANISATION", ((IvyModule) buildParent).getModuleName().organisation);
         }
     }
 }
