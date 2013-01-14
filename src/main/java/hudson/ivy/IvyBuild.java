@@ -499,7 +499,7 @@ public class IvyBuild extends AbstractIvyBuild<IvyModule, IvyBuild> {
         }
 
         public void buildEnvVars(AbstractBuild<?, ?> build, EnvVars env) {
-            AbstractProject<?,?> buildParent = build.getParent();
+            Object buildParent = build.getParent(); // javac inconvertible types with generics workaround
             env.put("IVY_MODULE_NAME", ((IvyModule) buildParent).getModuleName().name);
             env.put("IVY_MODULE_ORGANISATION", ((IvyModule) buildParent).getModuleName().organisation);
         }
