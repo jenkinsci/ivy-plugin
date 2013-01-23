@@ -174,7 +174,7 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
              */
             private boolean isDescendantOf(ChangeLogSet.Entry e, IvyModule mod) {
                 for (String path : e.getAffectedPaths())
-                    if (path.startsWith(mod.getRelativePathToModuleRoot()))
+                    if (path != null && path.startsWith(mod.getRelativePathToModuleRoot()))
                         return true;
                 return false;
             }
