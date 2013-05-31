@@ -76,8 +76,10 @@ import java.util.Set;
 
 import javax.servlet.ServletException;
 
+import hudson.util.ListBoxModel;
 import net.sf.json.JSONObject;
 
+import org.jenkinsci.lib.configprovider.model.Config;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -116,6 +118,8 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet,IvyModul
     private String relativePathToDescriptorFromModuleRoot;
 
     private String ivySettingsFile;
+
+    private String settings;
 
     private String ivySettingsPropertyFiles;
     
@@ -239,6 +243,10 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet,IvyModul
 
     public IvyModule getModule(String name) {
         return getItem(name);
+    }
+
+    public String getSettings() {
+        return settings;
     }
 
     @Override   // to make this accessible from IvyModuleSetBuild
@@ -665,6 +673,7 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet,IvyModul
         ivyFilePattern = Util.fixEmptyAndTrim(json.getString("ivyFilePattern"));
         ivyFileExcludesPattern = Util.fixEmptyAndTrim(json.getString("ivyFileExcludesPattern"));
         ivySettingsFile = Util.fixEmptyAndTrim(json.getString("ivySettingsFile"));
+        settings = Util.fixEmptyAndTrim(json.getString("settings"));
         ivySettingsPropertyFiles = Util.fixEmptyAndTrim(json.getString("ivySettingsPropertyFiles"));
         ivyBranch = Util.fixEmptyAndTrim(json.getString("ivyBranch"));
         relativePathToDescriptorFromModuleRoot = Util.fixEmptyAndTrim(json.getString("relativePathToDescriptorFromModuleRoot"));
@@ -775,6 +784,15 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet,IvyModul
             this.globalAntOpts = globalAntOpts;
             save();
         }
+
+        public ListBoxModel doFillSettingsItems() {
+            ListBoxModel lb = new ListBoxModel();
+            for (Config config : IvyConfig.provider.getAllConfigs()) {
+                lb.add(config.name, config.id);
+            }
+            return lb;
+        }
+
 
         @Override
         public String getDisplayName() {

@@ -61,6 +61,11 @@ THE SOFTWARE.
     <f:entry title="${%Ivy settings property files}" field="ivySettingsPropertyFiles">
       <f:textbox />
     </f:entry>
+
+    <f:entry title="${%Settings file}" field="settings">
+      <f:select />
+    </f:entry>
+
     <f:dropdownList name="ivyBuilderType" title="${%Build with}">
       <j:forEach var="descriptor" items="${it.builderTypeDescriptors}" varStatus="loop">
         <j:set var="instance" value="${descriptor==it.ivyBuilderType.descriptor?it.ivyBuilderType:null}"/>
