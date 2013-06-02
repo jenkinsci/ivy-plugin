@@ -261,7 +261,7 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
      */
     private ModuleDescriptor getModuleDescriptor(AbstractProject p) {
         if (moduleDescriptor == null) {
-            recomputeModuleDescriptor(p.getSomeBuildWithWorkspace());
+            moduleDescriptor = recomputeModuleDescriptor(p.getSomeBuildWithWorkspace());
         }
         return moduleDescriptor;
     }
@@ -302,10 +302,10 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
      *
      * @param  b  a build this trigger belongs to
      */
-    private void recomputeModuleDescriptor(AbstractBuild<?,?> b) {
+    private ModuleDescriptor recomputeModuleDescriptor(AbstractBuild<?,?> b) {
         // The build may be null if no build with a workspace was found
         if (b == null) {
-            return;
+            return null;
         }
         LOGGER.fine("Recomputing Moduledescriptor for Project "+b.getProject().getFullDisplayName());
 
@@ -322,8 +322,7 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
 	        catch (IOException e) {
 	            LOGGER.log(Level.WARNING, "Failed to access the workspace ivy properties file '"+propertyFile+"'", e);
 	            LOGGER.log(Level.WARNING, "Removing ModuleDescriptor");
-	            setModuleDescriptor(null);
-	            return;
+	            return null;
 	        }
 	        catch (InterruptedException e) {
 	            LOGGER.log(Level.WARNING, "Interupted while accessing the workspace ivy properties file '"+propertyFile+"'", e);
@@ -337,8 +336,7 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
 
 		Ivy ivy = getIvy(destDir, propertyFileToLoadIntoIvy);
         if (ivy == null) {
-            setModuleDescriptor(null);
-            return;
+            return null;
         }
 
         versionMatcher = ivy.getSettings().getVersionMatcher();
@@ -354,8 +352,7 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
 	        catch (IOException e) {
 	            LOGGER.log(Level.WARNING, "Failed to access the workspace ivy file '"+ivyDesc+"'", e);
 	            LOGGER.log(Level.WARNING, "Removing ModuleDescriptor");
-	            setModuleDescriptor(null);
-	            return;
+	            return null;
 	        }
 	        catch (InterruptedException e) {
 	            LOGGER.log(Level.WARNING, "Interupted while accessing the workspace ivy file '"+ivyDesc+"'", e);
@@ -368,13 +365,12 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
         // Calculate ModuleDescriptor from the backup copy 
         if (fivyF == null || !fivyF.canRead()) {
             LOGGER.log(Level.WARNING, "Cannot read ivy file backup...removing ModuleDescriptor");
-            setModuleDescriptor(null);
-            return;
+            return null;
         }
 
         if (moduleDescriptor == null || fivyF.lastModified() > lastmodified) {
             lastmodified = fivyF.lastModified();
-            setModuleDescriptor((ModuleDescriptor) ivy.execute(new IvyCallback(){
+            return (ModuleDescriptor) ivy.execute(new IvyCallback(){
                 public Object doInIvyContext(Ivy ivy, IvyContext context) {
                     try {
                         return  ModuleDescriptorParserRegistry.getInstance().parseDescriptor(ivy.getSettings(),
@@ -390,8 +386,9 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
                         return null;
                     }
                 }
-            }));
+            });
         }
+	return null;
     }
 
     /**
@@ -418,7 +415,7 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
      */
     @Override
     public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
-        recomputeModuleDescriptor(build);
+        setModuleDescriptor(recomputeModuleDescriptor(build));
         return true;
     }
 
