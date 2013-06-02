@@ -42,7 +42,6 @@ import hudson.model.ParametersAction;
 import hudson.model.Result;
 import hudson.model.Run;
 import hudson.model.TaskListener;
-import hudson.model.Cause.UpstreamCause;
 import hudson.remoting.Callable;
 import hudson.remoting.Channel;
 import hudson.scm.ChangeLogSet;
@@ -74,7 +73,7 @@ import org.apache.ivy.util.Message;
 import org.apache.tools.ant.BuildEvent;
 import org.apache.tools.ant.types.FileSet;
 import org.jenkinsci.lib.configprovider.model.Config;
-import org.jenkinsci.plugins.configfiles.buildwrapper.CleanTempFilesAction;
+import org.jenkinsci.plugins.configfiles.common.CleanTempFilesAction;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
@@ -364,7 +363,7 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
                 if (config != null) {
                     FilePath tmp = getWorkspace().createTextTempFile("ivy", "xml", config.content);
                     settings = tmp.getRemote();
-                    addAction(new CleanTempFilesAction(Collections.singletonList(settings)));
+                    addAction(new CleanTempFilesAction(settings));
 
                 } else {
                     settings = project.getIvySettingsFile();
