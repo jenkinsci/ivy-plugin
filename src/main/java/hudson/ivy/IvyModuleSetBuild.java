@@ -101,6 +101,9 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
      */
     /* package */List<IvyReporter> projectActionReporters;
 
+    /**
+     * Absolute path to ivy settings file on slave
+     */
     private transient String settings;
 
     public IvyModuleSetBuild(IvyModuleSet job) throws IOException {
@@ -366,7 +369,7 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
                     addAction(new CleanTempFilesAction(settings));
 
                 } else {
-                    settings = project.getIvySettingsFile();
+                    settings = getWorkspace().child(project.getIvySettingsFile()).getRemote();
                 }
 
                 parseIvyDescriptorFiles(listener, logger, envVars);
@@ -755,7 +758,10 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
         private final boolean verbose = debug;
         private final String ivyFilePattern;
         private final String ivyFileExcludePattern;
+
+        /** Absolute path to ivy settings file */
         private final String ivySettingsFile;
+
         private final String ivySettingsPropertyFiles;
         private final String ivyBranch;
         private final String workspace;
@@ -831,7 +837,7 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
         public Ivy getIvy(PrintStream logger) throws AbortException {
             Message.setDefaultLogger(new IvyMessageImpl());
             
-            File settingsLoc = (ivySettingsFile == null) ? null : new File(workspaceProper, ivySettingsFile);
+            File settingsLoc = (ivySettingsFile == null) ? null : new File(ivySettingsFile);
 
             if ((settingsLoc != null) && (!settingsLoc.exists())) {
                 throw new AbortException(Messages.IvyModuleSetBuild_NoSuchIvySettingsFile(settingsLoc.getAbsolutePath()));
