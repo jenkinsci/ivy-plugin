@@ -848,7 +848,10 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
                 for (String file : ivySettingsPropertyFiles.split(",")) {
                     File propertyFile = new File(workspaceProper, file.trim());
                     if (!propertyFile.exists()) {
-                        throw new AbortException(Messages.IvyModuleSetBuild_NoSuchPropertyFile(propertyFile.getAbsolutePath()));
+                        propertyFile = new File(file.trim());
+                        if (!propertyFile.isAbsolute() || !propertyFile.exists()) {
+                            throw new AbortException(Messages.IvyModuleSetBuild_NoSuchPropertyFile(propertyFile.getAbsolutePath()));
+                        }
                     }
                     propertyFiles.add(propertyFile);
                 }
