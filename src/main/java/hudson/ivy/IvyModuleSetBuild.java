@@ -372,11 +372,9 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
                     settings = getWorkspace().child(project.getIvySettingsFile()).getRemote();
                 }
 
-                parseIvyDescriptorFiles(listener, logger, envVars);
-
                 if (!project.isAggregatorStyleBuild()) {
                     // start module builds
-                    DependencyGraph graph = Hudson.getInstance().getDependencyGraph();
+                    parseIvyDescriptorFiles(listener, logger, envVars);
                     Set<IvyModule> triggeredModules = new HashSet<IvyModule>();
                     if (!project.isIncrementalBuild() || IvyModuleSetBuild.this.getChangeSet().isEmptySet()) {
                         for (IvyModule module : project.sortedActiveModules) {
@@ -452,26 +450,29 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
                         if (!preBuild(listener, project.getPublishers()))
                             return Result.FAILURE;
 
-                        List<String> changedModules = new ArrayList<String>();
-                        for (IvyModule m : project.sortedActiveModules) {
-                            // Check if incrementalBuild is selected and that
-                            // there are changes -
-                            // we act as if incrementalBuild is not set if there
-                            // are no changes.
-                            if (!IvyModuleSetBuild.this.getChangeSet().isEmptySet() && project.isIncrementalBuild()) {
-                                // If there are changes for this module, add it.
-                                if (!getChangeSetFor(m).isEmpty()) {
-                                    changedModules.add(m.getModuleName().name);
+                        Properties additionalProperties = null;
+                        if (project.isIncrementalBuild()) {
+                            parseIvyDescriptorFiles(listener, logger, envVars);
+                            List<String> changedModules = new ArrayList<String>();
+                            for (IvyModule m : project.sortedActiveModules) {
+                                // Check if incrementalBuild is selected and that
+                                // there are changes -
+                                // we act as if incrementalBuild is not set if there
+                                // are no changes.
+                                if (!IvyModuleSetBuild.this.getChangeSet().isEmptySet()) {
+                                    // If there are changes for this module, add it.
+                                    if (!getChangeSetFor(m).isEmpty()) {
+                                        changedModules.add(m.getModuleName().name);
+                                    }
                                 }
                             }
-                        }
 
-                        Properties additionalProperties = null;
-                        if (project.isAggregatorStyleBuild() && project.isIncrementalBuild()) {
-                            additionalProperties = new Properties();
-                            additionalProperties.put(project.getChangedModulesProperty() == null ? "hudson.ivy.changedModules" : project
-                                    .getChangedModulesProperty(), StringUtils.join(changedModules, ','));
-                        }     
+                            if (project.isAggregatorStyleBuild()) {
+                                additionalProperties = new Properties();
+                                additionalProperties.put(project.getChangedModulesProperty() == null ? "hudson.ivy.changedModules" : project
+                                        .getChangedModulesProperty(), StringUtils.join(changedModules, ','));
+                            }
+                        }
                         
                         IvyBuilderType ivyBuilderType = project.getIvyBuilderType();
                         hudson.tasks.Builder builder = ivyBuilderType.getBuilder(additionalProperties, null, buildEnvironments);
