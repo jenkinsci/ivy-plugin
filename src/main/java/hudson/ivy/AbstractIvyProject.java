@@ -59,7 +59,7 @@ public abstract class AbstractIvyProject<P extends AbstractProject<P,R>,R extend
         addTransientActionsFromBuild(getLastBuild(), r, added);
         addTransientActionsFromBuild(getLastSuccessfulBuild(), r, added);
 
-        for (Trigger<?> trigger : triggers())
+        for (Trigger<?> trigger : triggers)
             r.addAll(trigger.getProjectActions());
 
         return r;
