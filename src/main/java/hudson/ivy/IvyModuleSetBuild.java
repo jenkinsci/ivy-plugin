@@ -762,7 +762,7 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
         private final String ivyFilePattern;
         private final String ivyFileExcludePattern;
 
-        private final Properties properties = new Properties();
+        private final EnvVars envVars;
 
         /** Absolute path to ivy settings file */
         private final String ivySettingsFile;
@@ -783,13 +783,7 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
             this.ivySettingsFile = ivySettingsFile;
             this.ivySettingsPropertyFiles = project.getIvySettingsPropertyFiles();
             this.workspaceProper = project.getLastBuild().getWorkspace().getRemote();
-            if (envVars != null && !envVars.isEmpty()) {
-                for (Entry<String, String> entry : envVars.entrySet()) {
-                    if (entry.getKey() != null && entry.getValue() != null) {
-                        this.properties.put(entry.getKey(), entry.getValue());
-                    }
-                }
-            }
+            this.envVars = envVars;
         }
 
 		@SuppressWarnings("unchecked")
@@ -871,7 +865,7 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
             
             try {
                 IvySettings ivySettings = new IvySettings();
-                ivySettings.addAllVariables(properties);
+                ivySettings.addAllVariables(envVars);
                 for (File file : propertyFiles) {
                     ivySettings.loadProperties(file);
                 }
