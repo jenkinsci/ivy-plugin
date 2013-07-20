@@ -34,7 +34,6 @@ import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.Build;
 import hudson.model.BuildListener;
-import hudson.model.DependencyGraph;
 import hudson.model.Environment;
 import hudson.model.Fingerprint;
 import hudson.model.Hudson;
@@ -45,6 +44,7 @@ import hudson.model.TaskListener;
 import hudson.remoting.Callable;
 import hudson.remoting.Channel;
 import hudson.scm.ChangeLogSet;
+import hudson.slaves.EnvironmentVariablesNodeProperty;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.Publisher;
 import hudson.util.StreamTaskListener;
@@ -361,6 +361,8 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
             PrintStream logger = listener.getLogger();
             try {
                 EnvVars envVars = getEnvironment(listener);
+                EnvironmentVariablesNodeProperty property = getCurrentNode().getNodeProperties().get(EnvironmentVariablesNodeProperty.class);
+                envVars.putAll(property.getEnvVars());
 
                 Config config = IvyConfig.provider.getConfigById(project.getSettings());
                 if (config != null) {
@@ -528,7 +530,7 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
 
             List<IvyModuleInfo> ivyDescriptors;
             try {
-            	IvyXmlParser parser = new IvyXmlParser(listener, project, settings, getModuleRoot().getRemote());
+            	IvyXmlParser parser = new IvyXmlParser(listener, project, settings, getModuleRoot().getRemote(), envVars);
             	if (getModuleRoot().getChannel() instanceof Channel)
             		((Channel) getModuleRoot().getChannel()).preloadJar(parser, Ivy.class);
                 ivyDescriptors = getModuleRoot().act(parser);
@@ -760,6 +762,8 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
         private final String ivyFilePattern;
         private final String ivyFileExcludePattern;
 
+        private final Properties properties = new Properties();
+
         /** Absolute path to ivy settings file */
         private final String ivySettingsFile;
 
@@ -768,7 +772,7 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
         private final String workspace;
         private final String workspaceProper;
 
-        public IvyXmlParser(BuildListener listener, IvyModuleSet project, String ivySettingsFile, String workspace) {
+        public IvyXmlParser(BuildListener listener, IvyModuleSet project, String ivySettingsFile, String workspace, EnvVars envVars) {
             // project cannot be shipped to the remote JVM, so all the relevant
             // properties need to be captured now.
             this.listener = listener;
@@ -779,6 +783,13 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
             this.ivySettingsFile = ivySettingsFile;
             this.ivySettingsPropertyFiles = project.getIvySettingsPropertyFiles();
             this.workspaceProper = project.getLastBuild().getWorkspace().getRemote();
+            if (envVars != null && !envVars.isEmpty()) {
+                for (Entry<String, String> entry : envVars.entrySet()) {
+                    if (entry.getKey() != null && entry.getValue() != null) {
+                        this.properties.put(entry.getKey(), entry.getValue());
+                    }
+                }
+            }
         }
 
 		@SuppressWarnings("unchecked")
@@ -860,6 +871,7 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
             
             try {
                 IvySettings ivySettings = new IvySettings();
+                ivySettings.addAllVariables(properties);
                 for (File file : propertyFiles) {
                     ivySettings.loadProperties(file);
                 }
