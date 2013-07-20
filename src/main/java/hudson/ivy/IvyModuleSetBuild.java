@@ -362,7 +362,9 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
             try {
                 EnvVars envVars = getEnvironment(listener);
                 EnvironmentVariablesNodeProperty property = getCurrentNode().getNodeProperties().get(EnvironmentVariablesNodeProperty.class);
-                envVars.putAll(property.getEnvVars());
+                if (property != null) {
+                    envVars.putAll(property.getEnvVars());
+                }
 
                 Config config = IvyConfig.provider.getConfigById(project.getSettings());
                 if (config != null) {
