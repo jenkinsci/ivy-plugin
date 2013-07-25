@@ -373,7 +373,10 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
                     addAction(new CleanTempFilesAction(settings));
 
                 } else {
-                    settings = getWorkspace().child(project.getIvySettingsFile()).getRemote();
+                    String settingsFile = project.getIvySettingsFile();
+                    if (settingsFile != null) {
+                        settings = getWorkspace().child(settingsFile).getRemote();
+                    }
                 }
 
                 if (!project.isAggregatorStyleBuild()) {
