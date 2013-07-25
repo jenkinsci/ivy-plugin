@@ -727,7 +727,7 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet,IvyModul
     }
 
     /**
-     * Check that the provided file is a relative path. And check that it exists, just in case.
+     * Check that the provided file exists, just in case.
      */
     public FormValidation doCheckIvySettingsFile(@QueryParameter String value) throws IOException, ServletException {
         String v = fixEmpty(value);
@@ -735,17 +735,29 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet,IvyModul
             // Null values are allowed.
             return FormValidation.ok();
         }
-        if ((v.startsWith("/")) || (v.startsWith("\\")) || (v.matches("^\\w\\:\\\\.*"))) {
-            return FormValidation.error("Ivy settings file must be a relative path.");
-        }
 
         IvyModuleSetBuild lb = getLastBuild();
-        if (lb!=null) {
+        if (lb != null) {
             FilePath ws = lb.getWorkspace();
-            if(ws!=null)
-                return ws.validateRelativePath(value,true,true);
+            if (ws != null) {
+                if ((v.startsWith("/")) || (v.startsWith("\\")) || (v.matches("^\\w\\:\\\\.*"))) {
+                    return validateAbsolutePath(ws, v);
+                } else {
+                    return ws.validateRelativePath(v, true, true);
+                }
+            }
         }
         return FormValidation.ok();
+    }
+
+    private FormValidation validateAbsolutePath(FilePath ws, String path) throws IOException {
+        try {
+            if (ws.child(path).exists()) {
+                return FormValidation.ok();
+            }
+        } catch (InterruptedException ignore) {
+        }
+        return FormValidation.error("Error reading ivy settings file: " + path);
     }
 
     @SuppressWarnings("unchecked")
