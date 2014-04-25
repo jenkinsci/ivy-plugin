@@ -10,7 +10,7 @@
     <artifactId>ivy</artifactId>
     <packaging>hpi</packaging>
     <name>Ivy Plugin</name>
-    <version>1.24</version>
+    <version>1.24-SNAPSHOT</version>
     <url>http://wiki.jenkins-ci.org/display/JENKINS/Ivy+Plugin</url>
 
     <properties>
@@ -35,6 +35,10 @@
         <developer>
             <id>gboissinot</id>
             <name>Gregory Boissinot</name>
+        </developer>
+        <developer>
+            <id>arothian</id>
+            <name>Kevin Formsma</name>
         </developer>
     </developers>
 
