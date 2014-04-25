@@ -468,6 +468,8 @@ public class IvyBuild extends AbstractIvyBuild<IvyModule, IvyBuild> {
 
         @Override
         public void cleanUp(BuildListener listener) throws Exception {
+            super.cleanUp(listener);
+            
             // at this point it's too late to mark the build as a failure, so ignore return value.
             performAllBuildSteps(listener, reporters,false);
             performAllBuildSteps(listener, project.getProperties(),false);
