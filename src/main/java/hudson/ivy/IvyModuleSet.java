@@ -58,6 +58,7 @@ import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrappers;
 import hudson.tasks.Publisher;
 import hudson.tasks.Ant.AntInstallation;
+import hudson.tasks.test.AbstractTestResultAction;
 import hudson.util.CopyOnWriteMap;
 import hudson.util.DescribableList;
 import hudson.util.FormValidation;
@@ -701,6 +702,11 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet,IvyModul
 
     public Class<? extends AbstractProject> getModuleClass() {
         return IvyModule.class;
+    }
+
+    public AbstractTestResultAction<?> getTestResultAction() {
+        IvyModuleSetBuild b = getLastBuild();
+        return b != null ? b.getAction(AbstractTestResultAction.class) : null;
     }
 
     /**
