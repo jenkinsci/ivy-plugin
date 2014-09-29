@@ -36,7 +36,14 @@ THE SOFTWARE.
             </j:when>
             <j:otherwise>
               <div>
-                ${%text}
+                <script>
+                  function build(a) {
+                    new Ajax.Request(a.href);
+                    hoverNotification('${%Build scheduled}',a);
+                    return false;
+                  }
+                </script>
+                ${%schedule("build?delay=0sec", it.parameterized?null:'return build(this)', !it.parameterized)}
               </div>
             </j:otherwise>
           </j:choose>
