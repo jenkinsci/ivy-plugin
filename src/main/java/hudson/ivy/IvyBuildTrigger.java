@@ -23,16 +23,16 @@ import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
-import hudson.model.AbstractBuild;
-import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
-import hudson.model.Cause;
 import hudson.model.DependecyDeclarer;
 import hudson.model.DependencyGraph;
-import hudson.model.Hudson;
 import hudson.model.Item;
-import hudson.model.Project;
 import hudson.model.Result;
+import hudson.model.AbstractBuild;
+import hudson.model.AbstractProject;
+import hudson.model.Cause;
+import hudson.model.Hudson;
+import hudson.model.Project;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Notifier;
@@ -63,9 +63,8 @@ import org.apache.ivy.core.module.descriptor.DependencyDescriptor;
 import org.apache.ivy.core.module.descriptor.ModuleDescriptor;
 import org.apache.ivy.core.module.id.ModuleId;
 import org.apache.ivy.core.module.id.ModuleRevisionId;
-import org.apache.ivy.plugins.parser.ModuleDescriptorParserRegistry;
 import org.apache.ivy.core.settings.IvySettings;
-
+import org.apache.ivy.plugins.parser.ModuleDescriptorParserRegistry;
 import org.apache.ivy.plugins.version.VersionMatcher;
 import org.apache.ivy.util.Message;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -261,7 +260,14 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
      */
     private ModuleDescriptor getModuleDescriptor(AbstractProject p) {
         if (moduleDescriptor == null) {
-            moduleDescriptor = recomputeModuleDescriptor(p.getSomeBuildWithWorkspace());
+        	// If the node that built it is offline, just use the backup file to compute the moduleDescriptor
+        	if (p.getLastBuiltOn() != null && p.getLastBuiltOn().getChannel()!=null){
+        		AbstractBuild ab = p.getSomeBuildWithWorkspace();
+                moduleDescriptor = recomputeModuleDescriptor(ab);
+        	}else{
+        		LOGGER.warning("Node is offline for "+ p.getName()+ ", using project to get Module Descriptor" );
+        		moduleDescriptor=recomputeModuleDescriptor(p);
+        	}
         }
         return moduleDescriptor;
     }
@@ -296,6 +302,76 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
         }
         return copied;
     }
+    
+    /**
+     * Force the creation of the module descriptor.  This should only get
+     * called if the node that last built this project is offline, then
+     * we just use the backup ivy file if it is available
+     *
+     * @param  b  a project this trigger belongs to
+     */
+
+    private ModuleDescriptor recomputeModuleDescriptor(AbstractProject b) {
+        LOGGER.fine("Recomputing Moduledescriptor for Project "+b.getFullDisplayName()+ " using backup files");
+
+		final File destDir = b.getRootDir();
+		
+		String propertyFileToLoadIntoIvy = null;
+		
+		String propertyFile = getIvyPropertiesFile();
+        File ivyP = new File(destDir, BACKUP_IVY_PROPERTIES_NAME);
+		if (propertyFile != null && !propertyFile.trim().isEmpty()) {
+	        if (ivyP.canRead()) {
+	        	propertyFileToLoadIntoIvy = BACKUP_IVY_PROPERTIES_NAME;
+	    	}
+		}
+
+		Ivy ivy = getIvy(destDir, propertyFileToLoadIntoIvy);
+        if (ivy == null) {
+            return null;
+        }
+
+        versionMatcher = ivy.getSettings().getVersionMatcher();
+
+		String ivyDesc = getIvyFile();
+        File ivyF = null;
+        
+		if (ivyDesc != null && !ivyDesc.trim().isEmpty()) {
+	        ivyF = new File(destDir, BACKUP_IVY_FILE_NAME);
+		}
+
+        final File fivyF = ivyF;
+
+        // Calculate ModuleDescriptor from the backup copy 
+        if (fivyF == null || !fivyF.canRead()) {
+            LOGGER.log(Level.WARNING, "Cannot read ivy file backup...removing ModuleDescriptor");
+            return null;
+        }
+
+        if (moduleDescriptor == null || fivyF.lastModified() > lastmodified) {
+            lastmodified = fivyF.lastModified();
+            return (ModuleDescriptor) ivy.execute(new IvyCallback(){
+                public Object doInIvyContext(Ivy ivy, IvyContext context) {
+                    try {
+                        return  ModuleDescriptorParserRegistry.getInstance().parseDescriptor(ivy.getSettings(),
+                        		fivyF.toURI().toURL(), ivy.getSettings().doValidate());
+                    } catch (MalformedURLException e) {
+                        LOGGER.log(Level.WARNING, "The URL is malformed : " + fivyF, e);
+                        return null;
+                    } catch (ParseException e) {
+                        LOGGER.log(Level.WARNING, "Parsing error while reading the ivy file " + fivyF, e);
+                        return null;
+                    } catch (IOException e) {
+                        LOGGER.log(Level.WARNING, "I/O error while reading the ivy file " + fivyF, e);
+                        return null;
+                    }
+                }
+            });
+        }
+	return null;
+
+    }
+    
 
     /**
      * Force the creation of the module descriptor.
@@ -350,9 +426,9 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
 	            copyFileFromWorkspaceIfNecessary(b.getWorkspace(), ivyDesc, destDir, BACKUP_IVY_FILE_NAME);
 	        }
 	        catch (IOException e) {
-	            LOGGER.log(Level.WARNING, "Failed to access the workspace ivy file '"+ivyDesc+"'", e);
-	            LOGGER.log(Level.WARNING, "Removing ModuleDescriptor");
-	            return null;
+	        	LOGGER.log(Level.WARNING, "Failed to access the workspace ivy file '"+ivyDesc+"'", e);
+	        	//Slave may not be available, so try using the backup.
+	            if (ivyF.canRead()) LOGGER.log(Level.WARNING, "Will try to use use existing ivy file backup");
 	        }
 	        catch (InterruptedException e) {
 	            LOGGER.log(Level.WARNING, "Interupted while accessing the workspace ivy file '"+ivyDesc+"'", e);
@@ -681,7 +757,8 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
         /**
          * Implement the Descritor's display name.
          */
-        public String getDisplayName() {
+        @Override
+		public String getDisplayName() {
             return Messages.IvyBuildTrigger_DisplayName();
         }
 
@@ -854,7 +931,8 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
          * @return  true iff the project type can apply this Descriptor
          * @see  hudson.model.Project
          */
-        public boolean isApplicable(Class<? extends AbstractProject> jobType) {
+        @Override
+		public boolean isApplicable(Class<? extends AbstractProject> jobType) {
             return Project.class.isAssignableFrom(jobType);
         }
     }
