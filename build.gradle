@@ -1,0 +1,71 @@
+buildscript {
+    repositories {
+        jcenter()
+        maven {
+            url 'http://repo.jenkins-ci.org/releases/'
+        }
+    }
+    dependencies {
+        classpath 'org.jenkins-ci.tools:gradle-jpi-plugin:0.12.2'
+    }
+}
+
+apply plugin: 'org.jenkins-ci.jpi'
+
+
+group = "org.jenkins-ci.plugins"
+description = "A description of your plugin"
+
+jenkinsPlugin {
+    coreVersion = '1.491'
+    displayName = 'Ivy Plugin'
+    url = 'https://wiki.jenkins-ci.org/display/JENKINS/Ivy+Plugin'
+    gitHubUrl = 'https://github.com/jenkinsci/ivy-plugin'
+    shortName = 'ivy'
+
+    developers {
+        developer {
+            id 'hibou'
+        }
+        developer {
+            id 'martinficker'
+            name 'Martin Ficker'
+        }
+        developer {
+            id 'jmetcalf'
+        }
+        developer {
+            id 'tbingaman'
+            name 'Timothy Bingaman'
+        }
+        developer {
+            id 'gboissinot'
+            name 'Gregory Boissinot'
+        }
+        developer {
+            id 'arothian'
+            name 'Kevin Formsma'
+        }
+    }
+}
+
+compileJava {
+    options.encoding = 'UTF-8'
+}
+
+dependencies {
+    jenkinsPlugins 'org.jenkins-ci.plugins:config-file-provider:2.7.5@jar'
+    jenkinsPlugins 'org.jenkins-ci.plugins:ant:1.2@jar'
+    optionalJenkinsPlugins 'org.jvnet.hudson.plugins:nant:1.4.1@jar'
+    
+    compile 'uk.com.robust-it:cloning:1.7.4'
+    compile 'org.apache.ivy:ivy:2.3.0'
+    compile 'com.jcraft:jsch:0.1.31'
+    compile('commons-vfs:commons-vfs:1.0') {
+        exclude group: 'commons-logging', module: 'commons-logging'
+    }
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.7'
+}

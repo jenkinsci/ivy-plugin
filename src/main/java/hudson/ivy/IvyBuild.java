@@ -409,13 +409,14 @@ public class IvyBuild extends AbstractIvyBuild<IvyModule, IvyBuild> {
 
         @Override
         protected Lease decideWorkspace(Node n, WorkspaceList wsl) throws InterruptedException, IOException {
-            return wsl.allocate(getModuleSetBuild().getModuleRoot().child(getProject().getRelativePathToModuleRoot()));
+            String pathToModuleRoot = IvyBuild.this.getProject().getRelativePathToModuleRoot();
+            return wsl.allocate(getModuleSetBuild().getModuleRoot().child(pathToModuleRoot));
         }
 
         @Override
         protected Result doRun(BuildListener listener) throws Exception {
             // pick up a list of reporters to run
-            reporters = getProject().createModulePublishers();
+            reporters = IvyBuild.this.getProject().createModulePublishers();
             if (debug)
                 listener.getLogger().println("Reporters=" + reporters);
             if (!preBuild(listener, reporters))
@@ -423,7 +424,7 @@ public class IvyBuild extends AbstractIvyBuild<IvyModule, IvyBuild> {
 
             Result r = null;
             try {
-                List<BuildWrapper> wrappers = new ArrayList<BuildWrapper>(getProject().getBuildWrappersList().toList());
+                List<BuildWrapper> wrappers = new ArrayList<BuildWrapper>(IvyBuild.this.getProject().getBuildWrappersList().toList());
 
                 ParametersAction parameters = getAction(ParametersAction.class);
                 if (parameters != null)
@@ -436,8 +437,8 @@ public class IvyBuild extends AbstractIvyBuild<IvyModule, IvyBuild> {
                     buildEnvironments.add(e);
                 }
 
-                hudson.tasks.Builder builder = getProject().getParent().getIvyBuilderType()
-                        .getBuilder(null, getProject().getTargets(), buildEnvironments);
+                hudson.tasks.Builder builder = IvyBuild.this.getProject().getParent().getIvyBuilderType()
+                        .getBuilder(null, IvyBuild.this.getProject().getTargets(), buildEnvironments);
                 if (!builder.perform(IvyBuild.this, launcher, listener))
                     r = FAILURE;
             } finally {
