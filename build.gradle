@@ -59,7 +59,7 @@ dependencies {
     optionalJenkinsPlugins 'org.jvnet.hudson.plugins:nant:1.4.1@jar'
     
     compile 'uk.com.robust-it:cloning:1.7.4'
-    compile 'org.apache.ivy:ivy:2.3.0'
+    compile 'org.apache.ivy:ivy:2.4.0'
     compile 'com.jcraft:jsch:0.1.31'
     compile('commons-vfs:commons-vfs:1.0') {
         exclude group: 'commons-logging', module: 'commons-logging'
