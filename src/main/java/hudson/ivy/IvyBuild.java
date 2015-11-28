@@ -410,7 +410,8 @@ public class IvyBuild extends AbstractIvyBuild<IvyModule, IvyBuild> {
         @Override
         protected Lease decideWorkspace(Node n, WorkspaceList wsl) throws InterruptedException, IOException {
             String pathToModuleRoot = IvyBuild.this.getProject().getRelativePathToModuleRoot();
-            return wsl.allocate(getModuleSetBuild().getModuleRoot().child(pathToModuleRoot));
+            // 2015-11-25 Matthias Bechtold: changed base path to workspace folder - fixes JENKINS-13440
+            return wsl.allocate(getModuleSetBuild().getWorkspace().child(pathToModuleRoot));
         }
 
         @Override
