@@ -531,12 +531,11 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
 
             List<IvyModuleInfo> ivyDescriptors;
             // 2015-11-25 Matthias Bechtold: Parse all modules in workspace rather than the first module's folder - fixes JENKINS-13440
-            FilePath moduleRoot = getModuleRoots().length>1 ? getModuleRoot().getParent() : getModuleRoot();
             try { 
-            	IvyXmlParser parser = new IvyXmlParser(listener, project, settings, moduleRoot.getRemote());
-            	if (moduleRoot.getChannel() instanceof Channel)
-            		((Channel) moduleRoot.getChannel()).preloadJar(parser, Ivy.class);
-                ivyDescriptors = moduleRoot.act(parser);
+            	IvyXmlParser parser = new IvyXmlParser(listener, project, settings, getWorkspace().getRemote());
+            	if (getWorkspace().getChannel() instanceof Channel)
+            		((Channel) getWorkspace().getChannel()).preloadJar(parser, Ivy.class);
+                ivyDescriptors = getWorkspace().act(parser);
             } catch (IOException e) {
                 if (e.getCause() instanceof AbortException)
                     throw (AbortException) e.getCause();
