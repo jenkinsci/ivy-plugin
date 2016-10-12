@@ -21,7 +21,7 @@ public class IvyConfig extends XmlConfig {
     }
 
     public IvyConfig(Config config) {
-        super(config);
+        super(config.id, config.name, config.comment, config.content, config.getProviderId() == null ? provider.getProviderId() : config.getProviderId());
     }
 
     @Extension
