@@ -17,7 +17,7 @@ group = "org.jenkins-ci.plugins"
 description = "A description of your plugin"
 
 jenkinsPlugin {
-    coreVersion = '1.491'
+    coreVersion = '1.642.3'
     displayName = 'Ivy Plugin'
     url = 'https://wiki.jenkins-ci.org/display/JENKINS/Ivy+Plugin'
     gitHubUrl = 'https://github.com/jenkinsci/ivy-plugin'
@@ -56,8 +56,9 @@ compileJava {
 }
 
 dependencies {
-    jenkinsPlugins 'org.jenkins-ci.plugins:config-file-provider:2.7.5@jar'
+    jenkinsPlugins 'org.jenkins-ci.plugins:config-file-provider:2.14-SNAPSHOT@jar'
     jenkinsPlugins 'org.jenkins-ci.plugins:ant:1.2@jar'
+    jenkinsPlugins 'org.jenkins-ci.plugins:junit:1.18@jar'
     optionalJenkinsPlugins 'org.jvnet.hudson.plugins:nant:1.4.1@jar'
     
     compile 'uk.com.robust-it:cloning:1.7.4'

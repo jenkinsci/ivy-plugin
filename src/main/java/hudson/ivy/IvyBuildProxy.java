@@ -27,6 +27,7 @@ import hudson.FilePath;
 import hudson.model.Result;
 import hudson.remoting.Callable;
 import hudson.remoting.DelegatingCallable;
+import jenkins.security.MasterToSlaveCallable;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -217,7 +218,7 @@ public interface IvyBuildProxy {
         /**
          * {@link Callable} for invoking {@link BuildCallable} asynchronously.
          */
-        protected static final class AsyncInvoker implements DelegatingCallable<Object,Throwable> {
+        protected static final class AsyncInvoker extends MasterToSlaveCallable<Object, Throwable> implements DelegatingCallable<Object, Throwable> {
             private final IvyBuildProxy proxy;
             private final BuildCallable<?,?> program;
 
