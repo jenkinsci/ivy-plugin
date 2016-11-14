@@ -64,6 +64,7 @@ import org.apache.ivy.util.Message;
 import org.apache.tools.ant.BuildEvent;
 import org.apache.tools.ant.types.FileSet;
 import org.jenkinsci.lib.configprovider.model.Config;
+import org.jenkinsci.plugins.configfiles.ConfigFiles;
 import org.jenkinsci.plugins.configfiles.common.CleanTempFilesAction;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -354,7 +355,7 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
                 EnvVars envVars = getEnvironment(listener);
 
                 Queue.Executable currentExecutable = Executor.currentExecutor().getCurrentExecutable();
-                Config config = Config.getByIdOrNull((Run<?, ?>) currentExecutable, project.getSettings());
+                Config config = ConfigFiles.getByIdOrNull((Run<?, ?>) currentExecutable, project.getSettings());
                 if (config != null) {
                     FilePath tmp = getWorkspace().createTextTempFile("ivy", "xml", config.content);
                     settings = tmp.getRemote();

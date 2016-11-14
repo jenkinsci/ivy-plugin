@@ -81,6 +81,7 @@ import hudson.util.ListBoxModel;
 import net.sf.json.JSONObject;
 
 import org.jenkinsci.lib.configprovider.model.Config;
+import org.jenkinsci.plugins.configfiles.ConfigFiles;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
@@ -807,7 +808,7 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet,IvyModul
         public ListBoxModel doFillSettingsItems(@AncestorInPath ItemGroup context) {
             System.out.println(">"+context);
             System.out.println(">>"+IvyConfig.provider.getClass());
-            List<Config> configsInContext = Config.getConfigsInContext(context, null);
+            List<Config> configsInContext = ConfigFiles.getConfigsInContext(context, null);
             System.out.println(">>>"+configsInContext);
             ListBoxModel lb = new ListBoxModel();
             lb.add("please select", "");
