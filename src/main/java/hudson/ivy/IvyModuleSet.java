@@ -806,10 +806,7 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet,IvyModul
         }
 
         public ListBoxModel doFillSettingsItems(@AncestorInPath ItemGroup context) {
-            System.out.println(">"+context);
-            System.out.println(">>"+IvyConfig.provider.getClass());
             List<Config> configsInContext = ConfigFiles.getConfigsInContext(context, null);
-            System.out.println(">>>"+configsInContext);
             ListBoxModel lb = new ListBoxModel();
             lb.add("please select", "");
             for (Config config : configsInContext) {
