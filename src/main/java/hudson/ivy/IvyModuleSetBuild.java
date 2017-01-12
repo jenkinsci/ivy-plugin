@@ -30,18 +30,8 @@ import hudson.Launcher;
 import hudson.Util;
 import hudson.ivy.IvyBuild.ProxyImpl2;
 import hudson.ivy.builder.IvyBuilderType;
-import hudson.model.AbstractProject;
-import hudson.model.Action;
-import hudson.model.Build;
-import hudson.model.BuildListener;
-import hudson.model.DependencyGraph;
-import hudson.model.Environment;
-import hudson.model.Fingerprint;
-import hudson.model.Hudson;
-import hudson.model.ParametersAction;
-import hudson.model.Result;
-import hudson.model.Run;
-import hudson.model.TaskListener;
+import hudson.model.*;
+import hudson.model.Queue;
 import hudson.remoting.Callable;
 import hudson.remoting.Channel;
 import hudson.scm.ChangeLogSet;
@@ -61,6 +51,7 @@ import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import jenkins.security.MasterToSlaveCallable;
 import org.apache.commons.lang.StringUtils;
 import org.apache.ivy.Ivy;
 import org.apache.ivy.Ivy.IvyCallback;
@@ -73,6 +64,7 @@ import org.apache.ivy.util.Message;
 import org.apache.tools.ant.BuildEvent;
 import org.apache.tools.ant.types.FileSet;
 import org.jenkinsci.lib.configprovider.model.Config;
+import org.jenkinsci.plugins.configfiles.ConfigFiles;
 import org.jenkinsci.plugins.configfiles.common.CleanTempFilesAction;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -362,7 +354,8 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
             try {
                 EnvVars envVars = getEnvironment(listener);
 
-                Config config = IvyConfig.provider.getConfigById(project.getSettings());
+                Queue.Executable currentExecutable = Executor.currentExecutor().getCurrentExecutable();
+                Config config = ConfigFiles.getByIdOrNull((Run<?, ?>) currentExecutable, project.getSettings());
                 if (config != null) {
                     FilePath tmp = getWorkspace().createTextTempFile("ivy", "xml", config.content);
                     settings = tmp.getRemote();
@@ -756,7 +749,7 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
      * Executed on the slave to parse ivy.xml files and extract information into
      * {@link IvyModuleInfo}, which will be then brought back to the master.
      */
-    private static final class IvyXmlParser implements Callable<List<IvyModuleInfo>, Throwable> {
+    private static final class IvyXmlParser extends MasterToSlaveCallable<List<IvyModuleInfo>, Throwable> implements Callable<List<IvyModuleInfo>, Throwable> {
         private static final String IVY_XML_PATTERN = "**/ivy.xml";
         private final BuildListener listener;
         /**
@@ -840,7 +833,7 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
          * @throws AbortException 
          *
          * @throws ParseException
-         * @throws IOException
+         * @throws AbortException
          */
         public Ivy getIvy(PrintStream logger) throws AbortException {
             Message.setDefaultLogger(new IvyMessageImpl());
@@ -905,7 +898,7 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
         return super.getParent();
     }
 
-    private static final class IvyPreloadTask implements Callable<Boolean, IOException> {
+    private static final class IvyPreloadTask extends MasterToSlaveCallable<Boolean, IOException> implements Callable<Boolean, IOException> {
 		private static final long serialVersionUID = 1L;
 
 		public Boolean call() throws IOException {

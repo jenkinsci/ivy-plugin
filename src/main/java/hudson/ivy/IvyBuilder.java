@@ -37,6 +37,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
+import jenkins.security.MasterToSlaveCallable;
 import org.apache.tools.ant.BuildEvent;
 
 /**
@@ -51,7 +52,7 @@ import org.apache.tools.ant.BuildEvent;
  *
  * @author Timothy Bingaman
  */
-public abstract class IvyBuilder implements DelegatingCallable<Result,IOException> {
+public abstract class IvyBuilder extends MasterToSlaveCallable<Result, IOException> implements DelegatingCallable<Result, IOException> {
     /**
      * Goals to be executed in this Ant execution.
      */
