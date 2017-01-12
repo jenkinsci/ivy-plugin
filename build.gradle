@@ -6,7 +6,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath 'org.jenkins-ci.tools:gradle-jpi-plugin:0.12.2'
+        classpath 'org.jenkins-ci.tools:gradle-jpi-plugin:0.16.0'
     }
 }
 
@@ -70,5 +70,5 @@ dependencies {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '2.7'
+    gradleVersion = '2.8'
 }
