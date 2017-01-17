@@ -355,7 +355,10 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
                 EnvVars envVars = getEnvironment(listener);
 
                 Queue.Executable currentExecutable = Executor.currentExecutor().getCurrentExecutable();
-                Config config = ConfigFiles.getByIdOrNull((Run<?, ?>) currentExecutable, project.getSettings());
+                Config config = null;
+                if (project.getSettings() != null) {
+                    config = ConfigFiles.getByIdOrNull((Run<?, ?>) currentExecutable, project.getSettings());
+                }
                 if (config != null) {
                     FilePath tmp = getWorkspace().createTextTempFile("ivy", "xml", config.content);
                     settings = tmp.getRemote();
