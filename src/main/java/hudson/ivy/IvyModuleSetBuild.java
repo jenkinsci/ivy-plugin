@@ -165,7 +165,7 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
              */
             private boolean isDescendantOf(ChangeLogSet.Entry e, IvyModule mod) {
                 for (String path : e.getAffectedPaths())
-                    if (path != null && path.startsWith(mod.getRelativePathToModuleRoot()))
+                    if (path != null && path.startsWith(mod.getRelativePathFromScmCheckoutRootToModuleRoot()))
                         return true;
                 return false;
             }
@@ -529,7 +529,12 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
             // 2015-11-25 Matthias Bechtold: Parse all modules in workspace rather than the first module's folder - fixes JENKINS-13440
             FilePath moduleRoot = getModuleRoots().length>1 ? getModuleRoot().getParent() : getModuleRoot();
             try { 
-            	IvyXmlParser parser = new IvyXmlParser(listener, project, settings, moduleRoot.getRemote());
+                Set<String> scmCheckoutRootsRelativeToWorkspace = new HashSet<String>();
+                for (FilePath scmCheckoutRoot : getModuleRoots()) {
+                    scmCheckoutRootsRelativeToWorkspace.add(new File(getWorkspace().getRemote()).toURI()
+                            .relativize(new File(scmCheckoutRoot.getRemote()).toURI()).getPath());
+                }
+                IvyXmlParser parser = new IvyXmlParser(listener, project, settings, moduleRoot.getRemote(), scmCheckoutRootsRelativeToWorkspace);
             	if (moduleRoot.getChannel() instanceof Channel)
             		((Channel) moduleRoot.getChannel()).preloadJar(parser, Ivy.class);
                 ivyDescriptors = moduleRoot.act(parser);
@@ -770,8 +775,9 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
         private final String ivyBranch;
         private final String workspace;
         private final String workspaceProper;
-
-        public IvyXmlParser(BuildListener listener, IvyModuleSet project, String ivySettingsFile, String workspace) {
+        private final Set<String> scmCheckoutRootsRelativeToWorkspace;
+        
+        public IvyXmlParser(BuildListener listener, IvyModuleSet project, String ivySettingsFile, String workspace, Set<String> scmCheckoutRootsRelativeToWorkspace) {
             // project cannot be shipped to the remote JVM, so all the relevant
             // properties need to be captured now.
             this.listener = listener;
@@ -782,6 +788,7 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
             this.ivySettingsFile = ivySettingsFile;
             this.ivySettingsPropertyFiles = project.getIvySettingsPropertyFiles();
             this.workspaceProper = project.getLastBuild().getWorkspace().getRemote();
+            this.scmCheckoutRootsRelativeToWorkspace = scmCheckoutRootsRelativeToWorkspace;
         }
 
 		@SuppressWarnings("unchecked")
@@ -792,6 +799,7 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
 
             Ivy ivy = getIvy(logger);
             HashMap<ModuleDescriptor, String> moduleDescriptors = new HashMap<ModuleDescriptor, String>();
+            Map<ModuleDescriptor, String> relativePathToDescriptorFromScmCheckoutRootMap = new HashMap<ModuleDescriptor, String>();
             for (String ivyFilePath : ivyFiles.getDirectoryScanner().getIncludedFiles()) {
                 final File ivyFile = new File(ws, ivyFilePath);
 
@@ -812,13 +820,41 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
                         }
                     }
                 });
-                moduleDescriptors.put(module, ivyFilePath.replace('\\', '/'));
+                String normalizedIvyFilePath = ivyFilePath.replace('\\', '/');
+                moduleDescriptors.put(module, normalizedIvyFilePath);
+                boolean matchedWorkspacePathWithScmCheckoutRoot = false;
+                for (String scmCheckoutRootRelativeToWorkspace : scmCheckoutRootsRelativeToWorkspace) {
+                    if ("".equalsIgnoreCase(scmCheckoutRootRelativeToWorkspace)) {
+                        relativePathToDescriptorFromScmCheckoutRootMap.put(module, normalizedIvyFilePath);
+                        matchedWorkspacePathWithScmCheckoutRoot = true;
+                        break;
+                    }
+                    if (normalizedIvyFilePath.startsWith(scmCheckoutRootRelativeToWorkspace)) {
+                        String ivyFilePathRelativeToScmCheckoutRoot = ivyFilePath.substring(scmCheckoutRootRelativeToWorkspace
+                                .length());
+                        relativePathToDescriptorFromScmCheckoutRootMap.put(module, ivyFilePathRelativeToScmCheckoutRoot);
+                        matchedWorkspacePathWithScmCheckoutRoot = true;
+                        break;
+                    }
+                }
+                if (!matchedWorkspacePathWithScmCheckoutRoot) {
+                    logger.println("Unable to identify the SCM checkout root for the ivy file " + ivyFile + " within the workspace.");
+                    // This case is only expected in case of a multi-module SCM checkout (e.g. multiple Subversion URLs) in cases where the _first_
+                    // location is checkout out into a multi-level subfolder in the Jenkins workspace. This is a limitation due to the explicit 
+                    // single folder level assumption made in commit d90a60c related to JENKINS-13440 (the Jenkins workspace root is assumed to be
+                    // the direct parent folder of the SCM checkout root). If accepted, the pull request
+                    // 'https://github.com/jenkinsci/ivy-plugin/pull/21' should resolve that limitation.
+                    // The following line is a conservative effort to restore current behavior until the Jenkins workspace root is consistently 
+                    // determined as with the aforementioned pull request, although it will not provide proper changeset matching or
+                    // incremental build support.
+                    relativePathToDescriptorFromScmCheckoutRootMap.put(module, normalizedIvyFilePath);
+                }
             }
 
             List<IvyModuleInfo> infos = new ArrayList<IvyModuleInfo>();
             List<ModuleDescriptor> sortedModuleDescriptors = ivy.sortModuleDescriptors(moduleDescriptors.keySet(), SortOptions.DEFAULT);
             for (ModuleDescriptor moduleDescriptor : sortedModuleDescriptors) {
-                infos.add(new IvyModuleInfo(moduleDescriptor, moduleDescriptors.get(moduleDescriptor)));
+                infos.add(new IvyModuleInfo(moduleDescriptor, moduleDescriptors.get(moduleDescriptor), relativePathToDescriptorFromScmCheckoutRootMap.get(moduleDescriptor)));
             }
 
             if (verbose) {
