@@ -258,7 +258,7 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
      * @param p the project this Trigger belongs to 
      * @return the Ivy module descriptor
      */
-    private ModuleDescriptor getModuleDescriptor(AbstractProject p) {
+    private synchronized ModuleDescriptor getModuleDescriptor(AbstractProject p) {
         if (moduleDescriptor == null) {
         	// If the node that built it is offline, just use the backup file to compute the moduleDescriptor
         	if (p.getLastBuiltOn() != null && p.getLastBuiltOn().getChannel()!=null){
@@ -311,13 +311,13 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
      * @param  b  a project this trigger belongs to
      */
 
-    private ModuleDescriptor recomputeModuleDescriptor(AbstractProject b) {
+    private synchronized ModuleDescriptor recomputeModuleDescriptor(AbstractProject b) {
         LOGGER.fine("Recomputing Moduledescriptor for Project "+b.getFullDisplayName()+ " using backup files");
 
 		final File destDir = b.getRootDir();
 		
 		String propertyFileToLoadIntoIvy = null;
-		
+
 		String propertyFile = getIvyPropertiesFile();
         File ivyP = new File(destDir, BACKUP_IVY_PROPERTIES_NAME);
 		if (propertyFile != null && !propertyFile.trim().isEmpty()) {
@@ -378,7 +378,7 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
      *
      * @param  b  a build this trigger belongs to
      */
-    private ModuleDescriptor recomputeModuleDescriptor(AbstractBuild<?,?> b) {
+    private synchronized ModuleDescriptor recomputeModuleDescriptor(AbstractBuild<?,?> b) {
         // The build may be null if no build with a workspace was found
         if (b == null) {
             return null;
@@ -388,7 +388,7 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
 		final File destDir = b.getProject().getRootDir();
 		
 		String propertyFileToLoadIntoIvy = null;
-		
+
 		String propertyFile = getIvyPropertiesFile();
 		if (propertyFile != null && !propertyFile.trim().isEmpty()) {
 			try {
@@ -534,16 +534,21 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
             ModuleRevisionId rid = depDesc.getDependencyRevisionId();
 
             List<AbstractProject> possibleDeps = DESCRIPTOR.getProjectsFor (id);
+            boolean found = false;
             for (AbstractProject p : possibleDeps) {
                 // ignore disabled Projects
                 if (p.isDisabled()) p = null;
                 // Such a project might not exist
                 if (p != null && p instanceof Project) {
                     if (captures(rid, (Project) p)) {
+                        found = true;
                         graph.addDependency(new IvyThresholdDependency(p, owner, triggerWhenUnstable ? Result.UNSTABLE : Result.SUCCESS, useUpstreamParameters));
                     }
                 }
             }
+          if (!possibleDeps.isEmpty() && !found) {
+              LOGGER.warning("[" + owner.getName() + "] no matching versions for " + rid.toString());
+          }
         }
     }
 
