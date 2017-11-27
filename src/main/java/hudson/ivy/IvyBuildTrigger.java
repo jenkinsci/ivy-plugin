@@ -803,7 +803,7 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
 
             save();
             invalidateProjectMap();
-            Hudson.getInstance().rebuildDependencyGraph();
+            Hudson.getInstance().rebuildDependencyGraphAsync();
             return r;
         }
 
