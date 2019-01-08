@@ -1,5 +1,6 @@
 plugins {
     id 'org.jenkins-ci.jpi' version '0.28.1'
+    id 'ru.vyarus.animalsniffer' version '1.4.6'
 }
 
 group = 'org.jenkins-ci.plugins'
@@ -58,6 +59,11 @@ dependencies {
     compile('commons-vfs:commons-vfs:1.0') {
         exclude group: 'commons-logging', module: 'commons-logging'
     }
+}
+
+animalsniffer {
+  toolVersion = '1.17'
+  sourceSets = [sourceSets.main]
 }
 
 wrapper {
