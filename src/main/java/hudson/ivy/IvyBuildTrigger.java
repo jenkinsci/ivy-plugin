@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2007-2011 hibou, Martin Ficker, Jeffrey Metcalf, Timothy Bingaman
  *
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -130,7 +130,7 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
      */
     private transient VersionMatcher versionMatcher;
 
-    /**
+    /*
      * Set the Message Implementation for ivy to avoid logging to err
      */
     static {

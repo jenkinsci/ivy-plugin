@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2008-2011 Martin Ficker
  * 
  * Licensed to the Apache Software Foundation (ASF) under one or more

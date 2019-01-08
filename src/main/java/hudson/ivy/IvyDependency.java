@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2010-2011 Timothy Bingaman
  * 
  * Licensed to the Apache Software Foundation (ASF) under one or more
