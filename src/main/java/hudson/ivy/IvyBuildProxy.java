@@ -42,7 +42,7 @@ import java.util.Calendar;
 public interface IvyBuildProxy {
     /**
      * Executes the given {@link BuildCallable} on the master, where one
-     * has access to {@link IvyBuild} and all the other Hudson objects.
+     * has access to {@link IvyBuild} and all the other Jenkins objects.
      *
      * <p>
      * The parameter, return value, and exception are all transferred by using

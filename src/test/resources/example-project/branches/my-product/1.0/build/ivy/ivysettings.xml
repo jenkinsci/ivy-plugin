@@ -24,7 +24,7 @@ THE SOFTWARE.
 
 <ivysettings>
   <!--
-    All these settings are just to test different functional aspects of the Ivy Hudson plugin. If
+    All these settings are just to test different functional aspects of the Ivy Jenkins plugin. If
     you're using these example projects as a starting point for your own Ivy setup, you probably
     don't need this.
   -->

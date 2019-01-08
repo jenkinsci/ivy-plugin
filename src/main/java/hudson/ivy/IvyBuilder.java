@@ -58,7 +58,7 @@ public abstract class IvyBuilder extends MasterToSlaveCallable<Result, IOExcepti
      */
     private final List<String> goals;
     /**
-     * Hudson-defined system properties. These will be made available to Ant,
+     * Jenkins-defined system properties. These will be made available to Ant,
      * and accessible as if they are specified as -Dkey=value
      */
     private final Map<String,String> systemProps;

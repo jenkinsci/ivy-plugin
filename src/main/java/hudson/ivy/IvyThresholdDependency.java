@@ -28,7 +28,7 @@ import hudson.model.Result;
 import hudson.model.TaskListener;
 
 /**
- * Invoke downstream projects with applicable parameters using Hudson's
+ * Invoke downstream projects with applicable parameters using Jenkins'
  * DependencyGraph.Dependency interface.
  * 
  * @author tbingaman

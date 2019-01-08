@@ -61,7 +61,7 @@ public abstract class IvyReporterDescriptor extends Descriptor<IvyReporter> {
      * <p>
      * Some {@link IvyReporter}s, such as {@link IvyArtifactArchiver}, can work
      * just with the configuration in the Ivy descriptor and don't need any
-     * additional Hudson configuration. They also don't need any explicit
+     * additional Jenkins configuration. They also don't need any explicit
      * enabling/disabling as they can activate themselves by listening to the
      * callback from the build (for example javadoc archiver can do the work in
      * response to the execution of the javadoc target.)

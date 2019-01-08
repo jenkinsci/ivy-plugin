@@ -644,7 +644,7 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
     }
 
     /**
-     * The descriptor of this trigger.  It is annotated as an Extension so Hudson can automatically register this
+     * The descriptor of this trigger.  It is annotated as an Extension so Jenkins can automatically register this
      * instance as associated with IvyBuildTrigger.
      */
     @Extension
@@ -809,7 +809,7 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
 
         /**
          * Simulate what would happen internally if a successful build occurred on an IvyBuildTrigger managed project.
-         * This provides a hook to start builds on downstream projects if a triggering event outside of Hudson occurred.
+         * This provides a hook to start builds on downstream projects if a triggering event outside of Jenkins occurred.
          * One such triggering event could be publish of a non-integration (milestone/release) build of the IvyBuildTrigger
          * managed project code to the Ivy repository that is visible to your build system.
          * 
@@ -817,15 +817,15 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
          * which respectively represent the Ivy module descriptor attributes <code>organisation</code> and <code>module</code>.
          * Optional request parameters that can be passed on the StaplerRequest include <code>branch</code> and <code>rev</code>
          * which respectively represent the Ivy module descriptor attributes <code>branch</code> and <code>revision</code>.
-         * These values are used to match against the ModuleDescriptor of Hudson projects using the IvyBuildTrigger.  In the
+         * These values are used to match against the ModuleDescriptor of Jenkins projects using the IvyBuildTrigger.  In the
          * case that more than one project matches, it is the first match that will win, and only that project will have
          * its downstream dependencies scheduled for builds.  Therefore the caller is wise to provide the most
          * information in the request to ensure the best possible match.  If the trigger descriptor is set to use extended
          * version matching, then at least one of the optional <code>rev</code> or <code>branch</code> is required on the request.
          * 
-         * Note this event trigger does not actually build the matched project in Hudson.  It just schedules builds on downstream
+         * Note this event trigger does not actually build the matched project in Jenkins.  It just schedules builds on downstream
          * dependent projects.  Successfully executing this event trigger requires global {@link Item#BUILD} permission on a
-         * secured Hudson instance.
+         * secured Jenkins instance.
          * 
          * @author jmetcalf@dev.java.net
          * @param req  The StaplerRequest
@@ -856,7 +856,7 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
             for (AbstractProject candidate : candidates) {
 
                 // Don't try to identify downstream dependencies of a disabled project.
-                // This is more consistent when simulating Hudson dependency behavior,
+                // This is more consistent when simulating Jenkins dependency behavior,
                 // i.e. a disabled parent could not have been built to initiate the trigger.
                 if (candidate.isDisabled() || !(candidate instanceof Project)) continue;
 

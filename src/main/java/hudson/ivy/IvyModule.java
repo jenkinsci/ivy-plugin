@@ -87,7 +87,7 @@ public final class IvyModule extends AbstractIvyProject<IvyModule, IvyBuild> imp
      * Revision number of this module as of the last build, taken from
      * {@link ModuleRevisionId#getRevision()}.
      *
-     * This field can be null if Hudson loaded old data that didn't record this
+     * This field can be null if Jenkins loaded old data that didn't record this
      * information, so that situation needs to be handled gracefully.
      */
     private String revision;
@@ -96,7 +96,7 @@ public final class IvyModule extends AbstractIvyProject<IvyModule, IvyBuild> imp
      * Ivy branch of this module as of the last build, taken from
      * {@link ModuleRevisionId#getBranch()}.
      *
-     * This field can be null if Hudson loaded old data that didn't record this
+     * This field can be null if Jenkins loaded old data that didn't record this
      * information, so that situation needs to be handled gracefully.
      */
     private String ivyBranch;
@@ -248,7 +248,7 @@ public final class IvyModule extends AbstractIvyProject<IvyModule, IvyBuild> imp
     /**
      * Gets the revision number in the ivy.xml file as of the last build.
      *
-     * @return This method can return null if Hudson loaded old data that didn't
+     * @return This method can return null if Jenkins loaded old data that didn't
      *         record this information, so that situation needs to be handled
      *         gracefully.
      */
@@ -259,7 +259,7 @@ public final class IvyModule extends AbstractIvyProject<IvyModule, IvyBuild> imp
     /**
      * Gets the Ivy branch in the ivy.xml file as of the last build.
      *
-     * @return This method can return null if Hudson loaded old data that didn't
+     * @return This method can return null if Jenkins loaded old data that didn't
      *         record this information, so that situation needs to be handled
      *         gracefully.
      */
