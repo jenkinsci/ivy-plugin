@@ -32,7 +32,6 @@ import hudson.model.ItemGroup;
 import hudson.model.ParametersAction;
 import hudson.triggers.Trigger;
 
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
