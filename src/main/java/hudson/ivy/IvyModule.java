@@ -495,7 +495,7 @@ public final class IvyModule extends AbstractIvyProject<IvyModule, IvyBuild> imp
     }
 
     private static class IvyDependencyComputationData {
-        Map<ModuleDependency, IvyModule> allModules;
+        final Map<ModuleDependency, IvyModule> allModules;
 
         public IvyDependencyComputationData(Map<ModuleDependency, IvyModule> modules) {
             this.allModules = modules;

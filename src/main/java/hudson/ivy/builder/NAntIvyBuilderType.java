@@ -38,25 +38,25 @@ import hudson.plugins.nant.NantBuilder.NantInstallation;
 import hudson.tasks.Builder;
 
 public class NAntIvyBuilderType extends IvyBuilderType {
-    private String targets;
+    private final String targets;
     /**
      * Identifies {@link NantBuilder} to be used.
      */
-    private String nantName;
+    private final String nantName;
     /**
      * NANT_OPTS if not null.
      */
-    private String nantOpts;
+    private final String nantOpts;
     /**
      * Optional build script path relative to the workspace. Used for the Ant
      * '-f' option.
      */
-    private String buildFile;
+    private final String buildFile;
     /**
      * Optional properties to be passed to Ant. Follows {@link Properties}
      * syntax.
      */
-    private String nantProperties;
+    private final String nantProperties;
 
     @DataBoundConstructor
     public NAntIvyBuilderType(String nantName, String buildFile, String targets, String nantProperties, String nantOpts) {

@@ -35,8 +35,8 @@ import hudson.model.TaskListener;
  */
 public class IvyThresholdDependency extends IvyDependency {
 
-    private Result threshold;
-    private boolean useUpstreamParameters;
+    private final Result threshold;
+    private final boolean useUpstreamParameters;
 
     public IvyThresholdDependency(AbstractProject<?, ?> upstream, AbstractProject<?, ?> downstream, Result threshold, boolean useUpstreamParameters) {
         super(upstream, downstream);

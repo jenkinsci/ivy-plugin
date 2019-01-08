@@ -99,7 +99,7 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
     /**
      * The name of the ivy file relative to the workspace as configured by the user.
      */
-    private String ivyFile = "ivy.xml";
+    private final String ivyFile;
     /**
      * The name of the ivy properties file relative to the workspace as configured by the user.
      */
@@ -598,9 +598,9 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
      */
     public static class IvyConfiguration {
 
-        private String name;
+        private final String name;
 
-        private String ivyConfPath;
+        private final String ivyConfPath;
 
         /**
          * Constructor
@@ -946,7 +946,7 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
      */
     public static class UserCause extends Cause.UserCause {
 
-        private String ivylabel;
+        private final String ivylabel;
 
         /**
          * Constructor

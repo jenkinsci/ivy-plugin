@@ -41,23 +41,23 @@ import hudson.tasks.Builder;
 import hudson.tasks.Ant.AntInstallation;
 
 public class AntIvyBuilderType extends IvyBuilderType {
-    private String targets;
+    private final String targets;
     /**
      * Identifies {@link AntInstallation} to be used.
      */
-    private String antName;
+    private final String antName;
     /**
      * ANT_OPTS if not null.
      */
-    private String antOpts;
+    private final String antOpts;
     /**
      * Optional build script path relative to the workspace. Used for the Ant '-f' option.
      */
-    private String buildFile;
+    private final String buildFile;
     /**
      * Optional properties to be passed to Ant. Follows {@link Properties} syntax.
      */
-    private String antProperties;
+    private final String antProperties;
 
     @DataBoundConstructor
     public AntIvyBuilderType(String antName, String buildFile, String targets, String antProperties, String antOpts) {
