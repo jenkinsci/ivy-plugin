@@ -318,7 +318,7 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet,IvyModul
 
     /**
      * Possibly empty list of all disabled modules (if disabled==true)
-     * or all enabeld modules (if disabled==false)
+     * or all enabled modules (if disabled==false)
      */
     public List<IvyModule> getDisabledModules(boolean disabled) {
         if(!disabled && sortedActiveModules!=null)
@@ -412,8 +412,8 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet,IvyModul
         this.aggregatorStyleBuild = aggregatorStyleBuild;
     }
 
-    public void setIgnoreUpstremChanges(boolean ignoreUpstremChanges) {
-        this.ignoreUpstreamChanges = ignoreUpstremChanges;
+    public void setIgnoreUpstreamChanges(boolean ignoreUpstreamChanges) {
+        this.ignoreUpstreamChanges = ignoreUpstreamChanges;
     }
 
     public void setIsArchivingDisabled(boolean archivingDisabled) {
@@ -818,7 +818,7 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet,IvyModul
 
         @Override
         public String getDisplayName() {
-            return Messages.IvyModuleSet_DiplayName();
+            return Messages.IvyModuleSet_DisplayName();
         }
 
         public TopLevelItem newInstance(ItemGroup parent, String name) {

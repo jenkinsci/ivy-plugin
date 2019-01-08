@@ -45,7 +45,7 @@ public interface IvyBuildProxy {
      * has access to {@link IvyBuild} and all the other Hudson objects.
      *
      * <p>
-     * The parameter, return value, and exception are all transfered by using
+     * The parameter, return value, and exception are all transferred by using
      * Java serialization.
      *
      * @return
@@ -123,7 +123,7 @@ public interface IvyBuildProxy {
      * for this build by using {@link IvyReporter#getProjectAction(IvyModule)}.
      *
      * <p>
-     * The specified {@link IvyReporter} object will be transfered to the master
+     * The specified {@link IvyReporter} object will be transferred to the master
      * and will become a persisted part of the {@link IvyBuild}. 
      */
     void registerAsProjectAction(IvyReporter reporter);
@@ -133,7 +133,7 @@ public interface IvyBuildProxy {
      * for this build by using {@link IvyReporter#getAggregatedProjectAction(IvyModuleSet)}.
      *
      * <p>
-     * The specified {@link IvyReporter} object will be transfered to the master
+     * The specified {@link IvyReporter} object will be transferred to the master
      * and will become a persisted part of the {@link IvyModuleSetBuild}.
      */
     void registerAsAggregatedProjectAction(IvyReporter  reporter);
@@ -147,7 +147,7 @@ public interface IvyBuildProxy {
          *      if the processing is interrupted in the middle. Exception will be
          *      propagated to the caller.
          * @throws IOException
-         *      if the program simply wishes to propage the exception, it may throw
+         *      if the program simply wishes to propagate the exception, it may throw
          *      {@link IOException}.
          */
         V call(IvyBuild build) throws T, IOException, InterruptedException;

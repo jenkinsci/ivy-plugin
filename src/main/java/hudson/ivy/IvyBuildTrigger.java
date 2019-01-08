@@ -401,7 +401,7 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
 	            return null;
 	        }
 	        catch (InterruptedException e) {
-	            LOGGER.log(Level.WARNING, "Interupted while accessing the workspace ivy properties file '"+propertyFile+"'", e);
+	            LOGGER.log(Level.WARNING, "Interrupted while accessing the workspace ivy properties file '"+propertyFile+"'", e);
 	            File ivyP = new File(destDir, BACKUP_IVY_PROPERTIES_NAME);
 	            if (ivyP.canRead()) {
 	            	LOGGER.log(Level.WARNING, "Will try to use use existing ivy properties backup");
@@ -431,7 +431,7 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
 	            if (ivyF.canRead()) LOGGER.log(Level.WARNING, "Will try to use use existing ivy file backup");
 	        }
 	        catch (InterruptedException e) {
-	            LOGGER.log(Level.WARNING, "Interupted while accessing the workspace ivy file '"+ivyDesc+"'", e);
+	            LOGGER.log(Level.WARNING, "Interrupted while accessing the workspace ivy file '"+ivyDesc+"'", e);
 	            if (ivyF.canRead()) LOGGER.log(Level.WARNING, "Will try to use use existing ivy file backup");
 	        }
 		}
@@ -606,7 +606,7 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
         private String ivyConfPath;
 
         /**
-         * Contructor
+         * Constructor
          *
          * @param name
          *            the name of the configuration
@@ -760,7 +760,7 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
         }
 
         /**
-         * Implement the Descritor's display name.
+         * Implement the Descriptor's display name.
          */
         @Override
 		public String getDisplayName() {

@@ -345,7 +345,7 @@ public class IvyBuild extends AbstractIvyBuild<IvyModule, IvyBuild> {
         }
 
         /**
-         * Sends the accumuldated log in {@link SplittableBuildListener} to the
+         * Sends the accumulated log in {@link SplittableBuildListener} to the
          * log of this build.
          */
         public void appendLastLog() {

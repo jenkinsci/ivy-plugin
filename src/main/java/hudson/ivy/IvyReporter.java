@@ -44,11 +44,11 @@ import org.apache.tools.ant.BuildEvent;
 
 /**
  * Listens to the build execution of {@link IvyBuild},
- * and normally records some information and exposes thoses
+ * and normally records some information and exposes these
  * in {@link IvyBuild} later.
  *
  * <p>
- * {@link IvyReporter} is first instanciated on the master.
+ * {@link IvyReporter} is first instantiated on the master.
  * Then during the build, it is serialized and sent over into
  * the Ant process by serialization. Reporters will then receive
  * event callbacks as Ant build events. Those event callbacks

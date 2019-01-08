@@ -38,7 +38,7 @@ import java.util.Map;
  *
  * <p>
  * When a module build is completed, {@link IvyBuild#getModuleSetBuild()
- * its governing IvyModuleSetBuild} tries to create an instane of
+ * its governing IvyModuleSetBuild} tries to create an instance of
  * {@link IvyAggregatedReport} from each kind of {@link IvyReporterDescriptor}
  * whose {@link IvyReporter}s are used on module builds.
  *
