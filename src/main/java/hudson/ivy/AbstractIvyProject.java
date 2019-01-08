@@ -81,7 +81,7 @@ public abstract class AbstractIvyProject<P extends AbstractProject<P,R>,R extend
             if(isUseUpstreamParameters()) {
                 List<ParametersAction> upStreamParams = upc.getUpStreamParameters();
 
-                return scheduleBuild(getQuietPeriod(),c,upStreamParams.toArray(new ParametersAction[upStreamParams.size()]));
+                return scheduleBuild(getQuietPeriod(),c,upStreamParams.toArray(new ParametersAction[0]));
             }
         }
 
