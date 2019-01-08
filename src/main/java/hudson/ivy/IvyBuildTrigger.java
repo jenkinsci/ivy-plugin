@@ -144,12 +144,12 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
      *            the ivy.xml file path within the workspace
      * @param ivyConfName
      *            the Ivy configuration name to use
-     * @param ivyProperties
+     * @param ivyPropertiesFile
      *            the Ivy properties file path within the workspace
      * @param triggerWhenUnstable
      *            true if this build should be triggered even when an upstream build in Unstable.
      *            false if this build should be triggered only when an upstream build is Successful.
-     * @param passPropertiesDownstream           
+     * @param useUpstreamParameters
      */
     @DataBoundConstructor
     public IvyBuildTrigger(final String ivyFile, final String ivyConfName, final String ivyPropertiesFile, final boolean triggerWhenUnstable, final boolean useUpstreamParameters) {
@@ -222,9 +222,6 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
     /**
      *
      * @return the Ivy instance based on the {@link #ivyConfName}
-     *
-     * @throws ParseException
-     * @throws IOException
      */
     public Ivy getIvy(File localFilePath, String propertyFile) {
         Message.setDefaultLogger(new IvyMessageImpl());
@@ -685,8 +682,8 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
          * Return a List of AbstractProjects that have an IvyBuildtrigger configured with an
          * ivy file Matching the given ModuleID.  This method returns an empty list rather
          * than null when there are no matching projects.
-         * 
-         * @param id    The Module Id to search for
+         *
+         * @param searchId the module id to search for
          * @return a List of Matching Projects
          */
         private List<AbstractProject> getProjectsFor(ModuleId searchId) {
@@ -889,8 +886,7 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
         /**
          * Check that the Ivy configuration file exists.
          *
-         * @param req
-         *            the file path
+         * @param value the file path
          */
         public FormValidation doCheckIvyConf(@QueryParameter final String value) {
             // this can be used to check the existence of a file on the server,

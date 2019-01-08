@@ -90,11 +90,11 @@ public class AntIvyBuilderType extends IvyBuilderType {
 
     /**
      * Possibly null, whitespace-separated (including TAB, NL, etc) VM options to be used to launch Ant process.
-     * <p/>
+     * <p>
      * If antOpts is null or empty, we'll return the globally-defined ANT_OPTS. Also prepend any build-specific
      * ANT_OPTS.
      *
-     * @param environment
+     * @param buildEnvironments build environments
      */
     protected String getCalculatedAntOpts(List<Environment> buildEnvironments) {
         String antOpts = null;

@@ -373,7 +373,7 @@ public final class IvyModule extends AbstractIvyProject<IvyModule, IvyBuild> imp
     /**
      * Workspace of a {@link IvyModule} is a part of the parent's workspace.
      * <p>
-     * That is, {@Link IvyModuleSet} builds are incompatible with any
+     * That is, {@link IvyModuleSet} builds are incompatible with any
      * {@link IvyModule} builds, whereas {@link IvyModule} builds are compatible
      * with each other.
      *

@@ -834,9 +834,6 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
         /**
          *
          * @return the Ivy instance based on the {@link #ivyConfName}
-         * @throws AbortException 
-         *
-         * @throws ParseException
          * @throws AbortException
          */
         public Ivy getIvy(PrintStream logger) throws AbortException {

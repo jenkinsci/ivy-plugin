@@ -39,7 +39,6 @@ import java.util.Collection;
 import java.util.Collections;
 
 import jenkins.model.Jenkins;
-import org.apache.ivy.core.module.descriptor.ModuleDescriptor;
 import org.apache.tools.ant.BuildEvent;
 
 /**
@@ -168,7 +167,7 @@ public abstract class IvyReporter implements Describable<IvyReporter>, Extension
      * Called after the Ant/Ivy execution finished and the result is determined.
      *
      * <p>
-     * This method fires after {@link #postBuild(IvyBuildProxy, ModuleDescriptor, BuildListener)}.
+     * This method fires after {@link #postBuild(IvyBuildProxy, BuildEvent, BuildListener)}.
      * Works like {@link Publisher#perform(Build, Launcher, BuildListener)}.
      */
     public boolean end(IvyBuild build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
