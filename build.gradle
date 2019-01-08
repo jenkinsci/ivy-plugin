@@ -15,6 +15,8 @@ jenkinsPlugin {
     url = 'https://wiki.jenkins-ci.org/display/JENKINS/Ivy+Plugin'
     gitHubUrl = 'https://github.com/jenkinsci/ivy-plugin'
 
+    disabledTestInjection = false
+
     developers {
         developer {
             id 'hibou'
