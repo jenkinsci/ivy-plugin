@@ -31,7 +31,6 @@ import hudson.model.Result;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Cause;
-import hudson.model.Hudson;
 import hudson.model.Project;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildStepMonitor;
@@ -54,6 +53,7 @@ import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
 
+import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 
 import org.apache.ivy.Ivy;
@@ -480,7 +480,7 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
         if (old == moduleDescriptor) return;
         if ((old==null) || !old.equals(moduleDescriptor)) {
             DESCRIPTOR.invalidateProjectMap();
-            Hudson.getInstance().rebuildDependencyGraph();
+            Jenkins.getInstance().rebuildDependencyGraph();
          }
     }
 
@@ -712,7 +712,7 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
          * Calculate the map of projects to Ivy ModuleId.
          */
         private void calculateProjectMap() {
-            List<Project> projects = Hudson.getInstance().getAllItems(Project.class);
+            List<Project> projects = Jenkins.getInstance().getAllItems(Project.class);
             Map<ModuleId, List<AbstractProject>> projectMap = new HashMap<ModuleId, List<AbstractProject>>();
             for (Project<?, ?> p : projects) {
                 if (p.isDisabled()) {
@@ -803,7 +803,7 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
 
             save();
             invalidateProjectMap();
-            Hudson.getInstance().rebuildDependencyGraphAsync();
+            Jenkins.getInstance().rebuildDependencyGraphAsync();
             return r;
         }
 
@@ -840,7 +840,7 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
             String branch = Util.fixEmptyAndTrim(req.getParameter("branch"));
             String rev = Util.fixEmptyAndTrim(req.getParameter("rev"));
 
-            Hudson.getInstance().getACL().checkPermission(Item.BUILD);
+            Jenkins.getInstance().getACL().checkPermission(Item.BUILD);
 
             if (org == null || name == null)
                 throw new IllegalArgumentException("doHandleExternalTrigger requires the org and name parameters");
@@ -875,7 +875,7 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
                         if (rev != null && rev.equals(mdrid.getRevision()) == false)
                             continue;
                     }
-                    downstream = Hudson.getInstance().getDependencyGraph().getDownstream(p);
+                    downstream = Jenkins.getInstance().getDependencyGraph().getDownstream(p);
                     break;
                 }
             }
@@ -895,7 +895,7 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
         public FormValidation doCheckIvyConf(@QueryParameter final String value) {
             // this can be used to check the existence of a file on the server,
             // so needs to be protected
-            if (!Hudson.getInstance().hasPermission(Hudson.ADMINISTER)) return FormValidation.ok();
+            if (!Jenkins.getInstance().hasPermission(Jenkins.ADMINISTER)) return FormValidation.ok();
             if (Util.fixEmpty(value) == null) {
                 return FormValidation.error(Messages.IvyBuildTrigger_CheckIvyConf_PathRequiredError());
             }
@@ -918,7 +918,7 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
          *            the relative path
          */
         public FormValidation doCheckIvyFile(@QueryParameter final String value) {
-            if (!Hudson.getInstance().hasPermission(Hudson.ADMINISTER)) return FormValidation.ok();
+            if (!Jenkins.getInstance().hasPermission(Jenkins.ADMINISTER)) return FormValidation.ok();
             if (Util.fixEmpty(value) == null) {
                 return FormValidation.error(Messages.IvyBuildTrigger_CheckIvyFile_PathRequiredError());
             }

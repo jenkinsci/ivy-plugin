@@ -25,10 +25,10 @@ package hudson.ivy;
 
 import hudson.model.Describable;
 import hudson.model.Descriptor;
-import hudson.model.Hudson;
 
 import java.util.Collection;
 
+import jenkins.model.Jenkins;
 import org.apache.commons.jelly.JellyException;
 import org.kohsuke.stapler.MetaClass;
 import org.kohsuke.stapler.StaplerRequest;
@@ -103,6 +103,6 @@ public abstract class IvyReporterDescriptor extends Descriptor<IvyReporter> {
      */
     public static Collection<IvyReporterDescriptor> all() {
         // use getDescriptorList and not getExtensionList to pick up legacy instances
-        return Hudson.getInstance().<IvyReporter,IvyReporterDescriptor>getDescriptorList(IvyReporter.class);
+        return Jenkins.getInstance().<IvyReporter,IvyReporterDescriptor>getDescriptorList(IvyReporter.class);
     }
 }

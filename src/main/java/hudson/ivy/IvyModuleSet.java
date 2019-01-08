@@ -38,7 +38,6 @@ import hudson.model.BuildableItemWithBuildWrappers;
 import hudson.model.DependencyGraph;
 import hudson.model.Descriptor;
 import hudson.model.Executor;
-import hudson.model.Hudson;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.Job;
@@ -78,6 +77,7 @@ import java.util.Set;
 import javax.servlet.ServletException;
 
 import hudson.util.ListBoxModel;
+import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 
 import org.jenkinsci.lib.configprovider.model.Config;
@@ -215,7 +215,7 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet,IvyModul
         new DescribableList<BuildWrapper, Descriptor<BuildWrapper>>(this);
 
     public IvyModuleSet(String name) {
-        this(Hudson.getInstance(),name);
+        this(Jenkins.getInstance(),name);
     }
 
     public IvyModuleSet(ItemGroup parent, String name) {
@@ -651,7 +651,7 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet,IvyModul
      */
     public List<Queue.Item> getQueueItems() {
         List<Queue.Item> r = new ArrayList<hudson.model.Queue.Item>();
-        for( Queue.Item item : Hudson.getInstance().getQueue().getItems() ) {
+        for( Queue.Item item : Jenkins.getInstance().getQueue().getItems() ) {
             Task t = item.task;
             if((t instanceof IvyModule && ((IvyModule)t).getParent()==this) || t ==this)
                 r.add(item);
@@ -771,9 +771,9 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet,IvyModul
     @SuppressWarnings("unchecked")
     public ArrayList<Descriptor<IvyBuilderType>> getBuilderTypeDescriptors() {
         ArrayList<Descriptor<IvyBuilderType>> buildTypeDescriptors = new ArrayList<Descriptor<IvyBuilderType>>();
-        buildTypeDescriptors.add(Hudson.getInstance().getDescriptor(AntIvyBuilderType.class));
-        if (Hudson.getInstance().getPlugin("nant") != null) {
-            buildTypeDescriptors.add(Hudson.getInstance().getDescriptor(NAntIvyBuilderType.class));
+        buildTypeDescriptors.add(Jenkins.getInstance().getDescriptor(AntIvyBuilderType.class));
+        if (Jenkins.getInstance().getPlugin("nant") != null) {
+            buildTypeDescriptors.add(Jenkins.getInstance().getDescriptor(NAntIvyBuilderType.class));
         }
         return buildTypeDescriptors;
     }

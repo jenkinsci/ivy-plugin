@@ -30,7 +30,6 @@ import hudson.model.Action;
 import hudson.model.Build;
 import hudson.model.BuildListener;
 import hudson.model.Describable;
-import hudson.model.Hudson;
 import hudson.tasks.BuildStep;
 import hudson.tasks.Publisher;
 
@@ -39,6 +38,7 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
 
+import jenkins.model.Jenkins;
 import org.apache.ivy.core.module.descriptor.ModuleDescriptor;
 import org.apache.tools.ant.BuildEvent;
 
@@ -243,6 +243,6 @@ public abstract class IvyReporter implements Describable<IvyReporter>, Extension
     }
 
     public IvyReporterDescriptor getDescriptor() {
-        return (IvyReporterDescriptor)Hudson.getInstance().getDescriptorOrDie(getClass());
+        return (IvyReporterDescriptor) Jenkins.getInstance().getDescriptorOrDie(getClass());
     }
 }

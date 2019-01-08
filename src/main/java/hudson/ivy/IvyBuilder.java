@@ -24,7 +24,6 @@
 package hudson.ivy;
 
 import hudson.model.BuildListener;
-import hudson.model.Hudson;
 import hudson.model.Result;
 import hudson.remoting.Callable;
 import hudson.remoting.DelegatingCallable;
@@ -37,6 +36,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
+import jenkins.model.Jenkins;
 import jenkins.security.MasterToSlaveCallable;
 import org.apache.tools.ant.BuildEvent;
 
@@ -181,7 +181,7 @@ public abstract class IvyBuilder extends MasterToSlaveCallable<Result, IOExcepti
 
     // since reporters might be from plugins, use the uberjar to resolve them.
     public ClassLoader getClassLoader() {
-        return Hudson.getInstance().getPluginManager().uberClassLoader;
+        return Jenkins.getInstance().getPluginManager().uberClassLoader;
     }
 
     /**

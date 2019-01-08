@@ -28,12 +28,12 @@ import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.model.DependencyGraph;
-import hudson.model.Hudson;
 import hudson.model.Result;
 import hudson.model.ParametersAction;
 import hudson.model.Run;
 import hudson.model.Cause.UpstreamCause;
 import hudson.tasks.BuildTrigger;
+import jenkins.model.Jenkins;
 
 import java.io.File;
 import java.io.IOException;
@@ -154,7 +154,7 @@ public abstract class AbstractIvyBuild<P extends AbstractIvyProject<P,B>,B exten
     }
     
     private boolean inDownstreamProjects(AbstractProject downstreamProject) {
-        DependencyGraph graph = Hudson.getInstance().getDependencyGraph();
+        DependencyGraph graph = Jenkins.getInstance().getDependencyGraph();
         Set<AbstractProject> tups = graph.getTransitiveUpstream(downstreamProject);
         
         for (AbstractProject tup : tups) {
@@ -186,7 +186,7 @@ public abstract class AbstractIvyBuild<P extends AbstractIvyProject<P,B>,B exten
      */
     private boolean areUpstreamsBuilding(AbstractProject downstreamProject,
                                                    AbstractProject excludeProject) {
-        DependencyGraph graph = Hudson.getInstance().getDependencyGraph();
+        DependencyGraph graph = Jenkins.getInstance().getDependencyGraph();
         Set<AbstractProject> tups = graph.getTransitiveUpstream(downstreamProject);
         for (AbstractProject tup : tups) {
             if(tup!=excludeProject && (tup.isBuilding() || tup.isInQueue()))

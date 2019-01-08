@@ -29,10 +29,10 @@ import java.util.Map;
 import java.util.Properties;
 
 import hudson.model.Environment;
+import jenkins.model.Jenkins;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import hudson.Extension;
-import hudson.model.Hudson;
 import hudson.plugins.nant.NantBuilder;
 import hudson.plugins.nant.NantBuilder.NantInstallation;
 import hudson.tasks.Builder;
@@ -118,7 +118,7 @@ public class NAntIvyBuilderType extends IvyBuilderType {
         }
 
         public NantInstallation[] getInstallations() {
-            return Hudson.getInstance().getDescriptorByType(NantBuilder.DescriptorImpl.class).getInstallations();
+            return Jenkins.getInstance().getDescriptorByType(NantBuilder.DescriptorImpl.class).getInstallations();
         }
 
     }

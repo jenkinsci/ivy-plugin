@@ -31,14 +31,14 @@ import hudson.ExtensionPoint;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.Environment;
-import hudson.model.Hudson;
 import hudson.tasks.Builder;
+import jenkins.model.Jenkins;
 
 public abstract class IvyBuilderType implements Describable<IvyBuilderType>, ExtensionPoint {
 
     @SuppressWarnings("unchecked")
     public Descriptor<IvyBuilderType> getDescriptor() {
-        return Hudson.getInstance().getDescriptor(getClass());
+        return Jenkins.getInstance().getDescriptor(getClass());
     }
 
     public abstract Map<String, String> getEnvironment();
