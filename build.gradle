@@ -12,9 +12,8 @@ buildscript {
 
 apply plugin: 'org.jenkins-ci.jpi'
 
-
-group = "org.jenkins-ci.plugins"
-description = "A description of your plugin"
+group = 'org.jenkins-ci.plugins'
+description = 'This plugin adds Ivy support to Jenkins'
 
 jenkinsPlugin {
     coreVersion = '1.642.3'
