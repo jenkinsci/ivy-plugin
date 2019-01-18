@@ -37,15 +37,15 @@ THE SOFTWARE.
   <f:entry title="${%ivy_file_title}" field="ivyFile">
     <f:textbox/>
   </f:entry>
-  <f:entry title="${%ivy_properties_title}" field="ivyPropertiesFile">
+  <f:entry title="${%ivy_properties_file_title}" field="ivyPropertiesFile">
     <f:textbox/>
   </f:entry>
   <f:entry title="" field="triggerWhenUnstable">
     <f:checkbox id="ivy.triggerWhenUnstable"/>
-    <label class="attach-previous">${%Trigger when unstable}</label>
+    <label class="attach-previous">${%trigger_when_unstable}</label>
   </f:entry>
    <f:entry title="" field="useUpstreamParameters">
-    <f:checkbox id="useUpstreamParameters"/>
-    <label class="attach-previous">${%useUpstreamParameters}</label>
+    <f:checkbox id="ivy.useUpstreamParameters"/>
+    <label class="attach-previous">${%use_upstream_parameters}</label>
   </f:entry>
 </j:jelly>
