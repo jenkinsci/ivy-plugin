@@ -944,7 +944,7 @@ public class IvyBuildTrigger extends Notifier implements DependencyDeclarer {
      * @author jmetcalf@dev.java.net
      * @see #doHandleExternalTrigger(StaplerRequest, StaplerResponse)
      */
-    public static class UserCause extends Cause.UserCause {
+    public static class UserCause extends Cause.UserIdCause {
 
         private final String ivylabel;
 
