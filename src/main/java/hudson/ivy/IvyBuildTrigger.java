@@ -24,7 +24,6 @@ import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
 import hudson.model.BuildListener;
-import hudson.model.DependecyDeclarer;
 import hudson.model.DependencyGraph;
 import hudson.model.Item;
 import hudson.model.Result;
@@ -54,6 +53,7 @@ import java.util.logging.Logger;
 import javax.servlet.ServletException;
 
 import jenkins.model.Jenkins;
+import jenkins.model.DependencyDeclarer;
 import net.sf.json.JSONObject;
 
 import org.apache.ivy.Ivy;
@@ -81,7 +81,7 @@ import org.kohsuke.stapler.StaplerResponse;
  * @author tbingaman@dev.java.net
  */
 @SuppressWarnings("unchecked")
-public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
+public class IvyBuildTrigger extends Notifier implements DependencyDeclarer {
 
     /**
      * The name of a copy of the ivy file relative to the projects root dir since the 
