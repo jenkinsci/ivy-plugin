@@ -54,7 +54,7 @@ THE SOFTWARE.
     </j:when>
     <!-- there might be multiple module builds for this job, so use a different format -->
     <j:otherwise>
-      <j:set var="builds" value="${it.moduleBuilds}" />
+      <j:set var="builds" value="${it.moduleBuilds}"/>
       <table>
         <j:forEach var="m" items="${builds}">
           <tr>
@@ -68,7 +68,7 @@ THE SOFTWARE.
                 </j:when>
                 <j:otherwise>
                   <j:forEach var="b" items="${m.value}">
-                    <t:buildLink job="${m.key}" number="${b.number}" />
+                    <t:buildLink job="${m.key}" number="${b.number}"/>
                   </j:forEach>
                 </j:otherwise>
               </j:choose>

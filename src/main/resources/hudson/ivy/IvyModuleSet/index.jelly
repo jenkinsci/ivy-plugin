@@ -25,15 +25,14 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt" xmlns:p="/lib/hudson/project">
   <l:layout title="${it.name}">
-    <st:include page="sidepanel.jelly" />
+    <st:include page="sidepanel.jelly"/>
     <l:main-panel>
       <h1>${it.pronoun} ${it.displayName}</h1>
       <t:editableDescription permission="${app.ADMINISTER}"/>
 
-      <p:projectActionFloatingBox />
+      <p:projectActionFloatingBox/>
 
       <table style="margin-top: 1em; margin-left:1em;">
-
         <j:forEach var="act" items="${it.prominentActions}">
           <t:summary icon="${act.iconFileName}" href="${act.urlName}">
             ${act.displayName}
@@ -44,7 +43,7 @@ THE SOFTWARE.
         </t:summary>
 
         <t:artifactList caption="${%Last Successful Artifacts}"
-            build="${it.lastSuccessfulBuild}" baseURL="lastSuccessfulBuild/" />
+            build="${it.lastSuccessfulBuild}" baseURL="lastSuccessfulBuild/"/>
 
         <t:summary icon="notepad.gif" href="changes">
           ${%Recent Changes}
@@ -54,21 +53,21 @@ THE SOFTWARE.
         <j:if test="${tr!=null}">
           <t:summary icon="clipboard.gif">
             <a href="lastBuild/testReport/">${%Latest Test Result}</a>
-            <t:test-result it="${tr}" />
+            <t:test-result it="${tr}"/>
           </t:summary>
         </j:if>
       </table>
 
-      <st:include page="jobpropertysummaries.jelly" />  
+      <st:include page="jobpropertysummaries.jelly"/>
 
       <!-- merge fragments from the actions -->
       <j:forEach var="a" items="${it.actions}">
-        <st:include page="jobMain.jelly" it="${a}" optional="true" />
+        <st:include page="jobMain.jelly" it="${a}" optional="true"/>
       </j:forEach>
 
-      <p:upstream-downstream />
+      <p:upstream-downstream/>
 
-      <st:include page="permalinks.jelly" />
+      <st:include page="permalinks.jelly"/>
     </l:main-panel>
   </l:layout>
 </j:jelly>
