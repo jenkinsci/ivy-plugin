@@ -28,7 +28,6 @@ import hudson.AbortException;
 import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.model.AbstractBuild;
-import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.model.Environment;
 import hudson.model.EnvironmentContributingAction;
@@ -345,7 +344,7 @@ public class IvyBuild extends AbstractIvyBuild<IvyModule, IvyBuild> {
         }
 
         /**
-         * Sends the accumuldated log in {@link SplittableBuildListener} to the
+         * Sends the accumulated log in {@link SplittableBuildListener} to the
          * log of this build.
          */
         public void appendLastLog() {

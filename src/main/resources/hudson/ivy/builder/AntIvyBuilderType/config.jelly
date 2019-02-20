@@ -23,29 +23,29 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-    <j:set var="ants" value="${descriptor.installations}" />
-    <j:if test="${!empty(ants)}">
-      <f:entry title="${%Ant Version}">
-        <select class="setting-input" name="antName">
-          <option value="(Default)">(${%Default})</option>
-          <j:forEach var="inst" items="${ants}">
-            <f:option selected="${inst.name==instance.antName}" value="${inst.name}">${inst.name}</f:option>
-          </j:forEach>
-        </select>
-      </f:entry>
-    </j:if>
-    <f:entry title="${%Targets}" field="targets">
-      <f:textbox />
+  <j:set var="ants" value="${descriptor.installations}"/>
+  <j:if test="${!empty(ants)}">
+    <f:entry title="${%Ant Version}">
+      <select class="setting-input" name="antName">
+        <option value="(Default)">(${%Default})</option>
+        <j:forEach var="inst" items="${ants}">
+          <f:option selected="${inst.name==instance.antName}" value="${inst.name}">${inst.name}</f:option>
+        </j:forEach>
+      </select>
     </f:entry>
-    <f:advanced>
-      <f:entry title="${%Build File}" field="buildFile">
-        <f:textbox />
-      </f:entry>
-      <f:entry title="${%Properties}" field="antProperties">
-        <f:textarea />
-      </f:entry>
-      <f:entry title="${%Java Options}" help="/help/ant/ant-opts.html" field="antOpts">
-        <f:expandableTextbox />
-      </f:entry>
-    </f:advanced>
+  </j:if>
+  <f:entry title="${%Targets}" field="targets">
+    <f:textbox/>
+  </f:entry>
+  <f:advanced>
+    <f:entry title="${%Build File}" field="buildFile">
+      <f:textbox/>
+    </f:entry>
+    <f:entry title="${%Properties}" field="antProperties">
+      <f:textarea/>
+    </f:entry>
+    <f:entry title="${%Java Options}" help="/help/ant/ant-opts.html" field="antOpts">
+      <f:expandableTextbox/>
+    </f:entry>
+  </f:advanced>
 </j:jelly>

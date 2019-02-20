@@ -32,7 +32,6 @@ import hudson.model.ItemGroup;
 import hudson.model.ParametersAction;
 import hudson.triggers.Trigger;
 
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -82,7 +81,7 @@ public abstract class AbstractIvyProject<P extends AbstractProject<P,R>,R extend
             if(isUseUpstreamParameters()) {
                 List<ParametersAction> upStreamParams = upc.getUpStreamParameters();
 
-                return scheduleBuild(getQuietPeriod(),c,upStreamParams.toArray(new ParametersAction[upStreamParams.size()]));
+                return scheduleBuild(getQuietPeriod(),c,upStreamParams.toArray(new ParametersAction[0]));
             }
         }
 

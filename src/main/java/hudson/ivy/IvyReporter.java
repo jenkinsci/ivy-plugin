@@ -30,7 +30,6 @@ import hudson.model.Action;
 import hudson.model.Build;
 import hudson.model.BuildListener;
 import hudson.model.Describable;
-import hudson.model.Hudson;
 import hudson.tasks.BuildStep;
 import hudson.tasks.Publisher;
 
@@ -39,16 +38,16 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
 
-import org.apache.ivy.core.module.descriptor.ModuleDescriptor;
+import jenkins.model.Jenkins;
 import org.apache.tools.ant.BuildEvent;
 
 /**
  * Listens to the build execution of {@link IvyBuild},
- * and normally records some information and exposes thoses
+ * and normally records some information and exposes these
  * in {@link IvyBuild} later.
  *
  * <p>
- * {@link IvyReporter} is first instanciated on the master.
+ * {@link IvyReporter} is first instantiated on the master.
  * Then during the build, it is serialized and sent over into
  * the Ant process by serialization. Reporters will then receive
  * event callbacks as Ant build events. Those event callbacks
@@ -168,7 +167,7 @@ public abstract class IvyReporter implements Describable<IvyReporter>, Extension
      * Called after the Ant/Ivy execution finished and the result is determined.
      *
      * <p>
-     * This method fires after {@link #postBuild(IvyBuildProxy, ModuleDescriptor, BuildListener)}.
+     * This method fires after {@link #postBuild(IvyBuildProxy, BuildEvent, BuildListener)}.
      * Works like {@link Publisher#perform(Build, Launcher, BuildListener)}.
      */
     public boolean end(IvyBuild build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
@@ -243,6 +242,6 @@ public abstract class IvyReporter implements Describable<IvyReporter>, Extension
     }
 
     public IvyReporterDescriptor getDescriptor() {
-        return (IvyReporterDescriptor)Hudson.getInstance().getDescriptorOrDie(getClass());
+        return (IvyReporterDescriptor) Jenkins.getInstance().getDescriptorOrDie(getClass());
     }
 }

@@ -38,7 +38,7 @@ import java.util.Map;
  *
  * <p>
  * When a module build is completed, {@link IvyBuild#getModuleSetBuild()
- * its governing IvyModuleSetBuild} tries to create an instane of
+ * its governing IvyModuleSetBuild} tries to create an instance of
  * {@link IvyAggregatedReport} from each kind of {@link IvyReporterDescriptor}
  * whose {@link IvyReporter}s are used on module builds.
  *
@@ -53,7 +53,7 @@ public interface IvyAggregatedReport extends Action {
     /**
      * Called whenever a new module build is completed, to update the
      * aggregated report. When multiple builds complete simultaneously,
-     * Hudson serializes the execution of this method, so this method
+     * Jenkins serializes the execution of this method, so this method
      * needs not be concurrency-safe.
      *
      * @param moduleBuilds
@@ -65,7 +65,7 @@ public interface IvyAggregatedReport extends Action {
 
     /**
      * Returns the implementation class of {@link AggregatableAction} that
-     * produces this {@link IvyAggregatedReport}. Hudson uses this method
+     * produces this {@link IvyAggregatedReport}. Jenkins uses this method
      * to determine which {@link AggregatableAction} is aggregated to
      * which {@link IvyAggregatedReport}.
      */

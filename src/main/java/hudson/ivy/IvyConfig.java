@@ -2,7 +2,6 @@ package hudson.ivy;
 
 import hudson.Extension;
 import org.jenkinsci.lib.configprovider.model.Config;
-import org.jenkinsci.plugins.configfiles.custom.CustomConfig;
 import org.jenkinsci.plugins.configfiles.xml.XmlConfig;
 import org.kohsuke.stapler.DataBoundConstructor;
 

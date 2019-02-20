@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2010-2011 Timothy Bingaman, Jesse Bexten
  * 
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -28,15 +28,15 @@ import hudson.model.Result;
 import hudson.model.TaskListener;
 
 /**
- * Invoke downstream projects with applicable parameters using Hudson's
+ * Invoke downstream projects with applicable parameters using Jenkins'
  * DependencyGraph.Dependency interface.
  * 
  * @author tbingaman
  */
 public class IvyThresholdDependency extends IvyDependency {
 
-    private Result threshold;
-    private boolean useUpstreamParameters;
+    private final Result threshold;
+    private final boolean useUpstreamParameters;
 
     public IvyThresholdDependency(AbstractProject<?, ?> upstream, AbstractProject<?, ?> downstream, Result threshold, boolean useUpstreamParameters) {
         super(upstream, downstream);

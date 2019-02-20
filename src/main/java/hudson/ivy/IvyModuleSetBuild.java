@@ -51,6 +51,7 @@ import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import jenkins.model.Jenkins;
 import jenkins.security.MasterToSlaveCallable;
 import org.apache.commons.lang.StringUtils;
 import org.apache.ivy.Ivy;
@@ -578,7 +579,7 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
             }
 
             // we might have added new modules
-            Hudson.getInstance().rebuildDependencyGraph();
+            Jenkins.getInstance().rebuildDependencyGraph();
 
             // module builds must start with this build's number
             for (IvyModule m : modules.values())
@@ -833,9 +834,6 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
         /**
          *
          * @return the Ivy instance based on the {@link #ivyConfName}
-         * @throws AbortException 
-         *
-         * @throws ParseException
          * @throws AbortException
          */
         public Ivy getIvy(PrintStream logger) throws AbortException {

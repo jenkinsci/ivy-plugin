@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2008-2011 Martin Ficker
  * 
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -31,7 +31,7 @@ import org.apache.ivy.util.MessageLogger;
  *
  */
 public class IvyMessageImpl extends AbstractMessageLogger implements MessageLogger {
-    private Logger logger = Logger.getLogger(IvyMessageImpl.class.getName());
+    private final Logger logger = Logger.getLogger(IvyMessageImpl.class.getName());
     public void log(String msg, int level) {
         Level logLevel = Level.INFO;
         switch (level) {

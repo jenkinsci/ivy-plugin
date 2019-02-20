@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2007-2011 hibou, Martin Ficker, Jeffrey Metcalf, Timothy Bingaman
  *
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -24,14 +24,12 @@ import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
 import hudson.model.BuildListener;
-import hudson.model.DependecyDeclarer;
 import hudson.model.DependencyGraph;
 import hudson.model.Item;
 import hudson.model.Result;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Cause;
-import hudson.model.Hudson;
 import hudson.model.Project;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildStepMonitor;
@@ -54,6 +52,8 @@ import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
 
+import jenkins.model.Jenkins;
+import jenkins.model.DependencyDeclarer;
 import net.sf.json.JSONObject;
 
 import org.apache.ivy.Ivy;
@@ -81,7 +81,7 @@ import org.kohsuke.stapler.StaplerResponse;
  * @author tbingaman@dev.java.net
  */
 @SuppressWarnings("unchecked")
-public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
+public class IvyBuildTrigger extends Notifier implements DependencyDeclarer {
 
     /**
      * The name of a copy of the ivy file relative to the projects root dir since the 
@@ -99,7 +99,7 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
     /**
      * The name of the ivy file relative to the workspace as configured by the user.
      */
-    private String ivyFile = "ivy.xml";
+    private final String ivyFile;
     /**
      * The name of the ivy properties file relative to the workspace as configured by the user.
      */
@@ -130,7 +130,7 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
      */
     private transient VersionMatcher versionMatcher;
 
-    /**
+    /*
      * Set the Message Implementation for ivy to avoid logging to err
      */
     static {
@@ -144,12 +144,12 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
      *            the ivy.xml file path within the workspace
      * @param ivyConfName
      *            the Ivy configuration name to use
-     * @param ivyProperties
+     * @param ivyPropertiesFile
      *            the Ivy properties file path within the workspace
      * @param triggerWhenUnstable
      *            true if this build should be triggered even when an upstream build in Unstable.
      *            false if this build should be triggered only when an upstream build is Successful.
-     * @param passPropertiesDownstream           
+     * @param useUpstreamParameters
      */
     @DataBoundConstructor
     public IvyBuildTrigger(final String ivyFile, final String ivyConfName, final String ivyPropertiesFile, final boolean triggerWhenUnstable, final boolean useUpstreamParameters) {
@@ -222,9 +222,6 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
     /**
      *
      * @return the Ivy instance based on the {@link #ivyConfName}
-     *
-     * @throws ParseException
-     * @throws IOException
      */
     public Ivy getIvy(File localFilePath, String propertyFile) {
         Message.setDefaultLogger(new IvyMessageImpl());
@@ -292,7 +289,7 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
     		// Copy the ivy file from the workspace (possibly at a slave) to the projects dir (at Master)
     		FilePath backupCopy = new FilePath(localFile).child(localDestFile);
     		long flastModified = f.lastModified();
-    		if (flastModified == 0l) throw new FileNotFoundException("Can't stat file " + f);
+    		if (flastModified == 0L) throw new FileNotFoundException("Can't stat file " + f);
     		if (flastModified > lastmodified) {
     			f.copyTo(backupCopy);
     			localFile.setLastModified(flastModified);
@@ -401,7 +398,7 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
 	            return null;
 	        }
 	        catch (InterruptedException e) {
-	            LOGGER.log(Level.WARNING, "Interupted while accessing the workspace ivy properties file '"+propertyFile+"'", e);
+	            LOGGER.log(Level.WARNING, "Interrupted while accessing the workspace ivy properties file '"+propertyFile+"'", e);
 	            File ivyP = new File(destDir, BACKUP_IVY_PROPERTIES_NAME);
 	            if (ivyP.canRead()) {
 	            	LOGGER.log(Level.WARNING, "Will try to use use existing ivy properties backup");
@@ -431,7 +428,7 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
 	            if (ivyF.canRead()) LOGGER.log(Level.WARNING, "Will try to use use existing ivy file backup");
 	        }
 	        catch (InterruptedException e) {
-	            LOGGER.log(Level.WARNING, "Interupted while accessing the workspace ivy file '"+ivyDesc+"'", e);
+	            LOGGER.log(Level.WARNING, "Interrupted while accessing the workspace ivy file '"+ivyDesc+"'", e);
 	            if (ivyF.canRead()) LOGGER.log(Level.WARNING, "Will try to use use existing ivy file backup");
 	        }
 		}
@@ -480,7 +477,7 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
         if (old == moduleDescriptor) return;
         if ((old==null) || !old.equals(moduleDescriptor)) {
             DESCRIPTOR.invalidateProjectMap();
-            Hudson.getInstance().rebuildDependencyGraph();
+            Jenkins.getInstance().rebuildDependencyGraph();
          }
     }
 
@@ -601,12 +598,12 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
      */
     public static class IvyConfiguration {
 
-        private String name;
+        private final String name;
 
-        private String ivyConfPath;
+        private final String ivyConfPath;
 
         /**
-         * Contructor
+         * Constructor
          *
          * @param name
          *            the name of the configuration
@@ -644,7 +641,7 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
     }
 
     /**
-     * The descriptor of this trigger.  It is annotated as an Extension so Hudson can automatically register this
+     * The descriptor of this trigger.  It is annotated as an Extension so Jenkins can automatically register this
      * instance as associated with IvyBuildTrigger.
      */
     @Extension
@@ -685,8 +682,8 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
          * Return a List of AbstractProjects that have an IvyBuildtrigger configured with an
          * ivy file Matching the given ModuleID.  This method returns an empty list rather
          * than null when there are no matching projects.
-         * 
-         * @param id    The Module Id to search for
+         *
+         * @param searchId the module id to search for
          * @return a List of Matching Projects
          */
         private List<AbstractProject> getProjectsFor(ModuleId searchId) {
@@ -712,7 +709,7 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
          * Calculate the map of projects to Ivy ModuleId.
          */
         private void calculateProjectMap() {
-            List<Project> projects = Hudson.getInstance().getAllItems(Project.class);
+            List<Project> projects = Jenkins.getInstance().getAllItems(Project.class);
             Map<ModuleId, List<AbstractProject>> projectMap = new HashMap<ModuleId, List<AbstractProject>>();
             for (Project<?, ?> p : projects) {
                 if (p.isDisabled()) {
@@ -760,7 +757,7 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
         }
 
         /**
-         * Implement the Descritor's display name.
+         * Implement the Descriptor's display name.
          */
         @Override
 		public String getDisplayName() {
@@ -803,13 +800,13 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
 
             save();
             invalidateProjectMap();
-            Hudson.getInstance().rebuildDependencyGraphAsync();
+            Jenkins.getInstance().rebuildDependencyGraphAsync();
             return r;
         }
 
         /**
          * Simulate what would happen internally if a successful build occurred on an IvyBuildTrigger managed project.
-         * This provides a hook to start builds on downstream projects if a triggering event outside of Hudson occurred.
+         * This provides a hook to start builds on downstream projects if a triggering event outside of Jenkins occurred.
          * One such triggering event could be publish of a non-integration (milestone/release) build of the IvyBuildTrigger
          * managed project code to the Ivy repository that is visible to your build system.
          * 
@@ -817,15 +814,15 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
          * which respectively represent the Ivy module descriptor attributes <code>organisation</code> and <code>module</code>.
          * Optional request parameters that can be passed on the StaplerRequest include <code>branch</code> and <code>rev</code>
          * which respectively represent the Ivy module descriptor attributes <code>branch</code> and <code>revision</code>.
-         * These values are used to match against the ModuleDescriptor of Hudson projects using the IvyBuildTrigger.  In the
+         * These values are used to match against the ModuleDescriptor of Jenkins projects using the IvyBuildTrigger.  In the
          * case that more than one project matches, it is the first match that will win, and only that project will have
          * its downstream dependencies scheduled for builds.  Therefore the caller is wise to provide the most
          * information in the request to ensure the best possible match.  If the trigger descriptor is set to use extended
          * version matching, then at least one of the optional <code>rev</code> or <code>branch</code> is required on the request.
          * 
-         * Note this event trigger does not actually build the matched project in Hudson.  It just schedules builds on downstream
+         * Note this event trigger does not actually build the matched project in Jenkins.  It just schedules builds on downstream
          * dependent projects.  Successfully executing this event trigger requires global {@link Item#BUILD} permission on a
-         * secured Hudson instance.
+         * secured Jenkins instance.
          * 
          * @author jmetcalf@dev.java.net
          * @param req  The StaplerRequest
@@ -840,7 +837,7 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
             String branch = Util.fixEmptyAndTrim(req.getParameter("branch"));
             String rev = Util.fixEmptyAndTrim(req.getParameter("rev"));
 
-            Hudson.getInstance().getACL().checkPermission(Item.BUILD);
+            Jenkins.getInstance().getACL().checkPermission(Item.BUILD);
 
             if (org == null || name == null)
                 throw new IllegalArgumentException("doHandleExternalTrigger requires the org and name parameters");
@@ -856,7 +853,7 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
             for (AbstractProject candidate : candidates) {
 
                 // Don't try to identify downstream dependencies of a disabled project.
-                // This is more consistent when simulating Hudson dependency behavior,
+                // This is more consistent when simulating Jenkins dependency behavior,
                 // i.e. a disabled parent could not have been built to initiate the trigger.
                 if (candidate.isDisabled() || !(candidate instanceof Project)) continue;
 
@@ -875,7 +872,7 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
                         if (rev != null && rev.equals(mdrid.getRevision()) == false)
                             continue;
                     }
-                    downstream = Hudson.getInstance().getDependencyGraph().getDownstream(p);
+                    downstream = Jenkins.getInstance().getDependencyGraph().getDownstream(p);
                     break;
                 }
             }
@@ -889,13 +886,12 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
         /**
          * Check that the Ivy configuration file exists.
          *
-         * @param req
-         *            the file path
+         * @param value the file path
          */
         public FormValidation doCheckIvyConf(@QueryParameter final String value) {
             // this can be used to check the existence of a file on the server,
             // so needs to be protected
-            if (!Hudson.getInstance().hasPermission(Hudson.ADMINISTER)) return FormValidation.ok();
+            if (!Jenkins.getInstance().hasPermission(Jenkins.ADMINISTER)) return FormValidation.ok();
             if (Util.fixEmpty(value) == null) {
                 return FormValidation.error(Messages.IvyBuildTrigger_CheckIvyConf_PathRequiredError());
             }
@@ -918,7 +914,7 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
          *            the relative path
          */
         public FormValidation doCheckIvyFile(@QueryParameter final String value) {
-            if (!Hudson.getInstance().hasPermission(Hudson.ADMINISTER)) return FormValidation.ok();
+            if (!Jenkins.getInstance().hasPermission(Jenkins.ADMINISTER)) return FormValidation.ok();
             if (Util.fixEmpty(value) == null) {
                 return FormValidation.error(Messages.IvyBuildTrigger_CheckIvyFile_PathRequiredError());
             }
@@ -948,9 +944,9 @@ public class IvyBuildTrigger extends Notifier implements DependecyDeclarer {
      * @author jmetcalf@dev.java.net
      * @see #doHandleExternalTrigger(StaplerRequest, StaplerResponse)
      */
-    public static class UserCause extends Cause.UserCause {
+    public static class UserCause extends Cause.UserIdCause {
 
-        private String ivylabel;
+        private final String ivylabel;
 
         /**
          * Constructor

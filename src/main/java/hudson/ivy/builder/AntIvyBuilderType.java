@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import jenkins.model.Jenkins;
 import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
 
@@ -35,29 +36,28 @@ import hudson.Extension;
 import hudson.ivy.AntIvyBuildWrapper;
 import hudson.ivy.IvyModuleSet;
 import hudson.model.Environment;
-import hudson.model.Hudson;
 import hudson.tasks.Ant;
 import hudson.tasks.Builder;
 import hudson.tasks.Ant.AntInstallation;
 
 public class AntIvyBuilderType extends IvyBuilderType {
-    private String targets;
+    private final String targets;
     /**
      * Identifies {@link AntInstallation} to be used.
      */
-    private String antName;
+    private final String antName;
     /**
      * ANT_OPTS if not null.
      */
-    private String antOpts;
+    private final String antOpts;
     /**
      * Optional build script path relative to the workspace. Used for the Ant '-f' option.
      */
-    private String buildFile;
+    private final String buildFile;
     /**
      * Optional properties to be passed to Ant. Follows {@link Properties} syntax.
      */
-    private String antProperties;
+    private final String antProperties;
 
     @DataBoundConstructor
     public AntIvyBuilderType(String antName, String buildFile, String targets, String antProperties, String antOpts) {
@@ -90,11 +90,11 @@ public class AntIvyBuilderType extends IvyBuilderType {
 
     /**
      * Possibly null, whitespace-separated (including TAB, NL, etc) VM options to be used to launch Ant process.
-     * <p/>
+     * <p>
      * If antOpts is null or empty, we'll return the globally-defined ANT_OPTS. Also prepend any build-specific
      * ANT_OPTS.
      *
-     * @param environment
+     * @param buildEnvironments build environments
      */
     protected String getCalculatedAntOpts(List<Environment> buildEnvironments) {
         String antOpts = null;
@@ -158,7 +158,7 @@ public class AntIvyBuilderType extends IvyBuilderType {
         }
 
         public Ant.AntInstallation[] getInstallations() {
-            return Hudson.getInstance().getDescriptorByType(Ant.DescriptorImpl.class).getInstallations();
+            return Jenkins.getInstance().getDescriptorByType(Ant.DescriptorImpl.class).getInstallations();
         }
 
     }

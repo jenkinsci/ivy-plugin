@@ -25,45 +25,46 @@ THE SOFTWARE.
 <!--
   Config page.
 -->
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt" xmlns:p="/lib/hudson/project">
-  <st:include page="configure-common.jelly" />
+  <st:include page="configure-common.jelly"/>
 
   <p:config-trigger>
     <!-- setting to ignore upstream changes is done as a pseudo-trigger -->
     <f:optionalBlock name="triggerByDependency"
         help="/plugin/ivy/ignore-upstream-changes.html"
         title="${%Build whenever an Ivy dependency is built}"
-        checked="${h.defaultToTrue(!it.ignoreUpstreamChanges())}" />
+        checked="${h.defaultToTrue(!it.ignoreUpstreamChanges())}"/>
     <f:optionalBlock name="allowedToTriggerDownstream"
         title="${%Allow this project to trigger downstream Ivy projects}"
-        checked="${h.defaultToTrue(it.allowedToTriggerDownstream)}" />
-    <p:config-upstream-pseudo-trigger />
+        checked="${h.defaultToTrue(it.allowedToTriggerDownstream)}"/>
+    <p:config-upstream-pseudo-trigger/>
   </p:config-trigger>
 
   <f:section title="${%Ivy Module Configuration}">
     <f:entry title="${%Ivy xml files}" field="ivyFilePattern">
-      <f:textbox />
+      <f:textbox/>
     </f:entry>
     <f:advanced>
       <f:entry title="${%Excludes}" field="ivyFileExcludesPattern">
-        <f:textbox />
+        <f:textbox/>
       </f:entry>
     </f:advanced>
     <f:entry title="${%Relative path to descriptor from module root}" field="relativePathToDescriptorFromModuleRoot">
-      <f:textbox />
+      <f:textbox/>
     </f:entry>
     <f:entry title="${%Ivy branch}" field="ivyBranch">
-      <f:textbox />
+      <f:textbox/>
     </f:entry>
     <f:entry title="${%Ivy settings}" field="ivySettingsFile">
       <f:textbox checkUrl="'checkIvySettingsFile?value='+escape(this.value)"/>
     </f:entry>
     <f:entry title="${%Ivy settings property files}" field="ivySettingsPropertyFiles">
-      <f:textbox />
+      <f:textbox/>
     </f:entry>
 
     <f:entry title="${%Settings file}" field="settings">
-      <f:select />
+      <f:select/>
     </f:entry>
 
     <f:dropdownList name="ivyBuilderType" title="${%Build with}">
@@ -78,17 +79,17 @@ THE SOFTWARE.
     <f:advanced>
       <f:optionalBlock title="${%Incremental build - only build changed modules}" name="incrementalBuild" checked="${it.incrementalBuild}" help="/plugin/ivy/incremental.html">
         <f:entry title="${%Changed modules property}" field="changedModulesProperty">
-          <f:textbox />
+          <f:textbox/>
         </f:entry>
       </f:optionalBlock>
       <f:optionalBlock title="${%Build modules as separate jobs}" name="perModuleBuild" checked="${!it.aggregatorStyleBuild}" help="/plugin/ivy/aggregator.html">
       </f:optionalBlock>
       <f:optionalBlock title="${%Use parameters from upstream builds}" name="useUpstreamParameters" checked="${it.useUpstreamParameters}" help="/plugin/ivy/use-upstream-parameters.html">
       </f:optionalBlock>
-      <p:config-customWorkspace />
+      <p:config-customWorkspace/>
     </f:advanced>
   </f:section>
   
-  <p:config-buildWrappers />
-  <p:config-publishers />
+  <p:config-buildWrappers/>
+  <p:config-publishers/>
 </j:jelly>

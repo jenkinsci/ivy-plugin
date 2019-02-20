@@ -22,9 +22,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <l:layout title="${it.displayName} Modules">
-    <st:include page="sidepanel.jelly" />
+    <st:include page="sidepanel.jelly"/>
     <l:main-panel>
       <h1>${%Modules}</h1>
 
@@ -49,7 +50,7 @@ THE SOFTWARE.
           </j:choose>
         </j:when>
         <j:otherwise>
-          <j:set var="hasDisabled" value="${it.hasDisabledModule()}" />
+          <j:set var="hasDisabled" value="${it.hasDisabledModule()}"/>
           <j:if test="${hasDisabled}">
             <j:set var="showViewTabs" value="true"/>
           </j:if>
@@ -57,8 +58,8 @@ THE SOFTWARE.
             <!-- view tab bar -->
             <j:if test="${hasDisabled}">
               <l:tabBar>
-                <l:tab name="${%Modules}" active="${true}" />
-                <l:tab name="${%Disabled}" active="${false}" href="./disabled" />
+                <l:tab name="${%Modules}" active="${true}"/>
+                <l:tab name="${%Disabled}" active="${false}" href="./disabled"/>
               </l:tabBar>
             </j:if>
           </t:projectView>

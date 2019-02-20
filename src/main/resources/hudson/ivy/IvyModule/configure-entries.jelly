@@ -25,8 +25,9 @@ THE SOFTWARE.
 <!--
   Config page
 -->
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:p="/lib/hudson/project">
-  <p:config-trigger />
+  <p:config-trigger/>
 
   <f:section title="${%Ivy Module Configuration}">
     <f:entry title="${%Relative path to descriptor from module root}">
@@ -36,6 +37,6 @@ THE SOFTWARE.
       <f:textbox name="targets" value="${it.targets}"/>
     </f:entry>
   </f:section>
-  
-  <p:config-publishers />
+
+  <p:config-publishers/>
 </j:jelly>
