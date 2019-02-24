@@ -84,6 +84,7 @@ import net.sf.json.JSONObject;
 import org.jenkinsci.lib.configprovider.model.Config;
 import org.jenkinsci.plugins.configfiles.ConfigFiles;
 import org.kohsuke.stapler.AncestorInPath;
+import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -818,7 +819,6 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet, IvyModu
         private String globalAntOpts;
 
         public DescriptorImpl() {
-            super();
             load();
         }
 
@@ -826,8 +826,9 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet, IvyModu
             return globalAntOpts;
         }
 
+        @DataBoundSetter
         public void setGlobalAntOpts(String globalAntOpts) {
-            this.globalAntOpts = globalAntOpts;
+            this.globalAntOpts = Util.fixEmptyAndTrim(globalAntOpts);
             save();
         }
 
@@ -851,8 +852,8 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet, IvyModu
         }
 
         @Override
-        public boolean configure(StaplerRequest req, JSONObject o) {
-            globalAntOpts = Util.fixEmptyAndTrim(o.getString("globalAntOpts"));
+        public boolean configure(StaplerRequest req, JSONObject json) {
+            req.bindJSON(this, json);
             save();
 
             return true;

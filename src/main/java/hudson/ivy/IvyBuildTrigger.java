@@ -18,11 +18,13 @@
  */
 package hudson.ivy;
 
+import hudson.BulkChange;
 import hudson.CopyOnWrite;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
+import hudson.model.AbstractDescribableImpl;
 import hudson.model.BuildListener;
 import hudson.model.DependencyGraph;
 import hudson.model.Item;
@@ -68,6 +70,7 @@ import org.apache.ivy.plugins.parser.ModuleDescriptorParserRegistry;
 import org.apache.ivy.plugins.version.VersionMatcher;
 import org.apache.ivy.util.Message;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -592,7 +595,7 @@ public class IvyBuildTrigger extends Notifier implements DependencyDeclarer {
      * Note that configurations are now called settings in Ivy 2.0
      * to avoid confusion with dependency configurations.
      */
-    public static class IvyConfiguration {
+    public static class IvyConfiguration extends AbstractDescribableImpl<IvyConfiguration> {
 
         private final String name;
 
@@ -606,6 +609,7 @@ public class IvyBuildTrigger extends Notifier implements DependencyDeclarer {
          * @param ivyConfPath
          *            the full path to the ivy configuration file
          */
+        @DataBoundConstructor
         public IvyConfiguration(String name, String ivyConfPath) {
             this.name = name;
             this.ivyConfPath = ivyConfPath;
@@ -670,7 +674,7 @@ public class IvyBuildTrigger extends Notifier implements DependencyDeclarer {
         /**
          * Default constructor just loads any serialized configuration.
          */
-        DescriptorImpl() {
+        public DescriptorImpl() {
             load();
         }
 
@@ -744,12 +748,24 @@ public class IvyBuildTrigger extends Notifier implements DependencyDeclarer {
             return configurations;
         }
 
+        @DataBoundSetter
+        public void setConfigurations(IvyConfiguration[] configurations) {
+            this.configurations = configurations;
+            save();
+        }
+
         /**
          *
          * @return  true if extended version matching is being used.
          */
         public boolean isExtendedVersionMatching() {
             return extendedVersionMatching;
+        }
+
+        @DataBoundSetter
+        public void setExtendedVersionMatching(boolean extendedVersionMatching) {
+            this.extendedVersionMatching = extendedVersionMatching;
+            save();
         }
 
         /**
@@ -765,34 +781,14 @@ public class IvyBuildTrigger extends Notifier implements DependencyDeclarer {
          */
         @Override
         public boolean configure(StaplerRequest req, JSONObject json) {
-            int i;
-            String[] names = req.getParameterValues("ivy_name");
-            String[] paths = req.getParameterValues("ivy_conf_path");
-            String vm = req.getParameter("ivy_version_matching");
-
-            IvyConfiguration[] confs;
-
-            if (names != null && paths != null) {
-                int len = Math.min(names.length, paths.length);
-                confs = new IvyConfiguration[len];
-                for (i = 0; i < len; i++) {
-                    if (Util.nullify(names[i]) == null) {
-                        continue;
-                    }
-                    if (Util.nullify(paths[i]) == null) {
-                        continue;
-                    }
-                    confs[i] = new IvyConfiguration(names[i], paths[i]);
-                }
-            } else {
-                confs = new IvyConfiguration[0];
+            try (BulkChange bc = new BulkChange(this)) {
+                configurations = new IvyConfiguration[0];
+                req.bindJSON(this, json);
+                bc.commit();
+            } catch (IOException e) {
+                LOGGER.log(Level.WARNING, "Failed to save " + getConfigFile(), e);
             }
-            LOGGER.info("IvyConfigurations: " + confs.length);
 
-            this.configurations = confs;
-            this.extendedVersionMatching = (vm != null);
-
-            save();
             invalidateProjectMap();
             Jenkins.getInstance().rebuildDependencyGraphAsync();
 
