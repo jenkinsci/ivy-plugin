@@ -167,7 +167,7 @@ public class IvyBuildTrigger extends Notifier implements DependencyDeclarer {
      *            the ivy.xml file path within the workspace
      * @param ivyConfName
      *            the Ivy configuration name to use
-     * @deprecated use {@link #IvyBuildTrigger(String, String, boolean)} instead
+     * @deprecated use {@link #IvyBuildTrigger(String, String, String, boolean, boolean)} instead
      */
     @Deprecated
     public IvyBuildTrigger(final String ivyFile, final String ivyConfName) {
@@ -942,7 +942,7 @@ public class IvyBuildTrigger extends Notifier implements DependencyDeclarer {
      * This cause is used when triggering downstream builds from the external event trigger.
      * 
      * @author jmetcalf@dev.java.net
-     * @see #doHandleExternalTrigger(StaplerRequest, StaplerResponse)
+     * @see DescriptorImpl#doHandleExternalTrigger(StaplerRequest, StaplerResponse)
      */
     public static class UserCause extends Cause.UserIdCause {
 
