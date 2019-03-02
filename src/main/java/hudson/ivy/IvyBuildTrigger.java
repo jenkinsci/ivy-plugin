@@ -769,8 +769,6 @@ public class IvyBuildTrigger extends Notifier implements DependencyDeclarer {
          */
         @Override
         public boolean configure(StaplerRequest req, JSONObject json) {
-            boolean r = true;
-
             int i;
             String[] names = req.getParameterValues("ivy_name");
             String[] paths = req.getParameterValues("ivy_conf_path");
@@ -801,7 +799,8 @@ public class IvyBuildTrigger extends Notifier implements DependencyDeclarer {
             save();
             invalidateProjectMap();
             Jenkins.getInstance().rebuildDependencyGraphAsync();
-            return r;
+
+            return true;
         }
 
         /**
