@@ -25,6 +25,7 @@ package hudson.ivy;
 
 import static hudson.Util.fixEmpty;
 import static hudson.model.ItemGroupMixIn.loadChildren;
+
 import hudson.CopyOnWrite;
 import hudson.Extension;
 import hudson.FilePath;
@@ -90,18 +91,17 @@ import org.kohsuke.stapler.export.Exported;
 
 /**
  * Group of {@link IvyModule}s.
- *
  * <p>
  * This corresponds to the group of Ivy module descriptors that constitute a single
  * branch of projects.
  *
  * @author Timothy Bingaman
  */
-public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet,IvyModuleSetBuild> implements TopLevelItem, ItemGroup<IvyModule>, SCMedItem, Saveable, BuildableItemWithBuildWrappers {
+public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet, IvyModuleSetBuild> implements TopLevelItem, ItemGroup<IvyModule>, SCMedItem, Saveable, BuildableItemWithBuildWrappers {
     /**
      * All {@link IvyModule}s, keyed by their {@link IvyModule#getModuleName()} module name}s.
      */
-    transient /*final*/ Map<ModuleName,IvyModule> modules = new CopyOnWriteMap.Tree<ModuleName,IvyModule>();
+    transient /*final*/ Map<ModuleName, IvyModule> modules = new CopyOnWriteMap.Tree<ModuleName, IvyModule>();
 
     /**
      * Topologically sorted list of modules. This only includes live modules,
@@ -125,7 +125,7 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet,IvyModul
     private String settings;
 
     private String ivySettingsPropertyFiles;
-    
+
     private IvyBuilderType ivyBuilderType;
 
     /**
@@ -205,17 +205,17 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet,IvyModul
     /**
      * List of active {@link Publisher}s configured for this project.
      */
-    private DescribableList<Publisher,Descriptor<Publisher>> publishers =
-        new DescribableList<Publisher,Descriptor<Publisher>>(this);
+    private DescribableList<Publisher, Descriptor<Publisher>> publishers =
+            new DescribableList<Publisher, Descriptor<Publisher>>(this);
 
     /**
      * List of active {@link BuildWrapper}s configured for this project.
      */
-    private DescribableList<BuildWrapper,Descriptor<BuildWrapper>> buildWrappers =
-        new DescribableList<BuildWrapper, Descriptor<BuildWrapper>>(this);
+    private DescribableList<BuildWrapper, Descriptor<BuildWrapper>> buildWrappers =
+            new DescribableList<BuildWrapper, Descriptor<BuildWrapper>>(this);
 
     public IvyModuleSet(String name) {
-        this(Jenkins.getInstance(),name);
+        this(Jenkins.getInstance(), name);
     }
 
     public IvyModuleSet(ItemGroup parent, String name) {
@@ -260,39 +260,51 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet,IvyModul
     @Override
     protected List<Action> createTransientActions() {
         List<Action> r = super.createTransientActions();
-        for (IvyModule module: modules.values()) {
+        for (IvyModule module : modules.values()) {
             module.updateTransientActions();
         }
-        if(publishers!=null)    // this method can be loaded from within the onLoad method, where this might be null
+        if (publishers != null) { // this method can be loaded from within the onLoad method, where this might be null
             for (BuildStep step : publishers) {
                 r.addAll(step.getProjectActions(this));
             }
+        }
 
-        if (buildWrappers!=null)
-	        for (BuildWrapper step : buildWrappers) {
-                    r.addAll(step.getProjectActions(this));
-	        }
+        if (buildWrappers != null) {
+            for (BuildWrapper step : buildWrappers) {
+                r.addAll(step.getProjectActions(this));
+            }
+        }
 
         return r;
     }
 
     @Override
     protected void addTransientActionsFromBuild(IvyModuleSetBuild build, List<Action> collection, Set<Class> added) {
-        if(build==null)    return;
+        if (build == null) {
+            return;
+        }
 
-        for (Action a : build.getActions())
-            if(a instanceof IvyAggregatedReport)
-                if(added.add(a.getClass()))
-                    collection.add(((IvyAggregatedReport)a).getProjectAction(this));
+        for (Action a : build.getActions()) {
+            if (a instanceof IvyAggregatedReport) {
+                if (added.add(a.getClass())) {
+                    collection.add(((IvyAggregatedReport) a).getProjectAction(this));
+                }
+            }
+        }
 
         List<IvyReporter> list = build.projectActionReporters;
-        if(list==null)   return;
+        if (list == null) {
+            return;
+        }
 
         for (IvyReporter step : list) {
-            if(!added.add(step.getClass()))     continue;   // already added
+            if (!added.add(step.getClass())) {
+                continue; // already added
+            }
             Action a = step.getAggregatedProjectAction(this);
-            if(a!=null)
+            if (a != null) {
                 collection.add(a);
+            }
         }
     }
 
@@ -310,8 +322,9 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet,IvyModul
      */
     public boolean hasDisabledModule() {
         for (IvyModule m : modules.values()) {
-            if(m.isDisabled())
+            if (m.isDisabled()) {
                 return true;
+            }
         }
         return false;
     }
@@ -321,13 +334,15 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet,IvyModul
      * or all enabled modules (if disabled==false)
      */
     public List<IvyModule> getDisabledModules(boolean disabled) {
-        if(!disabled && sortedActiveModules!=null)
+        if (!disabled && sortedActiveModules != null) {
             return sortedActiveModules;
+        }
 
         List<IvyModule> r = new ArrayList<IvyModule>();
         for (IvyModule m : modules.values()) {
-            if(m.isDisabled()==disabled)
+            if (m.isDisabled() == disabled) {
                 r.add(m);
+            }
         }
         return r;
     }
@@ -447,7 +462,7 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet,IvyModul
      * List of active {@link BuildWrapper}s. Can be empty but never null.
      *
      * @deprecated as of 1.335
-     *      Use {@link #getBuildWrappersList()} to be consistent with other subtypes of {@link AbstractProject}.
+     * Use {@link #getBuildWrappersList()} to be consistent with other subtypes of {@link AbstractProject}.
      */
     @Deprecated
     public DescribableList<BuildWrapper, Descriptor<BuildWrapper>> getBuildWrappers() {
@@ -456,13 +471,14 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet,IvyModul
 
     @Override
     public Object getDynamic(String token, StaplerRequest req, StaplerResponse rsp) {
-        if (ModuleName.isValid(token))
+        if (ModuleName.isValid(token)) {
             return getModule(token);
-        return super.getDynamic(token,req,rsp);
+        }
+        return super.getDynamic(token, req, rsp);
     }
 
     public File getRootDirFor(IvyModule child) {
-        return new File(getModulesDir(),child.getModuleName().toFileSystemName());
+        return new File(getModulesDir(), child.getModuleName().toFileSystemName());
     }
 
     public void onRenamed(IvyModule item, String oldName, String newName) throws IOException {
@@ -488,37 +504,39 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet,IvyModul
     @Override
     protected SearchIndexBuilder makeSearchIndex() {
         return super.makeSearchIndex()
-            .add(new CollectionSearchIndex<IvyModule>() {// for computers
-                @Override
-                protected IvyModule get(String key) {
-                    for (IvyModule m : modules.values()) {
-                        if(m.getDisplayName().equals(key))
-                            return m;
+                .add(new CollectionSearchIndex<IvyModule>() {// for computers
+                    @Override
+                    protected IvyModule get(String key) {
+                        for (IvyModule m : modules.values()) {
+                            if (m.getDisplayName().equals(key)) {
+                                return m;
+                            }
+                        }
+                        return null;
                     }
-                    return null;
-                }
-                @Override
-                protected Collection<IvyModule> all() {
-                    return modules.values();
-                }
-                @Override
-                protected String getName(IvyModule o) {
-                    return o.getName();
-                }
-            });
+
+                    @Override
+                    protected Collection<IvyModule> all() {
+                        return modules.values();
+                    }
+
+                    @Override
+                    protected String getName(IvyModule o) {
+                        return o.getName();
+                    }
+                });
     }
 
     @Override
     public boolean isFingerprintConfigured() {
         return true;
     }
-    
+
     @Override
     public synchronized void save() throws IOException {
         super.save();
-        
-        if(!isAggregatorStyleBuild())
-        {
+
+        if (!isAggregatorStyleBuild()) {
             for (IvyModule module : getModules()) {
                 module.save();
             }
@@ -530,30 +548,31 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet,IvyModul
         modules = Collections.emptyMap(); // needed during load
         super.onLoad(parent, name);
 
-        modules = loadChildren(this, getModulesDir(),new Function1<ModuleName,IvyModule>() {
+        modules = loadChildren(this, getModulesDir(), new Function1<ModuleName, IvyModule>() {
             public ModuleName call(IvyModule module) {
                 return module.getModuleName();
             }
         });
-        if(publishers==null)
-            publishers = new DescribableList<Publisher,Descriptor<Publisher>>(this);
+        if (publishers == null) {
+            publishers = new DescribableList<Publisher, Descriptor<Publisher>>(this);
+        }
         publishers.setOwner(this);
-        if(buildWrappers==null)
+        if (buildWrappers == null) {
             buildWrappers = new DescribableList<BuildWrapper, Descriptor<BuildWrapper>>(this);
-        buildWrappers.setOwner(this);
+            buildWrappers.setOwner(this);
+        }
 
         updateTransientActions();
     }
 
     private File getModulesDir() {
-        return new File(getRootDir(),"modules");
+        return new File(getRootDir(), "modules");
     }
 
     /**
      * To make it easy to grasp relationship among modules
      * and the module set, we'll align the build numbers of
      * all the modules.
-     *
      * <p>
      * This method is invoked from {@link Executor#run()},
      * and because of the mutual exclusion among {@link IvyModuleSetBuild}
@@ -571,8 +590,9 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet,IvyModul
     public void logRotate() throws IOException, InterruptedException {
         super.logRotate();
         // perform the log rotation of modules
-        for (IvyModule m : modules.values())
+        for (IvyModule m : modules.values()) {
             m.logRotate();
+        }
     }
 
     /**
@@ -581,19 +601,20 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet,IvyModul
      */
     /*package*/ void updateNextBuildNumber() throws IOException {
         int next = this.nextBuildNumber;
-        for (IvyModule m : modules.values())
-            next = Math.max(next,m.getNextBuildNumber());
+        for (IvyModule m : modules.values()) {
+            next = Math.max(next, m.getNextBuildNumber());
+        }
 
-        if(this.nextBuildNumber!=next) {
-            this.nextBuildNumber=next;
+        if (this.nextBuildNumber != next) {
+            this.nextBuildNumber = next;
             this.saveNextBuildNumber();
         }
     }
 
     @Override
     protected void buildDependencyGraph(DependencyGraph graph) {
-        publishers.buildDependencyGraph(this,graph);
-        buildWrappers.buildDependencyGraph(this,graph);
+        publishers.buildDependencyGraph(this, graph);
+        buildWrappers.buildDependencyGraph(this, graph);
     }
 
     @Override
@@ -601,8 +622,8 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet,IvyModul
         final Set<ResourceActivity> activities = new HashSet<ResourceActivity>();
 
         activities.addAll(super.getResourceActivities());
-        activities.addAll(Util.filter(publishers,ResourceActivity.class));
-        activities.addAll(Util.filter(buildWrappers,ResourceActivity.class));
+        activities.addAll(Util.filter(publishers, ResourceActivity.class));
+        activities.addAll(Util.filter(buildWrappers, ResourceActivity.class));
 
         return activities;
     }
@@ -625,16 +646,19 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet,IvyModul
     @Override
     public CauseOfBlockage getCauseOfBlockage() {
         CauseOfBlockage cob = super.getCauseOfBlockage();
-        if (cob != null) return cob;
-        
+        if (cob != null) {
+            return cob;
+        }
+
         for (IvyModule module : modules.values()) {
-            if (module.isBuilding() || module.isInQueue())
+            if (module.isBuilding() || module.isInQueue()) {
                 return new BecauseOfModuleBuildInProgress(module);
+            }
         }
         return null;
     }
 
-    public AbstractProject<?,?> asProject() {
+    public AbstractProject<?, ?> asProject() {
         return this;
     }
 
@@ -651,23 +675,24 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet,IvyModul
      */
     public List<Queue.Item> getQueueItems() {
         List<Queue.Item> r = new ArrayList<hudson.model.Queue.Item>();
-        for( Queue.Item item : Jenkins.getInstance().getQueue().getItems() ) {
+        for (Queue.Item item : Jenkins.getInstance().getQueue().getItems()) {
             Task t = item.task;
-            if((t instanceof IvyModule && ((IvyModule)t).getParent()==this) || t ==this)
+            if ((t instanceof IvyModule && ((IvyModule) t).getParent() == this) || t == this) {
                 r.add(item);
+            }
         }
         return r;
     }
 
-//
-//
-// Web methods
-//
-//
+    //
+    //
+    // Web methods
+    //
+    //
 
     @Override
     protected void submit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, FormException {
-        super.submit(req,rsp);
+        super.submit(req, rsp);
         JSONObject json = req.getSubmittedForm();
 
         ignoreUpstreamChanges = !json.has("triggerByDependency");
@@ -691,13 +716,12 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet,IvyModul
         if (incrementalBuild)
             changedModulesProperty = Util.fixEmptyAndTrim(json.getJSONObject("incrementalBuild").getString("changedModulesProperty"));
 
-        publishers.rebuild(req,json,BuildStepDescriptor.filter(Publisher.all(),this.getClass()));
-        buildWrappers.rebuild(req,json,BuildWrappers.getFor(this));
+        publishers.rebuild(req, json, BuildStepDescriptor.filter(Publisher.all(), this.getClass()));
+        buildWrappers.rebuild(req, json, BuildWrappers.getFor(this));
 
-        if(!isAggregatorStyleBuild())
-        {
+        if (!isAggregatorStyleBuild()) {
             for (IvyModule module : getModules()) {
-                module.getBuildWrappersList().rebuild(req,json,BuildWrappers.getFor(module));
+                module.getBuildWrappersList().rebuild(req, json, BuildWrappers.getFor(module));
             }
         }
     }
@@ -716,8 +740,9 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet,IvyModul
      */
     public void doDoDeleteAllDisabledModules(StaplerResponse rsp) throws IOException, InterruptedException {
         checkPermission(DELETE);
-        for( IvyModule m : getDisabledModules(true))
+        for (IvyModule m : getDisabledModules(true)) {
             m.delete();
+        }
         rsp.sendRedirect2(".");
     }
 
@@ -726,10 +751,11 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet,IvyModul
      */
     public FormValidation doCheckFileInWorkspace(@QueryParameter String value) throws IOException, ServletException {
         IvyModuleSetBuild lb = getLastBuild();
-        if (lb!=null) {
+        if (lb != null) {
             FilePath ws = lb.getModuleRoot();
-            if(ws!=null)
-                return ws.validateRelativePath(value,true,true);
+            if (ws != null) {
+                return ws.validateRelativePath(value, true, true);
+            }
         }
         return FormValidation.ok();
     }
@@ -815,7 +841,6 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet,IvyModul
             return lb;
         }
 
-
         @Override
         public String getDisplayName() {
             return Messages.IvyModuleSet_DisplayName();
@@ -826,7 +851,7 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet,IvyModul
         }
 
         @Override
-        public boolean configure( StaplerRequest req, JSONObject o ) {
+        public boolean configure(StaplerRequest req, JSONObject o) {
             globalAntOpts = Util.fixEmptyAndTrim(o.getString("globalAntOpts"));
             save();
 
