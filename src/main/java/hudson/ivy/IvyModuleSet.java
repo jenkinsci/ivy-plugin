@@ -42,6 +42,7 @@ import hudson.model.Executor;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.Job;
+import hudson.model.PersistentDescriptor;
 import hudson.model.Queue;
 import hudson.model.ResourceActivity;
 import hudson.model.SCMedItem;
@@ -812,15 +813,11 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet, IvyModu
     @Extension
     public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
-    public static final class DescriptorImpl extends AbstractProjectDescriptor {
+    public static final class DescriptorImpl extends AbstractProjectDescriptor implements PersistentDescriptor {
         /**
          * Globally-defined ANT_OPTS.
          */
         private String globalAntOpts;
-
-        public DescriptorImpl() {
-            load();
-        }
 
         public String getGlobalAntOpts() {
             return globalAntOpts;

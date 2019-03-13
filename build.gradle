@@ -7,7 +7,7 @@ group = 'org.jenkins-ci.plugins'
 description = 'This plugin adds Ivy support to Jenkins'
 
 jenkinsPlugin {
-    coreVersion = '2.60.3'
+    coreVersion = '2.140'
 
     shortName = 'ivy'
     displayName = 'Ivy Plugin'

@@ -28,6 +28,7 @@ import hudson.model.AbstractDescribableImpl;
 import hudson.model.BuildListener;
 import hudson.model.DependencyGraph;
 import hudson.model.Item;
+import hudson.model.PersistentDescriptor;
 import hudson.model.Result;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
@@ -650,7 +651,7 @@ public class IvyBuildTrigger extends Notifier implements DependencyDeclarer {
     /**
      * The descriptor implementation of this trigger
      */
-    public static final class DescriptorImpl extends BuildStepDescriptor<Publisher> {
+    public static final class DescriptorImpl extends BuildStepDescriptor<Publisher> implements PersistentDescriptor {
 
         /**
          * Note that configurations are now called settings in Ivy 2.0
@@ -670,13 +671,6 @@ public class IvyBuildTrigger extends Notifier implements DependencyDeclarer {
          * project dependency mapping.
          */
         private volatile boolean extendedVersionMatching = false;
-
-        /**
-         * Default constructor just loads any serialized configuration.
-         */
-        public DescriptorImpl() {
-            load();
-        }
 
         /**
          * Return a List of AbstractProjects that have an IvyBuildtrigger configured with an
