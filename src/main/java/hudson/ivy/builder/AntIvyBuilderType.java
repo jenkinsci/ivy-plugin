@@ -124,7 +124,7 @@ public class AntIvyBuilderType extends IvyBuilderType {
 
     @Override
     public Map<String, String> getEnvironment() {
-        Map<String, String> envs = new HashMap<String, String>();
+        Map<String, String> envs = new HashMap<>();
         String opts = getCalculatedAntOpts(null);
         if (opts != null) {
             envs.put("ANT_OPTS", opts);

@@ -89,7 +89,7 @@ public class NAntIvyBuilderType extends IvyBuilderType {
 
     @Override
     public Map<String, String> getEnvironment() {
-        return new HashMap<String, String>();
+        return new HashMap<>();
     }
 
     @Override

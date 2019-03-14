@@ -110,7 +110,7 @@ public abstract class IvyBuilder extends MasterToSlaveCallable<Result, IOExcepti
      */
     public Result call() throws IOException {
         try {
-            futures = new ArrayList<Future<?>>();
+            futures = new ArrayList<>();
             Adapter a = new Adapter(this);
 //            PluginManagerInterceptor.setListener(a);
 //            LifecycleExecutorInterceptor.setListener(a);

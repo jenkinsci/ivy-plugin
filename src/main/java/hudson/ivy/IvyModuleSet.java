@@ -102,7 +102,7 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet, IvyModu
     /**
      * All {@link IvyModule}s, keyed by their {@link IvyModule#getModuleName()} module name}s.
      */
-    transient /*final*/ Map<ModuleName, IvyModule> modules = new CopyOnWriteMap.Tree<ModuleName, IvyModule>();
+    transient /*final*/ Map<ModuleName, IvyModule> modules = new CopyOnWriteMap.Tree<>();
 
     /**
      * Topologically sorted list of modules. This only includes live modules,
@@ -207,13 +207,13 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet, IvyModu
      * List of active {@link Publisher}s configured for this project.
      */
     private DescribableList<Publisher, Descriptor<Publisher>> publishers =
-            new DescribableList<Publisher, Descriptor<Publisher>>(this);
+            new DescribableList<>(this);
 
     /**
      * List of active {@link BuildWrapper}s configured for this project.
      */
     private DescribableList<BuildWrapper, Descriptor<BuildWrapper>> buildWrappers =
-            new DescribableList<BuildWrapper, Descriptor<BuildWrapper>>(this);
+            new DescribableList<>(this);
 
     public IvyModuleSet(String name) {
         this(Jenkins.getInstance(), name);
@@ -339,7 +339,7 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet, IvyModu
             return sortedActiveModules;
         }
 
-        List<IvyModule> r = new ArrayList<IvyModule>();
+        List<IvyModule> r = new ArrayList<>();
         for (IvyModule m : modules.values()) {
             if (m.isDisabled() == disabled) {
                 r.add(m);
@@ -440,7 +440,7 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet, IvyModu
      * List of active {@link Publisher}s that should be applied to all module builds.
      */
     public DescribableList<Publisher, Descriptor<Publisher>> getModulePublishers() {
-        return aggregatorStyleBuild ? new DescribableList<Publisher, Descriptor<Publisher>>(this) : publishers;
+        return aggregatorStyleBuild ? new DescribableList<>(this) : publishers;
     }
 
     /**
@@ -492,7 +492,7 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet, IvyModu
 
     @Override
     public Collection<Job> getAllJobs() {
-        Set<Job> jobs = new HashSet<Job>(getItems());
+        Set<Job> jobs = new HashSet<>(getItems());
         jobs.add(this);
         return jobs;
     }
@@ -551,11 +551,11 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet, IvyModu
 
         modules = loadChildren(this, getModulesDir(), module -> module.getModuleName());
         if (publishers == null) {
-            publishers = new DescribableList<Publisher, Descriptor<Publisher>>(this);
+            publishers = new DescribableList<>(this);
         }
         publishers.setOwner(this);
         if (buildWrappers == null) {
-            buildWrappers = new DescribableList<BuildWrapper, Descriptor<BuildWrapper>>(this);
+            buildWrappers = new DescribableList<>(this);
             buildWrappers.setOwner(this);
         }
 
@@ -616,7 +616,7 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet, IvyModu
 
     @Override
     protected Set<ResourceActivity> getResourceActivities() {
-        final Set<ResourceActivity> activities = new HashSet<ResourceActivity>();
+        final Set<ResourceActivity> activities = new HashSet<>();
 
         activities.addAll(super.getResourceActivities());
         activities.addAll(Util.filter(publishers, ResourceActivity.class));
@@ -671,7 +671,7 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet, IvyModu
      * Returns the {@link IvyModule}s that are in the queue.
      */
     public List<Queue.Item> getQueueItems() {
-        List<Queue.Item> r = new ArrayList<hudson.model.Queue.Item>();
+        List<Queue.Item> r = new ArrayList<>();
         for (Queue.Item item : Jenkins.getInstance().getQueue().getItems()) {
             Task t = item.task;
             if ((t instanceof IvyModule && ((IvyModule) t).getParent() == this) || t == this) {
@@ -793,7 +793,7 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet, IvyModu
 
     @SuppressWarnings("unchecked")
     public ArrayList<Descriptor<IvyBuilderType>> getBuilderTypeDescriptors() {
-        ArrayList<Descriptor<IvyBuilderType>> buildTypeDescriptors = new ArrayList<Descriptor<IvyBuilderType>>();
+        ArrayList<Descriptor<IvyBuilderType>> buildTypeDescriptors = new ArrayList<>();
         buildTypeDescriptors.add(Jenkins.getInstance().getDescriptor(AntIvyBuilderType.class));
         if (Jenkins.getInstance().getPlugin("nant") != null) {
             buildTypeDescriptors.add(Jenkins.getInstance().getDescriptor(NAntIvyBuilderType.class));

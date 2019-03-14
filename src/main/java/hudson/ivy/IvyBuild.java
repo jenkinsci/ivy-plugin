@@ -156,7 +156,7 @@ public class IvyBuild extends AbstractIvyBuild<IvyModule, IvyBuild> {
 
     public void registerAsProjectAction(IvyReporter reporter) {
         if (projectActionReporters == null)
-            projectActionReporters = new ArrayList<IvyReporter>();
+            projectActionReporters = new ArrayList<>();
         projectActionReporters.add(reporter);
     }
 
@@ -424,7 +424,7 @@ public class IvyBuild extends AbstractIvyBuild<IvyModule, IvyBuild> {
 
             Result r = null;
             try {
-                List<BuildWrapper> wrappers = new ArrayList<BuildWrapper>(IvyBuild.this.getProject().getBuildWrappersList().toList());
+                List<BuildWrapper> wrappers = new ArrayList<>(IvyBuild.this.getProject().getBuildWrappersList().toList());
 
                 ParametersAction parameters = getAction(ParametersAction.class);
                 if (parameters != null)

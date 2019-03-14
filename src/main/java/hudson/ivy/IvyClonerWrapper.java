@@ -31,7 +31,7 @@ import com.rits.cloning.Cloner;
 
 public class IvyClonerWrapper extends Cloner {
 
-    private final Set<Class<?>> ignored = new HashSet<Class<?>>();
+    private final Set<Class<?>> ignored = new HashSet<>();
     
     @Override
     public void dontClone(Class<?>... c) {

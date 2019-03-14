@@ -704,7 +704,7 @@ public class IvyBuildTrigger extends Notifier implements DependencyDeclarer {
          */
         private void calculateProjectMap() {
             List<Project> projects = Jenkins.getInstance().getAllItems(Project.class);
-            Map<ModuleId, List<AbstractProject>> projectMap = new HashMap<ModuleId, List<AbstractProject>>();
+            Map<ModuleId, List<AbstractProject>> projectMap = new HashMap<>();
             for (Project<?, ?> p : projects) {
                 if (p.isDisabled()) {
                     continue;
@@ -724,7 +724,7 @@ public class IvyBuildTrigger extends Notifier implements DependencyDeclarer {
                         ModuleId id = m.getModuleRevisionId().getModuleId();
                         List<AbstractProject> list = projectMap.get(id);
                         if (list == null) {
-                            list = new ArrayList<AbstractProject>();
+                            list = new ArrayList<>();
                         }
                         list.add(p);
                         projectMap.put(id, list);

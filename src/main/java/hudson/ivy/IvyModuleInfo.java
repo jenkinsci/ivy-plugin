@@ -79,7 +79,7 @@ final class IvyModuleInfo implements Serializable {
     /**
      * Dependency of this project.
      */
-    public final Set<ModuleDependency> dependencies = new LinkedHashSet<ModuleDependency>();
+    public final Set<ModuleDependency> dependencies = new LinkedHashSet<>();
 
     public IvyModuleInfo(ModuleDescriptor module, String relativePathToDescriptor) {
         this.name = new ModuleName(module);
