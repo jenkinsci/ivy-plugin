@@ -12,7 +12,7 @@ jenkinsPlugin {
     shortName = 'ivy'
     displayName = 'Ivy Plugin'
 
-    url = 'https://wiki.jenkins-ci.org/display/JENKINS/Ivy+Plugin'
+    url = 'https://wiki.jenkins.io/display/JENKINS/Ivy+Plugin'
     gitHubUrl = 'https://github.com/jenkinsci/ivy-plugin'
 
     disabledTestInjection = false
