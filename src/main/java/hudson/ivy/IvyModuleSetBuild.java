@@ -335,9 +335,7 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
             Util.createSymlink(getRootDir(),
                     "../../modules/" + moduleFsName + "/builds/" + newBuild.getId() /*ugly!*/,
                     moduleFsName, StreamTaskListener.NULL);
-        } catch (IOException e) {
-            LOGGER.log(Level.WARNING, "Failed to update " + this, e);
-        } catch (InterruptedException e) {
+        } catch (IOException | InterruptedException e) {
             LOGGER.log(Level.WARNING, "Failed to update " + this, e);
         }
     }

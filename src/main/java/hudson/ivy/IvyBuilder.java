@@ -204,10 +204,7 @@ public abstract class IvyBuilder extends MasterToSlaveCallable<Result, IOExcepti
             long startTime = System.nanoTime();
             try {
                 listener.postBuild(event);
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            } catch (InterruptedException e) {
+            } catch (IOException | InterruptedException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             }
@@ -218,10 +215,7 @@ public abstract class IvyBuilder extends MasterToSlaveCallable<Result, IOExcepti
             long startTime = System.nanoTime();
             try {
                 listener.preBuild(event);
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            } catch (InterruptedException e) {
+            } catch (IOException | InterruptedException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             }
