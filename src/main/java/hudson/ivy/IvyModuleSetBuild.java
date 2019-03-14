@@ -430,9 +430,7 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
                 } else {
                     // do builds here
                     try {
-                        List<BuildWrapper> wrappers = new ArrayList<BuildWrapper>();
-                        for (BuildWrapper w : project.getBuildWrappersList())
-                            wrappers.add(w);
+                        List<BuildWrapper> wrappers = new ArrayList<BuildWrapper>(project.getBuildWrappersList());
                         ParametersAction parameters = getAction(ParametersAction.class);
                         if (parameters != null)
                             parameters.createBuildWrappers(IvyModuleSetBuild.this, wrappers);
