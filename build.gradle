@@ -7,7 +7,7 @@ group = 'org.jenkins-ci.plugins'
 description = 'This plugin adds Ivy support to Jenkins'
 
 jenkinsPlugin {
-    coreVersion = '1.642.3'
+    coreVersion = '2.140'
 
     shortName = 'ivy'
     displayName = 'Ivy Plugin'
@@ -43,7 +43,7 @@ jenkinsPlugin {
     }
 }
 
-sourceCompatibility = '1.5'
+sourceCompatibility = '1.8'
 
 compileJava {
     options.encoding = 'UTF-8'
@@ -54,6 +54,8 @@ dependencies {
     jenkinsPlugins 'org.jenkins-ci.plugins:ant:1.2'
     jenkinsPlugins 'org.jenkins-ci.plugins:junit:1.18'
     optionalJenkinsPlugins 'org.jvnet.hudson.plugins:nant:1.4.1'
+    jenkinsTest 'io.jenkins:configuration-as-code:1.7'
+    jenkinsTest 'org.jenkins-ci.main:jenkins-test-harness:2.48'
 
     compile 'uk.com.robust-it:cloning:1.7.4'
     compile 'org.apache.ivy:ivy:2.4.0'

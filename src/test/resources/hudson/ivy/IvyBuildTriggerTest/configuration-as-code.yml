@@ -1,0 +1,8 @@
+unclassified:
+  ivyBuildTrigger:
+    configurations:
+    - ivyConfPath: "dir/file1.xml"
+      name: "setting1"
+    - ivyConfPath: "dir/file2.xml"
+      name: "setting2"
+    extendedVersionMatching: true

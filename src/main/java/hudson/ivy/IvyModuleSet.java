@@ -42,6 +42,7 @@ import hudson.model.Executor;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.Job;
+import hudson.model.PersistentDescriptor;
 import hudson.model.Queue;
 import hudson.model.ResourceActivity;
 import hudson.model.SCMedItem;
@@ -84,6 +85,7 @@ import net.sf.json.JSONObject;
 import org.jenkinsci.lib.configprovider.model.Config;
 import org.jenkinsci.plugins.configfiles.ConfigFiles;
 import org.kohsuke.stapler.AncestorInPath;
+import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -811,23 +813,19 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet, IvyModu
     @Extension
     public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
-    public static final class DescriptorImpl extends AbstractProjectDescriptor {
+    public static final class DescriptorImpl extends AbstractProjectDescriptor implements PersistentDescriptor {
         /**
          * Globally-defined ANT_OPTS.
          */
         private String globalAntOpts;
 
-        public DescriptorImpl() {
-            super();
-            load();
-        }
-
         public String getGlobalAntOpts() {
             return globalAntOpts;
         }
 
+        @DataBoundSetter
         public void setGlobalAntOpts(String globalAntOpts) {
-            this.globalAntOpts = globalAntOpts;
+            this.globalAntOpts = Util.fixEmptyAndTrim(globalAntOpts);
             save();
         }
 
@@ -851,8 +849,8 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet, IvyModu
         }
 
         @Override
-        public boolean configure(StaplerRequest req, JSONObject o) {
-            globalAntOpts = Util.fixEmptyAndTrim(o.getString("globalAntOpts"));
+        public boolean configure(StaplerRequest req, JSONObject json) {
+            req.bindJSON(this, json);
             save();
 
             return true;
