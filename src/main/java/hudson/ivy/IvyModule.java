@@ -113,6 +113,20 @@ public final class IvyModule extends AbstractIvyProject<IvyModule, IvyBuild> imp
     private String relativePathToDescriptorFromWorkspace;
 
     /**
+     * Relative path from the root of the SCM checkout to the ivy descriptor
+     * file for this module.
+     *
+     * If only a single SCM module is checked out out directly into the root of
+     * the workspace, this will be identical to {@link relativePathToDescriptor}.
+     * 
+     * If multiple SCM modules are checked out within subfolders of the
+     * workspace, this path will be relative to the subfolder for the
+     * corresponding checkout containing the ivy descriptor file for this module.
+     * 
+     */
+    private String relativePathToDescriptorFromScmCheckoutRoot;
+
+    /**
      * If this module has targets specified by itself. Otherwise leave it null
      * to use the default targets specified in the parent.
      */
@@ -214,6 +228,7 @@ public final class IvyModule extends AbstractIvyProject<IvyModule, IvyBuild> imp
         this.revision = moduleInfo.revision;
         this.ivyBranch = moduleInfo.branch;
         this.relativePathToDescriptorFromWorkspace = moduleInfo.relativePathToDescriptor;
+        this.relativePathToDescriptorFromScmCheckoutRoot = moduleInfo.relativePathToDescriptorFromScmCheckoutRoot;
         this.dependencies = moduleInfo.dependencies;
         disabled = false;
     }
@@ -287,6 +302,12 @@ public final class IvyModule extends AbstractIvyProject<IvyModule, IvyBuild> imp
     public String getRelativePathToModuleRoot() {
         return StringUtils.removeEnd(relativePathToDescriptorFromWorkspace, StringUtils.defaultString(getRelativePathToDescriptorFromModuleRoot(),
                 IVY_XML_PATH));
+    }
+
+    public String getRelativePathFromScmCheckoutRootToModuleRoot() {
+        return StringUtils.removeEnd(relativePathToDescriptorFromScmCheckoutRoot,
+                StringUtils.defaultString(getRelativePathToDescriptorFromModuleRoot(),
+                        IVY_XML_PATH));
     }
 
     @Override

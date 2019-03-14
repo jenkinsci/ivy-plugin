@@ -63,6 +63,20 @@ final class IvyModuleInfo implements Serializable {
     public final String relativePathToDescriptor;
 
     /**
+     * Relative path from the root of the SCM checkout to the ivy descriptor
+     * file for this module.
+     *
+     * If only a single SCM module is checked out out directly into the root of
+     * the workspace, this will be identical to {@link relativePathToDescriptor}.
+     * 
+     * If multiple SCM modules are checked out within subfolders of the
+     * workspace, this path will be relative to the subfolder for the
+     * corresponding checkout containing the ivy descriptor file for this module.
+     * 
+     */
+    public final String relativePathToDescriptorFromScmCheckoutRoot;
+
+    /**
      * Revision number taken from ivy descriptor file.
      *
      * @see ModuleRevisionId#getRevision()
@@ -81,7 +95,7 @@ final class IvyModuleInfo implements Serializable {
      */
     public final Set<ModuleDependency> dependencies = new LinkedHashSet<ModuleDependency>();
 
-    public IvyModuleInfo(ModuleDescriptor module, String relativePathToDescriptor) {
+    public IvyModuleInfo(ModuleDescriptor module, String relativePathToDescriptor, String relativePathToDescriptorFromScmCheckoutRoot) {
         this.name = new ModuleName(module);
         ModuleRevisionId mrid = module.getModuleRevisionId();
         this.revision = (mrid.getRevision() == null || mrid.getRevision().startsWith("working@") || mrid.getRevision().contains("${")) ? ModuleDependency.UNKNOWN
@@ -89,6 +103,7 @@ final class IvyModuleInfo implements Serializable {
         this.branch = (mrid.getBranch() == null || mrid.getBranch().contains("${")) ? ModuleDependency.UNKNOWN : mrid.getBranch();
         this.displayName = mrid.getName();
         this.relativePathToDescriptor = relativePathToDescriptor;
+        this.relativePathToDescriptorFromScmCheckoutRoot = relativePathToDescriptorFromScmCheckoutRoot;
 
         for (DependencyDescriptor dep : module.getDependencies())
             dependencies.add(new ModuleDependency(dep));
