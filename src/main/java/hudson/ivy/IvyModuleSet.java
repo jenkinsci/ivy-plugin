@@ -216,7 +216,7 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet, IvyModu
             new DescribableList<>(this);
 
     public IvyModuleSet(String name) {
-        this(Jenkins.getInstance(), name);
+        this(Jenkins.get(), name);
     }
 
     public IvyModuleSet(ItemGroup parent, String name) {
@@ -672,7 +672,7 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet, IvyModu
      */
     public List<Queue.Item> getQueueItems() {
         List<Queue.Item> r = new ArrayList<>();
-        for (Queue.Item item : Jenkins.getInstance().getQueue().getItems()) {
+        for (Queue.Item item : Jenkins.get().getQueue().getItems()) {
             Task t = item.task;
             if ((t instanceof IvyModule && ((IvyModule) t).getParent() == this) || t == this) {
                 r.add(item);
@@ -794,9 +794,9 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet, IvyModu
     @SuppressWarnings("unchecked")
     public ArrayList<Descriptor<IvyBuilderType>> getBuilderTypeDescriptors() {
         ArrayList<Descriptor<IvyBuilderType>> buildTypeDescriptors = new ArrayList<>();
-        buildTypeDescriptors.add(Jenkins.getInstance().getDescriptor(AntIvyBuilderType.class));
-        if (Jenkins.getInstance().getPlugin("nant") != null) {
-            buildTypeDescriptors.add(Jenkins.getInstance().getDescriptor(NAntIvyBuilderType.class));
+        buildTypeDescriptors.add(Jenkins.get().getDescriptor(AntIvyBuilderType.class));
+        if (Jenkins.get().getPlugin("nant") != null) {
+            buildTypeDescriptors.add(Jenkins.get().getDescriptor(NAntIvyBuilderType.class));
         }
         return buildTypeDescriptors;
     }

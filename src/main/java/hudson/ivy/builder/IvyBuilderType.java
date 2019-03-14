@@ -38,7 +38,7 @@ public abstract class IvyBuilderType implements Describable<IvyBuilderType>, Ext
 
     @SuppressWarnings("unchecked")
     public Descriptor<IvyBuilderType> getDescriptor() {
-        return Jenkins.getInstance().getDescriptor(getClass());
+        return Jenkins.get().getDescriptor(getClass());
     }
 
     public abstract Map<String, String> getEnvironment();

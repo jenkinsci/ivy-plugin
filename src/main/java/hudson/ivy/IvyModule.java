@@ -481,7 +481,7 @@ public final class IvyModule extends AbstractIvyProject<IvyModule, IvyBuild> imp
      * Returns all Ivy modules in this Jenkins instance.
      */
     protected Collection<IvyModule> getAllIvyModules() {
-        return Jenkins.getInstance().getAllItems(IvyModule.class);
+        return Jenkins.get().getAllItems(IvyModule.class);
     }
     
     private boolean hasDependency(DependencyGraph graph, AbstractProject upstream, AbstractProject downstream) {
@@ -507,7 +507,7 @@ public final class IvyModule extends AbstractIvyProject<IvyModule, IvyBuild> imp
             return cob;
 
         if (!getParent().isAggregatorStyleBuild()) {
-            DependencyGraph graph = Jenkins.getInstance().getDependencyGraph();
+            DependencyGraph graph = Jenkins.get().getDependencyGraph();
             for (AbstractProject tup : graph.getTransitiveUpstream(this)) {
                 if(getParent() == tup.getParent() && (tup.isBuilding() || tup.isInQueue()))
                         return new BecauseOfUpstreamModuleBuildInProgress(tup);
@@ -569,7 +569,7 @@ public final class IvyModule extends AbstractIvyProject<IvyModule, IvyBuild> imp
         publishers.rebuild(req,req.getSubmittedForm(),BuildStepDescriptor.filter(Publisher.all(),this.getClass()));
 
         // dependency setting might have been changed by the user, so rebuild.
-        Jenkins.getInstance().rebuildDependencyGraph();
+        Jenkins.get().rebuildDependencyGraph();
     }
 
     @Override

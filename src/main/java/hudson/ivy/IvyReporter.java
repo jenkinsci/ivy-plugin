@@ -242,6 +242,6 @@ public abstract class IvyReporter implements Describable<IvyReporter>, Extension
     }
 
     public IvyReporterDescriptor getDescriptor() {
-        return (IvyReporterDescriptor) Jenkins.getInstance().getDescriptorOrDie(getClass());
+        return (IvyReporterDescriptor) Jenkins.get().getDescriptorOrDie(getClass());
     }
 }

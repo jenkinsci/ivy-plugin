@@ -575,7 +575,7 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
             }
 
             // we might have added new modules
-            Jenkins.getInstance().rebuildDependencyGraph();
+            Jenkins.get().rebuildDependencyGraph();
 
             // module builds must start with this build's number
             for (IvyModule m : modules.values())

@@ -158,7 +158,7 @@ public class AntIvyBuilderType extends IvyBuilderType {
         }
 
         public Ant.AntInstallation[] getInstallations() {
-            return Jenkins.getInstance().getDescriptorByType(Ant.DescriptorImpl.class).getInstallations();
+            return Jenkins.get().getDescriptorByType(Ant.DescriptorImpl.class).getInstallations();
         }
 
     }

@@ -181,7 +181,7 @@ public abstract class IvyBuilder extends MasterToSlaveCallable<Result, IOExcepti
 
     // since reporters might be from plugins, use the uberjar to resolve them.
     public ClassLoader getClassLoader() {
-        return Jenkins.getInstance().getPluginManager().uberClassLoader;
+        return Jenkins.get().getPluginManager().uberClassLoader;
     }
 
     /**
