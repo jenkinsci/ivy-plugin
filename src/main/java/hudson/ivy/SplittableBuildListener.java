@@ -74,7 +74,7 @@ final class SplittableBuildListener extends AbstractTaskListener implements Buil
                 side.write(b);
             }
 
-            public void write(byte b[], int off, int len) throws IOException {
+            public void write(byte[] b, int off, int len) throws IOException {
                 base.write(b,off,len);
                 side.write(b,off,len);
             }
