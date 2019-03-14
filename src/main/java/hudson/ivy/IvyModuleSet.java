@@ -63,7 +63,6 @@ import hudson.tasks.test.AbstractTestResultAction;
 import hudson.util.CopyOnWriteMap;
 import hudson.util.DescribableList;
 import hudson.util.FormValidation;
-import hudson.util.Function1;
 
 import java.io.File;
 import java.io.IOException;
@@ -550,11 +549,7 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet, IvyModu
         modules = Collections.emptyMap(); // needed during load
         super.onLoad(parent, name);
 
-        modules = loadChildren(this, getModulesDir(), new Function1<ModuleName, IvyModule>() {
-            public ModuleName call(IvyModule module) {
-                return module.getModuleName();
-            }
-        });
+        modules = loadChildren(this, getModulesDir(), module -> module.getModuleName());
         if (publishers == null) {
             publishers = new DescribableList<Publisher, Descriptor<Publisher>>(this);
         }
