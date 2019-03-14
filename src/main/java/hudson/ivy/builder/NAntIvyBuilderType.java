@@ -89,7 +89,7 @@ public class NAntIvyBuilderType extends IvyBuilderType {
 
     @Override
     public Map<String, String> getEnvironment() {
-        return new HashMap<String, String>();
+        return new HashMap<>();
     }
 
     @Override
@@ -118,7 +118,7 @@ public class NAntIvyBuilderType extends IvyBuilderType {
         }
 
         public NantInstallation[] getInstallations() {
-            return Jenkins.getInstance().getDescriptorByType(NantBuilder.DescriptorImpl.class).getInstallations();
+            return Jenkins.get().getDescriptorByType(NantBuilder.DescriptorImpl.class).getInstallations();
         }
 
     }

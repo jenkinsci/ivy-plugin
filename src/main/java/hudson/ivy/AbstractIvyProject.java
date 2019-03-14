@@ -54,7 +54,7 @@ public abstract class AbstractIvyProject<P extends AbstractProject<P,R>,R extend
         // and if the last build failed very early, then the reports that
         // kick in later (like test results) won't be displayed.
         // so pick up last successful build, too.
-        Set<Class> added = new HashSet<Class>();
+        Set<Class> added = new HashSet<>();
         addTransientActionsFromBuild(getLastBuild(), r, added);
         addTransientActionsFromBuild(getLastSuccessfulBuild(), r, added);
 

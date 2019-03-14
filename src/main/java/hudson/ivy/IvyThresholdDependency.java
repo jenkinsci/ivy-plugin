@@ -51,10 +51,7 @@ public class IvyThresholdDependency extends IvyDependency {
         	if(useUpstreamParameters)
         	{
         		List<ParametersAction> paramActions = build.getActions(ParametersAction.class);
-        	
-        		for (ParametersAction parametersAction : paramActions) {
-        			actions.add(parametersAction);
-        		}
+        		actions.addAll(paramActions);
         	}
             return true;
         }

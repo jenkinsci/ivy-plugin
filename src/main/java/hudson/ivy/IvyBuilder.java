@@ -110,7 +110,7 @@ public abstract class IvyBuilder extends MasterToSlaveCallable<Result, IOExcepti
      */
     public Result call() throws IOException {
         try {
-            futures = new ArrayList<Future<?>>();
+            futures = new ArrayList<>();
             Adapter a = new Adapter(this);
 //            PluginManagerInterceptor.setListener(a);
 //            LifecycleExecutorInterceptor.setListener(a);
@@ -181,7 +181,7 @@ public abstract class IvyBuilder extends MasterToSlaveCallable<Result, IOExcepti
 
     // since reporters might be from plugins, use the uberjar to resolve them.
     public ClassLoader getClassLoader() {
-        return Jenkins.getInstance().getPluginManager().uberClassLoader;
+        return Jenkins.get().getPluginManager().uberClassLoader;
     }
 
     /**
@@ -204,10 +204,7 @@ public abstract class IvyBuilder extends MasterToSlaveCallable<Result, IOExcepti
             long startTime = System.nanoTime();
             try {
                 listener.postBuild(event);
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            } catch (InterruptedException e) {
+            } catch (IOException | InterruptedException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             }
@@ -218,10 +215,7 @@ public abstract class IvyBuilder extends MasterToSlaveCallable<Result, IOExcepti
             long startTime = System.nanoTime();
             try {
                 listener.preBuild(event);
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            } catch (InterruptedException e) {
+            } catch (IOException | InterruptedException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             }

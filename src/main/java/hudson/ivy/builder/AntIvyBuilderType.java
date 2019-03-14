@@ -124,7 +124,7 @@ public class AntIvyBuilderType extends IvyBuilderType {
 
     @Override
     public Map<String, String> getEnvironment() {
-        Map<String, String> envs = new HashMap<String, String>();
+        Map<String, String> envs = new HashMap<>();
         String opts = getCalculatedAntOpts(null);
         if (opts != null) {
             envs.put("ANT_OPTS", opts);
@@ -158,7 +158,7 @@ public class AntIvyBuilderType extends IvyBuilderType {
         }
 
         public Ant.AntInstallation[] getInstallations() {
-            return Jenkins.getInstance().getDescriptorByType(Ant.DescriptorImpl.class).getInstallations();
+            return Jenkins.get().getDescriptorByType(Ant.DescriptorImpl.class).getInstallations();
         }
 
     }

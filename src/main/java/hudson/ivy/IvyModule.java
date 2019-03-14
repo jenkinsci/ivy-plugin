@@ -76,7 +76,7 @@ import org.kohsuke.stapler.export.Exported;
 public final class IvyModule extends AbstractIvyProject<IvyModule, IvyBuild> implements Saveable {
     private static final String IVY_XML_PATH = "ivy.xml";
 
-    private DescribableList<Publisher, Descriptor<Publisher>> publishers = new DescribableList<Publisher, Descriptor<Publisher>>(this);
+    private DescribableList<Publisher, Descriptor<Publisher>> publishers = new DescribableList<>(this);
 
     /**
      * Name taken from {@link ModuleRevisionId#getName()}.
@@ -127,14 +127,12 @@ public final class IvyModule extends AbstractIvyProject<IvyModule, IvyBuild> imp
      */
     private String relativePathToDescriptorFromModuleRoot;
 
-    private DescribableList<BuildWrapper,Descriptor<BuildWrapper>> buildWrappers =
-        new DescribableList<BuildWrapper, Descriptor<BuildWrapper>>(this);
+    private DescribableList<BuildWrapper, Descriptor<BuildWrapper>> buildWrappers = new DescribableList<>(this);
     
     public DescribableList<BuildWrapper, Descriptor<BuildWrapper>> getBuildWrappersList() {
         if(buildWrappers == null)
         {
-            buildWrappers =
-                new DescribableList<BuildWrapper, Descriptor<BuildWrapper>>(this);
+            buildWrappers = new DescribableList<>(this);
         }
         return buildWrappers;
     }
@@ -228,7 +226,7 @@ public final class IvyModule extends AbstractIvyProject<IvyModule, IvyBuild> imp
     public void onLoad(ItemGroup<? extends Item> parent, String name) throws IOException {
         super.onLoad(parent, name);
         if (publishers == null)
-            publishers = new DescribableList<Publisher, Descriptor<Publisher>>(this);
+            publishers = new DescribableList<>(this);
         publishers.setOwner(this);
         if (dependencies == null) {
             dependencies = Collections.emptySet();
@@ -295,7 +293,7 @@ public final class IvyModule extends AbstractIvyProject<IvyModule, IvyBuild> imp
             return publishers;
         }
 
-        DescribableList<Publisher, Descriptor<Publisher>> publishersList = new DescribableList<Publisher, Descriptor<Publisher>>(Saveable.NOOP);
+        DescribableList<Publisher, Descriptor<Publisher>> publishersList = new DescribableList<>(Saveable.NOOP);
         try {
             publishersList.addAll(createModulePublishers());
         } catch (Exception e) {
@@ -409,7 +407,7 @@ public final class IvyModule extends AbstractIvyProject<IvyModule, IvyBuild> imp
 
         // Build a map of all Ivy modules in this Jenkins instance as dependencies.
         if (!getParent().ignoreUpstreamChanges() && data == null) {
-            Map<ModuleDependency, IvyModule> modules = new HashMap<ModuleDependency, IvyModule>();
+            Map<ModuleDependency, IvyModule> modules = new HashMap<>();
             for (IvyModule m : getAllIvyModules()) {
                 if(!m.isBuildable() || !m.getParent().isAllowedToTriggerDownstream())  continue;
                 ModuleDependency moduleDependency = m.asDependency();
@@ -422,7 +420,7 @@ public final class IvyModule extends AbstractIvyProject<IvyModule, IvyBuild> imp
 
         // In case two modules with the same name are defined, modules in the same IvyModuleSet
         // take precedence.
-        Map<ModuleDependency, IvyModule> myParentsModules = new HashMap<ModuleDependency, IvyModule>();
+        Map<ModuleDependency, IvyModule> myParentsModules = new HashMap<>();
 
         for (IvyModule m : getParent().getModules()) {
             if(m.isDisabled())  continue;
@@ -483,7 +481,7 @@ public final class IvyModule extends AbstractIvyProject<IvyModule, IvyBuild> imp
      * Returns all Ivy modules in this Jenkins instance.
      */
     protected Collection<IvyModule> getAllIvyModules() {
-        return Jenkins.getInstance().getAllItems(IvyModule.class);
+        return Jenkins.get().getAllItems(IvyModule.class);
     }
     
     private boolean hasDependency(DependencyGraph graph, AbstractProject upstream, AbstractProject downstream) {
@@ -509,7 +507,7 @@ public final class IvyModule extends AbstractIvyProject<IvyModule, IvyBuild> imp
             return cob;
 
         if (!getParent().isAggregatorStyleBuild()) {
-            DependencyGraph graph = Jenkins.getInstance().getDependencyGraph();
+            DependencyGraph graph = Jenkins.get().getDependencyGraph();
             for (AbstractProject tup : graph.getTransitiveUpstream(this)) {
                 if(getParent() == tup.getParent() && (tup.isBuilding() || tup.isInQueue()))
                         return new BecauseOfUpstreamModuleBuildInProgress(tup);
@@ -571,7 +569,7 @@ public final class IvyModule extends AbstractIvyProject<IvyModule, IvyBuild> imp
         publishers.rebuild(req,req.getSubmittedForm(),BuildStepDescriptor.filter(Publisher.all(),this.getClass()));
 
         // dependency setting might have been changed by the user, so rebuild.
-        Jenkins.getInstance().rebuildDependencyGraph();
+        Jenkins.get().rebuildDependencyGraph();
     }
 
     @Override
@@ -584,7 +582,7 @@ public final class IvyModule extends AbstractIvyProject<IvyModule, IvyBuild> imp
      * Creates a list of {@link Publisher}s to be used for a build of this project.
      */
     protected final List<Publisher> createModulePublishers() {
-        List<Publisher> modulePublisherList = new ArrayList<Publisher>();
+        List<Publisher> modulePublisherList = new ArrayList<>();
 
         getPublishers().addAllTo(modulePublisherList);
         if (!getParent().isAggregatorStyleBuild()) {

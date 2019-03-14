@@ -478,7 +478,7 @@ public class IvyBuildTrigger extends Notifier implements DependencyDeclarer {
         if (old == moduleDescriptor) return;
         if ((old == null) || !old.equals(moduleDescriptor)) {
             DESCRIPTOR.invalidateProjectMap();
-            Jenkins.getInstance().rebuildDependencyGraph();
+            Jenkins.get().rebuildDependencyGraph();
         }
     }
 
@@ -703,8 +703,8 @@ public class IvyBuildTrigger extends Notifier implements DependencyDeclarer {
          * Calculate the map of projects to Ivy ModuleId.
          */
         private void calculateProjectMap() {
-            List<Project> projects = Jenkins.getInstance().getAllItems(Project.class);
-            Map<ModuleId, List<AbstractProject>> projectMap = new HashMap<ModuleId, List<AbstractProject>>();
+            List<Project> projects = Jenkins.get().getAllItems(Project.class);
+            Map<ModuleId, List<AbstractProject>> projectMap = new HashMap<>();
             for (Project<?, ?> p : projects) {
                 if (p.isDisabled()) {
                     continue;
@@ -724,7 +724,7 @@ public class IvyBuildTrigger extends Notifier implements DependencyDeclarer {
                         ModuleId id = m.getModuleRevisionId().getModuleId();
                         List<AbstractProject> list = projectMap.get(id);
                         if (list == null) {
-                            list = new ArrayList<AbstractProject>();
+                            list = new ArrayList<>();
                         }
                         list.add(p);
                         projectMap.put(id, list);
@@ -784,7 +784,7 @@ public class IvyBuildTrigger extends Notifier implements DependencyDeclarer {
             }
 
             invalidateProjectMap();
-            Jenkins.getInstance().rebuildDependencyGraphAsync();
+            Jenkins.get().rebuildDependencyGraphAsync();
 
             return true;
         }
@@ -822,7 +822,7 @@ public class IvyBuildTrigger extends Notifier implements DependencyDeclarer {
             String branch = Util.fixEmptyAndTrim(req.getParameter("branch"));
             String rev = Util.fixEmptyAndTrim(req.getParameter("rev"));
 
-            Jenkins.getInstance().getACL().checkPermission(Item.BUILD);
+            Jenkins.get().getACL().checkPermission(Item.BUILD);
 
             if (org == null || name == null) {
                 throw new IllegalArgumentException("doHandleExternalTrigger requires the org and name parameters");
@@ -859,7 +859,7 @@ public class IvyBuildTrigger extends Notifier implements DependencyDeclarer {
                         if (rev != null && rev.equals(mdrid.getRevision()) == false)
                             continue;
                     }
-                    downstream = Jenkins.getInstance().getDependencyGraph().getDownstream(p);
+                    downstream = Jenkins.get().getDependencyGraph().getDownstream(p);
                     break;
                 }
             }
@@ -877,7 +877,7 @@ public class IvyBuildTrigger extends Notifier implements DependencyDeclarer {
          */
         public FormValidation doCheckIvyConf(@QueryParameter final String value) {
             // this can be used to check the existence of a file on the server, so needs to be protected
-            if (!Jenkins.getInstance().hasPermission(Jenkins.ADMINISTER)) {
+            if (!Jenkins.get().hasPermission(Jenkins.ADMINISTER)) {
                 return FormValidation.ok();
             }
             if (Util.fixEmpty(value) == null) {
@@ -902,7 +902,7 @@ public class IvyBuildTrigger extends Notifier implements DependencyDeclarer {
          */
         public FormValidation doCheckIvyFile(@QueryParameter final String value) {
             // this can be used to check the existence of a file on the server, so needs to be protected
-            if (!Jenkins.getInstance().hasPermission(Jenkins.ADMINISTER)) {
+            if (!Jenkins.get().hasPermission(Jenkins.ADMINISTER)) {
                 return FormValidation.ok();
             }
             if (Util.fixEmpty(value) == null) {

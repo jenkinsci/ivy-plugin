@@ -187,10 +187,10 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
         int end = nb != null ? nb.getNumber() : Integer.MAX_VALUE;
 
         // preserve the order by using LinkedHashMap
-        Map<IvyModule, List<IvyBuild>> r = new LinkedHashMap<IvyModule, List<IvyBuild>>(mods.size());
+        Map<IvyModule, List<IvyBuild>> r = new LinkedHashMap<>(mods.size());
 
         for (IvyModule m : mods) {
-            List<IvyBuild> builds = new ArrayList<IvyBuild>();
+            List<IvyBuild> builds = new ArrayList<>();
             IvyBuild b = m.getNearestBuild(number);
             while (b != null && b.getNumber() < end) {
                 builds.add(b);
@@ -224,7 +224,7 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
         int end = nb != null ? nb.getNumber() : Integer.MAX_VALUE;
 
         // preserve the order by using LinkedHashMap
-        Map<IvyModule, IvyBuild> r = new LinkedHashMap<IvyModule, IvyBuild>(mods.size());
+        Map<IvyModule, IvyBuild> r = new LinkedHashMap<>(mods.size());
 
         for (IvyModule m : mods) {
             IvyBuild b = m.getNearestOldBuild(end - 1);
@@ -237,7 +237,7 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
 
     public void registerAsProjectAction(IvyReporter reporter) {
         if (projectActionReporters == null)
-            projectActionReporters = new ArrayList<IvyReporter>();
+            projectActionReporters = new ArrayList<>();
         projectActionReporters.add(reporter);
     }
 
@@ -248,7 +248,7 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
      */
     public <T extends Action> List<T> findModuleBuildActions(Class<T> action) {
         Collection<IvyModule> mods = getParent().getModules();
-        List<T> r = new ArrayList<T>(mods.size());
+        List<T> r = new ArrayList<>(mods.size());
 
         // identify the build number range. [start,end)
         IvyModuleSetBuild nb = getNextBuild();
@@ -302,7 +302,7 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
                 boolean modified = false;
 
                 List<Action> actions = getActions();
-                Set<Class<? extends AggregatableAction>> individuals = new HashSet<Class<? extends AggregatableAction>>();
+                Set<Class<? extends AggregatableAction>> individuals = new HashSet<>();
                 for (Action a : actions) {
                     if (a instanceof IvyAggregatedReport) {
                         IvyAggregatedReport mar = (IvyAggregatedReport) a;
@@ -335,9 +335,7 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
             Util.createSymlink(getRootDir(),
                     "../../modules/" + moduleFsName + "/builds/" + newBuild.getId() /*ugly!*/,
                     moduleFsName, StreamTaskListener.NULL);
-        } catch (IOException e) {
-            LOGGER.log(Level.WARNING, "Failed to update " + this, e);
-        } catch (InterruptedException e) {
+        } catch (IOException | InterruptedException e) {
             LOGGER.log(Level.WARNING, "Failed to update " + this, e);
         }
     }
@@ -375,7 +373,7 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
                 if (!project.isAggregatorStyleBuild()) {
                     // start module builds
                     parseIvyDescriptorFiles(listener, logger, envVars);
-                    Set<IvyModule> triggeredModules = new HashSet<IvyModule>();
+                    Set<IvyModule> triggeredModules = new HashSet<>();
                     if (!project.isIncrementalBuild() || IvyModuleSetBuild.this.getChangeSet().isEmptySet()) {
                         for (IvyModule module : project.sortedActiveModules) {
                             // Don't trigger builds if we've already triggered
@@ -430,9 +428,7 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
                 } else {
                     // do builds here
                     try {
-                        List<BuildWrapper> wrappers = new ArrayList<BuildWrapper>();
-                        for (BuildWrapper w : project.getBuildWrappersList())
-                            wrappers.add(w);
+                        List<BuildWrapper> wrappers = new ArrayList<>(project.getBuildWrappersList());
                         ParametersAction parameters = getAction(ParametersAction.class);
                         if (parameters != null)
                             parameters.createBuildWrappers(IvyModuleSetBuild.this, wrappers);
@@ -453,7 +449,7 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
                         Properties additionalProperties = null;
                         if (project.isIncrementalBuild()) {
                             parseIvyDescriptorFiles(listener, logger, envVars);
-                            List<String> changedModules = new ArrayList<String>();
+                            List<String> changedModules = new ArrayList<>();
                             for (IvyModule m : project.sortedActiveModules) {
                                 // Check if incrementalBuild is selected and that
                                 // there are changes -
@@ -545,8 +541,8 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
             // update the module list
             Map<ModuleName, IvyModule> modules = project.modules;
             synchronized (modules) {
-                Map<ModuleName, IvyModule> old = new HashMap<ModuleName, IvyModule>(modules);
-                List<IvyModule> sortedModules = new ArrayList<IvyModule>();
+                Map<ModuleName, IvyModule> old = new HashMap<>(modules);
+                List<IvyModule> sortedModules = new ArrayList<>();
 
                 modules.clear();
                 for (IvyModuleInfo ivyDescriptor : ivyDescriptors) {
@@ -579,7 +575,7 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
             }
 
             // we might have added new modules
-            Jenkins.getInstance().rebuildDependencyGraph();
+            Jenkins.get().rebuildDependencyGraph();
 
             // module builds must start with this build's number
             for (IvyModule m : modules.values())
@@ -632,7 +628,7 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
      */
     private static final class Builder extends IvyBuilder {
         private final Map<ModuleName,IvyBuildProxy2> proxies;
-        private final Map<ModuleName,List<Publisher>> modulePublishers = new HashMap<ModuleName,List<Publisher>>();
+        private final Map<ModuleName,List<Publisher>> modulePublishers = new HashMap<>();
 
         private IvyBuildProxy2 lastProxy;
 
@@ -644,7 +640,7 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
         public Builder(BuildListener listener,Map<ModuleName,ProxyImpl2> proxies, Collection<IvyModule> modules, List<String> goals, Map<String,String> systemProps) {
             super(listener,goals,systemProps);
             this.sourceProxies = proxies;
-            this.proxies = new HashMap<ModuleName, IvyBuildProxy2>(proxies);
+            this.proxies = new HashMap<>(proxies);
             for (Entry<ModuleName,IvyBuildProxy2> e : this.proxies.entrySet())
                 e.setValue(new FilterImpl(e.getValue()));
 
@@ -792,7 +788,7 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
             final PrintStream logger = listener.getLogger();
 
             Ivy ivy = getIvy(logger);
-            HashMap<ModuleDescriptor, String> moduleDescriptors = new HashMap<ModuleDescriptor, String>();
+            HashMap<ModuleDescriptor, String> moduleDescriptors = new HashMap<>();
             for (String ivyFilePath : ivyFiles.getDirectoryScanner().getIncludedFiles()) {
                 final File ivyFile = new File(ws, ivyFilePath);
 
@@ -816,7 +812,7 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
                 moduleDescriptors.put(module, ivyFilePath.replace('\\', '/'));
             }
 
-            List<IvyModuleInfo> infos = new ArrayList<IvyModuleInfo>();
+            List<IvyModuleInfo> infos = new ArrayList<>();
             List<ModuleDescriptor> sortedModuleDescriptors = ivy.sortModuleDescriptors(moduleDescriptors.keySet(), SortOptions.DEFAULT);
             for (ModuleDescriptor moduleDescriptor : sortedModuleDescriptors) {
                 infos.add(new IvyModuleInfo(moduleDescriptor, moduleDescriptors.get(moduleDescriptor)));
@@ -845,7 +841,7 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
                 throw new AbortException(Messages.IvyModuleSetBuild_NoSuchIvySettingsFile(settingsLoc.getAbsolutePath()));
             }
             
-            ArrayList<File> propertyFiles = new ArrayList<File>();
+            ArrayList<File> propertyFiles = new ArrayList<>();
             if (StringUtils.isNotBlank(ivySettingsPropertyFiles)) {
                 for (String file : StringUtils.split(ivySettingsPropertyFiles, ',')) {
                     File propertyFile = new File(workspaceProper, file.trim());

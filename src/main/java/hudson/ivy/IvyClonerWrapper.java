@@ -23,6 +23,7 @@
  */
 package hudson.ivy;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -30,15 +31,11 @@ import com.rits.cloning.Cloner;
 
 public class IvyClonerWrapper extends Cloner {
 
-    private final Set<Class<?>> ignored = new HashSet<Class<?>>();
+    private final Set<Class<?>> ignored = new HashSet<>();
     
     @Override
     public void dontClone(Class<?>... c) {
-
-        for (Class<?> cl : c)
-        {
-            this.ignored.add(cl);
-        }
+        Collections.addAll(ignored, c);
         super.dontClone(c);
     }
 
