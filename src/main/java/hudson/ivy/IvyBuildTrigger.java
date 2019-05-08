@@ -27,6 +27,7 @@ import hudson.Util;
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.BuildListener;
 import hudson.model.DependencyGraph;
+import hudson.model.Descriptor;
 import hudson.model.Item;
 import hudson.model.PersistentDescriptor;
 import hudson.model.Result;
@@ -639,6 +640,9 @@ public class IvyBuildTrigger extends Notifier implements DependencyDeclarer {
         public boolean getExists() {
             return new File(ivyConfPath).exists();
         }
+
+        @Extension
+        public static class DescriptorImpl extends Descriptor<IvyConfiguration> {}
     }
 
     /**
