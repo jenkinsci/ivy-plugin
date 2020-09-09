@@ -8,4 +8,4 @@ image:https://ci.jenkins.io/job/Plugins/job/ivy-plugin/job/master/badge/icon[Bui
 
 Provides Jenkins integration with http://ant.apache.org/ivy/[Apache Ivy].
 
-See http://wiki.jenkins-ci.org/display/JENKINS/Ivy+Plugin[Ivy Plugin] on the Jenkins wiki for more information.
+See https://plugins.jenkins.io/ivy/[Ivy Plugin] on the Jenkins wiki for more information.
