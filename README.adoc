@@ -1,0 +1,11 @@
+[[ivy-plugin]]
+= ivy-plugin
+
+image:https://img.shields.io/jenkins/plugin/v/ivy.svg[Jenkins Plugin,link=https://plugins.jenkins.io/ivy]
+image:https://img.shields.io/github/release/jenkinsci/ivy-plugin.svg?label=release[GitHub release,link=https://github.com/jenkinsci/ivy-plugin/releases/latest]
+image:https://img.shields.io/jenkins/plugin/i/ivy.svg?color=blue[Jenkins Plugin Installs,link=https://plugins.jenkins.io/ivy]
+image:https://ci.jenkins.io/job/Plugins/job/ivy-plugin/job/master/badge/icon[Build Status,link=https://ci.jenkins.io/job/Plugins/job/ivy-plugin/job/master/]
+
+Provides Jenkins integration with http://ant.apache.org/ivy/[Apache Ivy].
+
+See https://plugins.jenkins.io/ivy/[Ivy Plugin] on the Jenkins wiki for more information.
