@@ -38,20 +38,20 @@ THE SOFTWARE.
             ${act.displayName}
           </t:summary>
         </j:forEach>
-        <t:summary icon="folder.gif" href="ws/" permission="${it.WORKSPACE}">
+        <t:summary icon="folder.png" href="ws/" permission="${it.WORKSPACE}">
           ${%Workspace}
         </t:summary>
 
         <t:artifactList caption="${%Last Successful Artifacts}"
             build="${it.lastSuccessfulBuild}" baseURL="lastSuccessfulBuild/"/>
 
-        <t:summary icon="notepad.gif" href="changes">
+        <t:summary icon="notepad.png" href="changes">
           ${%Recent Changes}
         </t:summary>
 
         <j:set var="tr" value="${it.testResultAction}"/>
         <j:if test="${tr!=null}">
-          <t:summary icon="clipboard.gif">
+          <t:summary icon="clipboard.png">
             <a href="lastBuild/testReport/">${%Latest Test Result}</a>
             <t:test-result it="${tr}"/>
           </t:summary>
