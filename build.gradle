@@ -1,6 +1,5 @@
 plugins {
-    id 'org.jenkins-ci.jpi' version '0.36.2'
-    id 'ru.vyarus.animalsniffer' version '1.5.0'
+    id 'org.jenkins-ci.jpi' version '0.43.0'
 }
 
 group = 'org.jenkins-ci.plugins'
@@ -49,15 +48,21 @@ compileJava {
     options.encoding = 'UTF-8'
 }
 
+java {
+    registerFeature('nant') {
+        usingSourceSet(sourceSets.main)
+    }
+}
+
 dependencies {
-    jenkinsPlugins 'org.jenkins-ci.plugins:config-file-provider:2.15'
-    jenkinsPlugins 'org.jenkins-ci.plugins:ant:1.2'
-    jenkinsPlugins 'org.jenkins-ci.plugins:junit:1.18'
+    implementation 'org.jenkins-ci.plugins:config-file-provider:2.15'
+    implementation 'org.jenkins-ci.plugins:ant:1.2'
+    implementation 'org.jenkins-ci.plugins:junit:1.18'
 
-    optionalJenkinsPlugins 'org.jvnet.hudson.plugins:nant:1.4.1'
+    nantImplementation 'org.jvnet.hudson.plugins:nant:1.4.1'
 
-    jenkinsTest 'io.jenkins:configuration-as-code:1.7'
-    jenkinsTest 'org.jenkins-ci.main:jenkins-test-harness:2.48'
+    testImplementation 'io.jenkins:configuration-as-code:1.7'
+    testImplementation 'org.jenkins-ci.main:jenkins-test-harness:2.48'
 
     implementation 'uk.com.robust-it:cloning:1.9.12'
     implementation 'org.apache.ivy:ivy:2.5.0'
@@ -65,11 +70,6 @@ dependencies {
     implementation('org.apache.commons:commons-vfs2:2.2') {
         exclude group: 'commons-logging', module: 'commons-logging'
     }
-}
-
-animalsniffer {
-  toolVersion = '1.17'
-  sourceSets = [sourceSets.main]
 }
 
 wrapper {
