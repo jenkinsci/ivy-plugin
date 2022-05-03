@@ -73,5 +73,5 @@ animalsniffer {
 }
 
 wrapper {
-    gradleVersion = '6.0.1'
+    gradleVersion = '7.4.2'
 }
