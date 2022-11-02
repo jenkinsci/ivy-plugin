@@ -92,14 +92,12 @@ import org.apache.tools.ant.BuildEvent;
  * module builds.
  *
  * @author Kohsuke Kawaguchi
- * @see IvyReporters
+ * @see IvyReporter
  */
 public abstract class IvyReporter implements Describable<IvyReporter>, ExtensionPoint, Serializable {
     /**
      * Called before the actual ant execution begins.
      *
-     * @param moduleDescriptor
-     *      Represents the Ivy module to be executed.
      * @return
      *      true if the build can continue, false if there was an error
      *      and the build needs to be aborted.
@@ -120,7 +118,7 @@ public abstract class IvyReporter implements Describable<IvyReporter>, Extension
     }
 
     /**
-     * Called when the build enters a next {@link IvyProject}.
+     * Called when the build enters a next {@link AbstractIvyProject}.
      *
      * <p>
      * When the current build is a multi-module reactor build, every time the build
@@ -138,7 +136,7 @@ public abstract class IvyReporter implements Describable<IvyReporter>, Extension
     }
 
     /**
-     * Called when the build leaves the current {@link IvyProject}.
+     * Called when the build leaves the current {@link AbstractIvyProject}.
      *
      * @see #enterModule
      */

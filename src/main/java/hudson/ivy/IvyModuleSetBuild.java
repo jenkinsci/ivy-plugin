@@ -112,7 +112,7 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
      *
      * When we fork Ant, we do so directly by executing Java, thus this
      * environment variable is pointless (we have to tweak JVM launch option
-     * correctly instead, which can be seen in {@link IvyProcessFactory}), but
+     * correctly instead, which can be seen in {@code IvyProcessFactory}), but
      * setting the environment variable explicitly is still useful in case this
      * Ant forks other Ant processes via normal way. See HUDSON-3644.
      */

@@ -59,7 +59,7 @@ public abstract class IvyReporterDescriptor extends Descriptor<IvyReporter> {
      * Returns an instance used for automatic {@link IvyReporter} activation.
      *
      * <p>
-     * Some {@link IvyReporter}s, such as {@link IvyArtifactArchiver}, can work
+     * Some {@link IvyReporter}s, such as {@code IvyArtifactArchiver}, can work
      * just with the configuration in the Ivy descriptor and don't need any
      * additional Jenkins configuration. They also don't need any explicit
      * enabling/disabling as they can activate themselves by listening to the
