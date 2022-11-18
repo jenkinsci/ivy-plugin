@@ -57,7 +57,7 @@ public interface IvyAggregatedReport extends Action {
      * needs not be concurrency-safe.
      *
      * @param moduleBuilds
-     *      Same as <tt>IvyModuleSet.getModuleBuilds()</tt> but provided for convenience and efficiency.
+     *      Same as {@code IvyModuleSet.getModuleBuilds()} but provided for convenience and efficiency.
      * @param newBuild
      *      Newly completed build.
      */
