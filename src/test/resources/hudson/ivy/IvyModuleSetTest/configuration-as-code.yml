@@ -1,3 +1,5 @@
 unclassified:
   ivyModuleSet:
-    globalAntOpts: "-Dproperty1=value1\n-Dproperty2=value2"
+    globalAntOpts: |-
+      -Dproperty1=value1
+      -Dproperty2=value2

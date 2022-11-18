@@ -813,7 +813,6 @@ public class IvyBuildTrigger extends Notifier implements DependencyDeclarer {
          * dependent projects.  Successfully executing this event trigger requires global {@link Item#BUILD} permission on a
          * secured Jenkins instance.
          *
-         * @author jmetcalf@dev.java.net
          * @param req  The StaplerRequest
          * @param rsp  The StaplerResponse
          * @throws IOException    IOException on the servlet call
@@ -936,7 +935,7 @@ public class IvyBuildTrigger extends Notifier implements DependencyDeclarer {
      * This cause is used when triggering downstream builds from the external event trigger.
      *
      * @author jmetcalf@dev.java.net
-     * @see DescriptorImpl#doHandleExternalTrigger(StaplerRequest, StaplerResponse)
+     * @see hudson.ivy.IvyBuildTrigger.DescriptorImpl#doHandleExternalTrigger(StaplerRequest, StaplerResponse)
      */
     public static class UserCause extends Cause.UserIdCause {
 
