@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FindBugsFilter>
+  <!--
+    Here lies technical debt. Exclusions in this section have not yet been triaged. When working on
+    on this section, pick an exclusion to triage, then:
+    - If it is a false positive, add a @SuppressFBWarnings(value = "[…]", justification = "[…]")
+      annotation indicating the reason why it is a false positive, then remove the exclusion from
+      this section.
+    - If it is not a false positive, fix the bug, then remove the exclusion from this section.
+   -->
+  <Match>
+    <Confidence value="1"/>
+    <Or>
+      <And>
+        <Bug pattern="DM_DEFAULT_ENCODING"/>
+        <Class name="hudson.ivy.SplittableBuildListener"/>
+      </And>
+      <And>
+        <Bug pattern="SE_BAD_FIELD"/>
+        <Class name="hudson.ivy.SplittableBuildListener"/>
+      </And>
+      <And>
+        <Bug pattern="SE_BAD_FIELD_INNER_CLASS"/>
+        <Class name="hudson.ivy.IvyBuild$ProxyImpl"/>
+      </And>
+      <And>
+        <Bug pattern="SE_BAD_FIELD_STORE"/>
+        <Class name="hudson.ivy.SplittableBuildListener"/>
+      </And>
+    </Or>
+  </Match>
+</FindBugsFilter>

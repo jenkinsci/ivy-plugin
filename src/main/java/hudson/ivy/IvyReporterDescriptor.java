@@ -86,7 +86,7 @@ public abstract class IvyReporterDescriptor extends Descriptor<IvyReporter> {
     }
 
     /**
-     * Returns true if this descriptor has <tt>config.jelly</tt>.
+     * Returns true if this descriptor has {@code config.jelly}.
      */
     public final boolean hasConfigScreen() {
         MetaClass c = WebApp.getCurrent().getMetaClass(getClass());
