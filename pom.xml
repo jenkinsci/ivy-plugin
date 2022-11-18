@@ -125,6 +125,7 @@
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>nant</artifactId>
       <version>1.4.3</version>
+      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>uk.com.robust-it</groupId>
