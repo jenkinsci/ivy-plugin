@@ -38,5 +38,5 @@ THE SOFTWARE.
     </f:entry>
   </f:section>
 
-  <p:config-publishers/>
+  <p:config-publishers2/>
 </j:jelly>

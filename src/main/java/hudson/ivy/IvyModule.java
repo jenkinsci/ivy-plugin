@@ -566,7 +566,7 @@ public final class IvyModule extends AbstractIvyProject<IvyModule, IvyBuild> imp
         targets = Util.fixEmptyAndTrim(req.getParameter("targets"));
         relativePathToDescriptorFromModuleRoot = Util.fixEmptyAndTrim(req.getParameter("relativePathToDescriptorFromModuleRoot"));
 
-        publishers.rebuild(req,req.getSubmittedForm(),BuildStepDescriptor.filter(Publisher.all(),this.getClass()));
+        publishers.rebuildHetero(req,req.getSubmittedForm(),Publisher.all(),"publisher");
 
         // dependency setting might have been changed by the user, so rebuild.
         Jenkins.get().rebuildDependencyGraph();

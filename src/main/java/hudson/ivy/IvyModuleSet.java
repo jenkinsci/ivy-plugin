@@ -713,7 +713,7 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet, IvyModu
         if (incrementalBuild)
             changedModulesProperty = Util.fixEmptyAndTrim(json.getJSONObject("incrementalBuild").getString("changedModulesProperty"));
 
-        publishers.rebuild(req, json, BuildStepDescriptor.filter(Publisher.all(), this.getClass()));
+        publishers.rebuildHetero(req, json, Publisher.all(), "publisher");
         buildWrappers.rebuild(req, json, BuildWrappers.getFor(this));
 
         if (!isAggregatorStyleBuild()) {
