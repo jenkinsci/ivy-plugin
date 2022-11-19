@@ -2,7 +2,7 @@
 
 ## Version 1.26 (November 28, 2015)
 
--   Fixed <https://issues.jenkins-ci.org/browse/JENKINS-13440> - Ivy.xml
+-   Fixed <https://issues.jenkins-ci.org/browse/JENKINS-13440> - Ivy.xml
     scanning (Thanks mbechtol)
 -   Fixed issue when slave nodes offline at startup (Thanks burghduffkc)
 
@@ -18,14 +18,14 @@
     Support Ivy 2.4.0
 -   Fixed
     <https://issues.jenkins-ci.org/browse/JENKINS-24282>[JENKINS-24282](https://issues.jenkins-ci.org/browse/JENKINS-24282) -
-    Improved wording (Thanks tfennelly)
+    Improved wording (Thanks tfennelly)
 -   Fixed Build now link (Thanks mcupak)
 -   Migrated build to gradle
 -   Increased core version to 1.491
 
 ## Version 1.24 (April 27, 2014)
 
--   Fixed [JENKINS-22447](https://issues.jenkins-ci.org/browse/JENKINS-22447) -
+-   Fixed [JENKINS-22447](https://issues.jenkins-ci.org/browse/JENKINS-22447) -
     Ivy Job builds don't release workspace lock
 
 ## Version 1.23.2 (July 26, 2013)
@@ -272,4 +272,3 @@
 
 -   now version 2.0.0 of ivy is supported
 -   the ivy plugin can now handle builds run on a slave
-
