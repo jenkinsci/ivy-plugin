@@ -29,7 +29,9 @@ import hudson.Util;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.DependencyGraph;
+import hudson.model.DependencyGraph.Dependency;
 import hudson.model.Descriptor;
+import hudson.model.Descriptor.FormException;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.JDK;
@@ -39,15 +41,11 @@ import hudson.model.Node;
 import hudson.model.Resource;
 import hudson.model.Result;
 import hudson.model.Saveable;
-import hudson.model.DependencyGraph.Dependency;
-import hudson.model.Descriptor.FormException;
 import hudson.model.queue.CauseOfBlockage;
-import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.LogRotator;
 import hudson.tasks.Publisher;
 import hudson.util.DescribableList;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -58,9 +56,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import javax.servlet.ServletException;
-
 import jenkins.model.Jenkins;
 import org.apache.commons.lang.StringUtils;
 import org.apache.ivy.core.module.id.ModuleRevisionId;
@@ -128,51 +124,43 @@ public final class IvyModule extends AbstractIvyProject<IvyModule, IvyBuild> imp
     private String relativePathToDescriptorFromModuleRoot;
 
     private DescribableList<BuildWrapper, Descriptor<BuildWrapper>> buildWrappers = new DescribableList<>(this);
-    
+
     public DescribableList<BuildWrapper, Descriptor<BuildWrapper>> getBuildWrappersList() {
-        if(buildWrappers == null)
-        {
+        if (buildWrappers == null) {
             buildWrappers = new DescribableList<>(this);
         }
         return buildWrappers;
     }
-    
+
     /**
      * List of modules that this module declares direct dependencies on.
      */
     @CopyOnWrite
     private volatile Set<ModuleDependency> dependencies;
 
-    /* package */IvyModule(IvyModuleSet parent, IvyModuleInfo moduleInfo, int firstBuildNumber) throws IOException {
+    /* package */ IvyModule(IvyModuleSet parent, IvyModuleInfo moduleInfo, int firstBuildNumber) throws IOException {
         super(parent, moduleInfo.name.toFileSystemName());
         reconfigure(moduleInfo);
         updateNextBuildNumber(firstBuildNumber);
         copyParentBuildWrappers(parent);
     }
 
-    private void copyParentBuildWrappers(IvyModuleSet parent)
-    {
-        if(!parent.isAggregatorStyleBuild())
-        {
+    private void copyParentBuildWrappers(IvyModuleSet parent) {
+        if (!parent.isAggregatorStyleBuild()) {
             List<BuildWrapper> parentWrappers = parent.getBuildWrappersList().getAll(BuildWrapper.class);
-        
-            
-            
+
             for (BuildWrapper buildWrapper : parentWrappers) {
-                try
-                {
+                try {
                     IvyClonerWrapper cloner = new IvyClonerWrapper();
                     cloner.dontClone(Descriptor.class);
                     getBuildWrappersList().add(cloner.deepClone(buildWrapper));
-                }
-                catch(Exception e)
-                {
+                } catch (Exception e) {
                     throw new RuntimeException("Could not copy build wrappers", e);
                 }
             }
         }
     }
-    
+
     /**
      * {@link IvyModule} follows the same log rotation schedule as its parent.
      */
@@ -207,7 +195,7 @@ public final class IvyModule extends AbstractIvyProject<IvyModule, IvyBuild> imp
      * This method is invoked on {@link IvyModule} that has the matching
      * {@link ModuleName}.
      */
-    /* package */final void reconfigure(IvyModuleInfo moduleInfo) {
+    /* package */ final void reconfigure(IvyModuleInfo moduleInfo) {
         this.displayName = moduleInfo.displayName;
         this.revision = moduleInfo.revision;
         this.ivyBranch = moduleInfo.branch;
@@ -225,8 +213,9 @@ public final class IvyModule extends AbstractIvyProject<IvyModule, IvyBuild> imp
     @Override
     public void onLoad(ItemGroup<? extends Item> parent, String name) throws IOException {
         super.onLoad(parent, name);
-        if (publishers == null)
+        if (publishers == null) {
             publishers = new DescribableList<>(this);
+        }
         publishers.setOwner(this);
         if (dependencies == null) {
             dependencies = Collections.emptySet();
@@ -273,8 +262,9 @@ public final class IvyModule extends AbstractIvyProject<IvyModule, IvyBuild> imp
     }
 
     public String getRelativePathToDescriptorFromModuleRoot() {
-        if (relativePathToDescriptorFromModuleRoot != null)
+        if (relativePathToDescriptorFromModuleRoot != null) {
             return relativePathToDescriptorFromModuleRoot;
+        }
         return getParent().getRelativePathToDescriptorFromModuleRoot();
     }
 
@@ -283,8 +273,9 @@ public final class IvyModule extends AbstractIvyProject<IvyModule, IvyBuild> imp
     }
 
     public String getRelativePathToModuleRoot() {
-        return StringUtils.removeEnd(relativePathToDescriptorFromWorkspace, StringUtils.defaultString(getRelativePathToDescriptorFromModuleRoot(),
-                IVY_XML_PATH));
+        return StringUtils.removeEnd(
+                relativePathToDescriptorFromWorkspace,
+                StringUtils.defaultString(getRelativePathToDescriptorFromModuleRoot(), IVY_XML_PATH));
     }
 
     @Override
@@ -326,8 +317,10 @@ public final class IvyModule extends AbstractIvyProject<IvyModule, IvyBuild> imp
      * Gets organisation+name+revision as {@link ModuleDependency}.
      */
     public ModuleDependency asDependency() {
-        return new ModuleDependency(moduleName, Functions.defaulted(revision, ModuleDependency.UNKNOWN), Functions.defaulted(ivyBranch,
-                ModuleDependency.UNKNOWN));
+        return new ModuleDependency(
+                moduleName,
+                Functions.defaulted(revision, ModuleDependency.UNKNOWN),
+                Functions.defaulted(ivyBranch, ModuleDependency.UNKNOWN));
     }
 
     @Override
@@ -363,8 +356,9 @@ public final class IvyModule extends AbstractIvyProject<IvyModule, IvyBuild> imp
     @Override
     public Label getAssignedLabel() {
         Node n = getParent().getLastBuiltOn();
-        if (n == null)
+        if (n == null) {
             return null;
+        }
         return n.getSelfLabel();
     }
 
@@ -398,18 +392,22 @@ public final class IvyModule extends AbstractIvyProject<IvyModule, IvyBuild> imp
         // Allow a module's publishers to add to the dependency graph.
         // This permits the standard build trigger to still work in
         // addition to the triggers generated by ivy dependencies.
-        publishers.buildDependencyGraph(this,graph);
-        
-        if (!isBuildable() || (getParent().ignoreUpstreamChanges() && getParent().isAggregatorStyleBuild()))
+        publishers.buildDependencyGraph(this, graph);
+
+        if (!isBuildable()
+                || (getParent().ignoreUpstreamChanges() && getParent().isAggregatorStyleBuild())) {
             return;
-        
+        }
+
         IvyDependencyComputationData data = graph.getComputationalData(IvyDependencyComputationData.class);
 
         // Build a map of all Ivy modules in this Jenkins instance as dependencies.
         if (!getParent().ignoreUpstreamChanges() && data == null) {
             Map<ModuleDependency, IvyModule> modules = new HashMap<>();
             for (IvyModule m : getAllIvyModules()) {
-                if(!m.isBuildable() || !m.getParent().isAllowedToTriggerDownstream())  continue;
+                if (!m.isBuildable() || !m.getParent().isAllowedToTriggerDownstream()) {
+                    continue;
+                }
                 ModuleDependency moduleDependency = m.asDependency();
                 modules.put(moduleDependency, m);
                 modules.put(moduleDependency.withUnknownRevision(), m);
@@ -423,10 +421,12 @@ public final class IvyModule extends AbstractIvyProject<IvyModule, IvyBuild> imp
         Map<ModuleDependency, IvyModule> myParentsModules = new HashMap<>();
 
         for (IvyModule m : getParent().getModules()) {
-            if(m.isDisabled())  continue;
+            if (m.isDisabled()) {
+                continue;
+            }
             ModuleDependency moduleDependency = m.asDependency();
-            myParentsModules.put(moduleDependency,m);
-            myParentsModules.put(moduleDependency.withUnknownRevision(),m);
+            myParentsModules.put(moduleDependency, m);
+            myParentsModules.put(moduleDependency.withUnknownRevision(), m);
         }
 
         // if the build style is the aggregator build, define dependencies against project,
@@ -438,15 +438,16 @@ public final class IvyModule extends AbstractIvyProject<IvyModule, IvyBuild> imp
             if (src == null) {
                 src = myParentsModules.get(d.withUnknownRevision());
             }
-            if(src == null && !getParent().ignoreUpstreamChanges()) {
+            if (src == null && !getParent().ignoreUpstreamChanges()) {
                 src = data.allModules.get(d);
                 if (src == null) {
                     src = data.allModules.get(d.withUnknownRevision());
                 }
             }
 
-            if (src == null)
+            if (src == null) {
                 continue;
+            }
 
             AbstractProject upstream;
             if (src.getParent().isAggregatorStyleBuild()) {
@@ -456,24 +457,26 @@ public final class IvyModule extends AbstractIvyProject<IvyModule, IvyBuild> imp
                 // downstream one to make the
                 // "Block build when upstream project is building" option behave
                 // properly
-                if (!this.getParent().equals(src.getParent()) && !hasDependency(graph, src.getParent(), downstream))
+                if (!this.getParent().equals(src.getParent()) && !hasDependency(graph, src.getParent(), downstream)) {
                     graph.addDependency(new IvyVirtualDependency(src.getParent(), downstream));
+                }
                 upstream = src;
             }
-            
-            AbstractProject revisedDownstream = downstream;                                                               
-            if(!getParent().equals(src.getParent()) && !getParent().isAggregatorStyleBuild())                             
-            {                                                                                                             
-                revisedDownstream = getParent();                                                                          
-                if (!src.getParent().isAggregatorStyleBuild() && !hasDependency(graph, src.getParent(),revisedDownstream))
-                {                                                                                                         
-                    graph.addDependency(new IvyVirtualDependency(src.getParent(), revisedDownstream));                    
-                }                                                                                                         
-            }                                                                                                             
+
+            AbstractProject revisedDownstream = downstream;
+            if (!getParent().equals(src.getParent()) && !getParent().isAggregatorStyleBuild()) {
+                revisedDownstream = getParent();
+                if (!src.getParent().isAggregatorStyleBuild()
+                        && !hasDependency(graph, src.getParent(), revisedDownstream)) {
+                    graph.addDependency(new IvyVirtualDependency(src.getParent(), revisedDownstream));
+                }
+            }
 
             // Create the build dependency, ignoring self-referencing or already existing deps
-            if (upstream != revisedDownstream && !hasDependency(graph, upstream, revisedDownstream))
-                graph.addDependency(new IvyThresholdDependency(upstream, revisedDownstream, Result.SUCCESS, isUseUpstreamParameters()));
+            if (upstream != revisedDownstream && !hasDependency(graph, upstream, revisedDownstream)) {
+                graph.addDependency(new IvyThresholdDependency(
+                        upstream, revisedDownstream, Result.SUCCESS, isUseUpstreamParameters()));
+            }
         }
     }
 
@@ -483,11 +486,12 @@ public final class IvyModule extends AbstractIvyProject<IvyModule, IvyBuild> imp
     protected Collection<IvyModule> getAllIvyModules() {
         return Jenkins.get().getAllItems(IvyModule.class);
     }
-    
+
     private boolean hasDependency(DependencyGraph graph, AbstractProject upstream, AbstractProject downstream) {
         for (Dependency dep : graph.getDownstreamDependencies(upstream)) {
-            if (dep instanceof IvyDependency && dep.getDownstreamProject().equals(downstream))
+            if (dep instanceof IvyDependency && dep.getDownstreamProject().equals(downstream)) {
                 return true;
+            }
         }
         return false;
     }
@@ -503,14 +507,16 @@ public final class IvyModule extends AbstractIvyProject<IvyModule, IvyBuild> imp
     @Override
     public CauseOfBlockage getCauseOfBlockage() {
         CauseOfBlockage cob = super.getCauseOfBlockage();
-        if (cob != null)
+        if (cob != null) {
             return cob;
+        }
 
         if (!getParent().isAggregatorStyleBuild()) {
             DependencyGraph graph = Jenkins.get().getDependencyGraph();
             for (AbstractProject tup : graph.getTransitiveUpstream(this)) {
-                if(getParent() == tup.getParent() && (tup.isBuilding() || tup.isInQueue()))
-                        return new BecauseOfUpstreamModuleBuildInProgress(tup);
+                if (getParent() == tup.getParent() && (tup.isBuilding() || tup.isInQueue())) {
+                    return new BecauseOfUpstreamModuleBuildInProgress(tup);
+                }
             }
         }
 
@@ -521,9 +527,9 @@ public final class IvyModule extends AbstractIvyProject<IvyModule, IvyBuild> imp
      * Because the upstream module build is in progress, and we are configured to wait for that.
      */
     public static class BecauseOfUpstreamModuleBuildInProgress extends CauseOfBlockage {
-        public final AbstractProject<?,?> up;
+        public final AbstractProject<?, ?> up;
 
-        public BecauseOfUpstreamModuleBuildInProgress(AbstractProject<?,?> up) {
+        public BecauseOfUpstreamModuleBuildInProgress(AbstractProject<?, ?> up) {
             this.up = up;
         }
 
@@ -535,19 +541,25 @@ public final class IvyModule extends AbstractIvyProject<IvyModule, IvyBuild> imp
 
     @Override
     protected void addTransientActionsFromBuild(IvyBuild build, List<Action> collection, Set<Class> added) {
-        if (build == null)
+        if (build == null) {
             return;
+        }
         List<IvyReporter> list = build.projectActionReporters;
-        if (list == null)
+        if (list == null) {
             return;
+        }
 
         for (IvyReporter step : list) {
-            if (!added.add(step.getClass()))
+            if (!added.add(step.getClass())) {
                 continue; // already added
+            }
             try {
                 collection.addAll(step.getProjectActions(this));
             } catch (Exception e) {
-                LOGGER.log(Level.WARNING, "Failed to getProjectAction from " + step + ". Report issue to plugin developers.", e);
+                LOGGER.log(
+                        Level.WARNING,
+                        "Failed to getProjectAction from " + step + ". Report issue to plugin developers.",
+                        e);
             }
         }
     }
@@ -564,9 +576,10 @@ public final class IvyModule extends AbstractIvyProject<IvyModule, IvyBuild> imp
         super.submit(req, rsp);
 
         targets = Util.fixEmptyAndTrim(req.getParameter("targets"));
-        relativePathToDescriptorFromModuleRoot = Util.fixEmptyAndTrim(req.getParameter("relativePathToDescriptorFromModuleRoot"));
+        relativePathToDescriptorFromModuleRoot =
+                Util.fixEmptyAndTrim(req.getParameter("relativePathToDescriptorFromModuleRoot"));
 
-        publishers.rebuildHetero(req,req.getSubmittedForm(),Publisher.all(),"publisher");
+        publishers.rebuildHetero(req, req.getSubmittedForm(), Publisher.all(), "publisher");
 
         // dependency setting might have been changed by the user, so rebuild.
         Jenkins.get().rebuildDependencyGraph();
@@ -575,7 +588,7 @@ public final class IvyModule extends AbstractIvyProject<IvyModule, IvyBuild> imp
     @Override
     protected void performDelete() throws IOException, InterruptedException {
         super.performDelete();
-         getParent().onModuleDeleted(this);
+        getParent().onModuleDeleted(this);
     }
 
     /**
@@ -592,12 +605,10 @@ public final class IvyModule extends AbstractIvyProject<IvyModule, IvyBuild> imp
         return modulePublisherList;
     }
 
-    
-    
     @Override
     public boolean isUseUpstreamParameters() {
         return getParent().isUseUpstreamParameters();
     }
-    
+
     private static final Logger LOGGER = Logger.getLogger(IvyModule.class.getName());
 }

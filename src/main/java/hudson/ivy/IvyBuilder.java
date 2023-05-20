@@ -28,14 +28,12 @@ import hudson.model.Result;
 import hudson.remoting.Callable;
 import hudson.remoting.DelegatingCallable;
 import hudson.remoting.Future;
-
 import java.io.IOException;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
-
 import jenkins.model.Jenkins;
 import jenkins.security.MasterToSlaveCallable;
 import org.apache.tools.ant.BuildEvent;
@@ -52,7 +50,8 @@ import org.apache.tools.ant.BuildEvent;
  *
  * @author Timothy Bingaman
  */
-public abstract class IvyBuilder extends MasterToSlaveCallable<Result, IOException> implements DelegatingCallable<Result, IOException> {
+public abstract class IvyBuilder extends MasterToSlaveCallable<Result, IOException>
+        implements DelegatingCallable<Result, IOException> {
     /**
      * Goals to be executed in this Ant execution.
      */
@@ -61,7 +60,7 @@ public abstract class IvyBuilder extends MasterToSlaveCallable<Result, IOExcepti
      * Jenkins-defined system properties. These will be made available to Ant,
      * and accessible as if they are specified as -Dkey=value
      */
-    private final Map<String,String> systemProps;
+    private final Map<String, String> systemProps;
     /**
      * Where error messages and so on are sent.
      */
@@ -71,7 +70,7 @@ public abstract class IvyBuilder extends MasterToSlaveCallable<Result, IOExcepti
      * Flag needs to be set at the constructor, so that this reflects
      * the setting at master.
      */
-//    private final boolean profile = AntProcessFactory.profile;
+    //    private final boolean profile = AntProcessFactory.profile;
 
     /**
      * Record all asynchronous executions as they are scheduled,
@@ -108,78 +107,84 @@ public abstract class IvyBuilder extends MasterToSlaveCallable<Result, IOExcepti
     /**
      * This code is executed inside the Ant jail process.
      */
+    @Override
     public Result call() throws IOException {
         try {
             futures = new ArrayList<>();
             Adapter a = new Adapter(this);
-//            PluginManagerInterceptor.setListener(a);
-//            LifecycleExecutorInterceptor.setListener(a);
+            //            PluginManagerInterceptor.setListener(a);
+            //            LifecycleExecutorInterceptor.setListener(a);
 
-//            markAsSuccess = false;
+            //            markAsSuccess = false;
 
             System.getProperties().putAll(systemProps);
 
             listener.getLogger().println(formatArgs(goals));
-//            int r = Main.launch(goals.toArray(new String[goals.size()]));
+            //            int r = Main.launch(goals.toArray(new String[goals.size()]));
 
             // now check the completion status of async ops
             boolean messageReported = false;
             long startTime = System.nanoTime();
             for (Future<?> f : futures) {
                 try {
-                    if(!f.isDone() && !messageReported) {
+                    if (!f.isDone() && !messageReported) {
                         messageReported = true;
                         listener.getLogger().println(Messages.IvyBuilder_Waiting());
                     }
                     f.get();
                 } catch (InterruptedException e) {
                     // attempt to cancel all asynchronous tasks
-                    for (Future<?> g : futures)
+                    for (Future<?> g : futures) {
                         g.cancel(true);
+                    }
                     listener.getLogger().println(Messages.IvyBuilder_Aborted());
                     return Result.ABORTED;
                 } catch (ExecutionException e) {
-//                    e.printStackTrace(listener.error(Messages.IvyBuilder_AsyncFailed()));
+                    //                    e.printStackTrace(listener.error(Messages.IvyBuilder_AsyncFailed()));
                 }
             }
-            a.overheadTime += System.nanoTime()-startTime;
+            a.overheadTime += System.nanoTime() - startTime;
             futures.clear();
 
-//            if(profile) {
-//                NumberFormat n = NumberFormat.getInstance();
-//                PrintStream logger = listener.getLogger();
-//                logger.println("Total overhead was "+format(n,a.overheadTime)+"ms");
-//                Channel ch = Channel.current();
-//                logger.println("Class loading "   +format(n,ch.classLoadingTime.get())   +"ms, "+ch.classLoadingCount+" classes");
-//                logger.println("Resource loading "+format(n,ch.resourceLoadingTime.get())+"ms, "+ch.resourceLoadingCount+" times");
-//            }
+            //            if(profile) {
+            //                NumberFormat n = NumberFormat.getInstance();
+            //                PrintStream logger = listener.getLogger();
+            //                logger.println("Total overhead was "+format(n,a.overheadTime)+"ms");
+            //                Channel ch = Channel.current();
+            //                logger.println("Class loading "   +format(n,ch.classLoadingTime.get())   +"ms,
+            // "+ch.classLoadingCount+" classes");
+            //                logger.println("Resource loading "+format(n,ch.resourceLoadingTime.get())+"ms,
+            // "+ch.resourceLoadingCount+" times");
+            //            }
 
-//            if(r==0)    return Result.SUCCESS;
+            //            if(r==0)    return Result.SUCCESS;
 
-//            if(markAsSuccess) {
-//                return Result.SUCCESS;
-//            }
+            //            if(markAsSuccess) {
+            //                return Result.SUCCESS;
+            //            }
 
             listener.getLogger().println(Messages.IvyBuilder_Failed());
             return Result.FAILURE;
         } finally {
-//            PluginManagerInterceptor.setListener(null);
-//            LifecycleExecutorInterceptor.setListener(null);
+            //            PluginManagerInterceptor.setListener(null);
+            //            LifecycleExecutorInterceptor.setListener(null);
         }
     }
 
     private String formatArgs(List<String> args) {
         StringBuilder buf = new StringBuilder("Executing Ant: ");
-        for (String arg : args)
+        for (String arg : args) {
             buf.append(' ').append(arg);
+        }
         return buf.toString();
     }
 
     private String format(NumberFormat n, long nanoTime) {
-        return n.format(nanoTime/1000000);
+        return n.format(nanoTime / 1000000);
     }
 
     // since reporters might be from plugins, use the uberjar to resolve them.
+    @Override
     public ClassLoader getClassLoader() {
         return Jenkins.get().getPluginManager().uberClassLoader;
     }
@@ -200,6 +205,7 @@ public abstract class IvyBuilder extends MasterToSlaveCallable<Result, IOExcepti
             this.listener = listener;
         }
 
+        @Override
         public void buildFinished(BuildEvent event) {
             long startTime = System.nanoTime();
             try {
@@ -208,9 +214,10 @@ public abstract class IvyBuilder extends MasterToSlaveCallable<Result, IOExcepti
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             }
-            overheadTime += System.nanoTime()-startTime;
+            overheadTime += System.nanoTime() - startTime;
         }
 
+        @Override
         public void buildStarted(BuildEvent event) {
             long startTime = System.nanoTime();
             try {
@@ -219,29 +226,34 @@ public abstract class IvyBuilder extends MasterToSlaveCallable<Result, IOExcepti
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             }
-            overheadTime += System.nanoTime()-startTime;
+            overheadTime += System.nanoTime() - startTime;
         }
 
+        @Override
         public void messageLogged(BuildEvent event) {
             // TODO Auto-generated method stub
 
         }
 
+        @Override
         public void targetFinished(BuildEvent event) {
             // TODO Auto-generated method stub
 
         }
 
+        @Override
         public void targetStarted(BuildEvent event) {
             // TODO Auto-generated method stub
 
         }
 
+        @Override
         public void taskFinished(BuildEvent event) {
             // TODO Auto-generated method stub
 
         }
 
+        @Override
         public void taskStarted(BuildEvent event) {
             // TODO Auto-generated method stub
 

@@ -38,32 +38,31 @@ import hudson.model.Action;
 import hudson.model.BuildableItemWithBuildWrappers;
 import hudson.model.DependencyGraph;
 import hudson.model.Descriptor;
+import hudson.model.Descriptor.FormException;
 import hudson.model.Executor;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.Job;
 import hudson.model.PersistentDescriptor;
 import hudson.model.Queue;
+import hudson.model.Queue.Task;
 import hudson.model.ResourceActivity;
 import hudson.model.SCMedItem;
 import hudson.model.Saveable;
 import hudson.model.TopLevelItem;
-import hudson.model.Descriptor.FormException;
-import hudson.model.Queue.Task;
 import hudson.model.queue.CauseOfBlockage;
 import hudson.search.CollectionSearchIndex;
 import hudson.search.SearchIndexBuilder;
+import hudson.tasks.Ant.AntInstallation;
 import hudson.tasks.BuildStep;
-import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrappers;
 import hudson.tasks.Publisher;
-import hudson.tasks.Ant.AntInstallation;
 import hudson.tasks.test.AbstractTestResultAction;
 import hudson.util.CopyOnWriteMap;
 import hudson.util.DescribableList;
 import hudson.util.FormValidation;
-
+import hudson.util.ListBoxModel;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -74,13 +73,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-
 import javax.servlet.ServletException;
-
-import hudson.util.ListBoxModel;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
-
 import org.jenkinsci.lib.configprovider.model.Config;
 import org.jenkinsci.plugins.configfiles.ConfigFiles;
 import org.kohsuke.stapler.AncestorInPath;
@@ -98,7 +93,8 @@ import org.kohsuke.stapler.export.Exported;
  *
  * @author Timothy Bingaman
  */
-public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet, IvyModuleSetBuild> implements TopLevelItem, ItemGroup<IvyModule>, SCMedItem, Saveable, BuildableItemWithBuildWrappers {
+public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet, IvyModuleSetBuild>
+        implements TopLevelItem, ItemGroup<IvyModule>, SCMedItem, Saveable, BuildableItemWithBuildWrappers {
     /**
      * All {@link IvyModule}s, keyed by their {@link IvyModule#getModuleName()} module name}s.
      */
@@ -190,6 +186,7 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet, IvyModu
      */
     private boolean useUpstreamParameters = false;
 
+    @Override
     public boolean isUseUpstreamParameters() {
         return useUpstreamParameters;
     }
@@ -206,14 +203,12 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet, IvyModu
     /**
      * List of active {@link Publisher}s configured for this project.
      */
-    private DescribableList<Publisher, Descriptor<Publisher>> publishers =
-            new DescribableList<>(this);
+    private DescribableList<Publisher, Descriptor<Publisher>> publishers = new DescribableList<>(this);
 
     /**
      * List of active {@link BuildWrapper}s configured for this project.
      */
-    private DescribableList<BuildWrapper, Descriptor<BuildWrapper>> buildWrappers =
-            new DescribableList<>(this);
+    private DescribableList<BuildWrapper, Descriptor<BuildWrapper>> buildWrappers = new DescribableList<>(this);
 
     public IvyModuleSet(String name) {
         this(Jenkins.get(), name);
@@ -223,11 +218,13 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet, IvyModu
         super(parent, name);
     }
 
+    @Override
     public String getUrlChildPrefix() {
         // seemingly redundant "./" is used to make sure that ':' is not interpreted as the scheme identifier
         return ".";
     }
 
+    @Override
     public Collection<IvyModule> getItems() {
         return modules.values();
     }
@@ -237,6 +234,7 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet, IvyModu
         return getItems();
     }
 
+    @Override
     public IvyModule getItem(String name) {
         try {
             return modules.get(ModuleName.fromString(name));
@@ -253,7 +251,7 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet, IvyModu
         return settings;
     }
 
-    @Override   // to make this accessible from IvyModuleSetBuild
+    @Override // to make this accessible from IvyModuleSetBuild
     protected void updateTransientActions() {
         super.updateTransientActions();
     }
@@ -455,6 +453,7 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet, IvyModu
         return publishers;
     }
 
+    @Override
     public DescribableList<BuildWrapper, Descriptor<BuildWrapper>> getBuildWrappersList() {
         return buildWrappers;
     }
@@ -478,14 +477,17 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet, IvyModu
         return super.getDynamic(token, req, rsp);
     }
 
+    @Override
     public File getRootDirFor(IvyModule child) {
         return new File(getModulesDir(), child.getModuleName().toFileSystemName());
     }
 
+    @Override
     public void onRenamed(IvyModule item, String oldName, String newName) throws IOException {
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public void onDeleted(IvyModule item) throws IOException {
         // noop
     }
@@ -505,27 +507,28 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet, IvyModu
     @Override
     protected SearchIndexBuilder makeSearchIndex() {
         return super.makeSearchIndex()
-                .add(new CollectionSearchIndex<IvyModule>() {// for computers
-                    @Override
-                    protected IvyModule get(String key) {
-                        for (IvyModule m : modules.values()) {
-                            if (m.getDisplayName().equals(key)) {
-                                return m;
+                .add(
+                        new CollectionSearchIndex<IvyModule>() { // for computers
+                            @Override
+                            protected IvyModule get(String key) {
+                                for (IvyModule m : modules.values()) {
+                                    if (m.getDisplayName().equals(key)) {
+                                        return m;
+                                    }
+                                }
+                                return null;
                             }
-                        }
-                        return null;
-                    }
 
-                    @Override
-                    protected Collection<IvyModule> all() {
-                        return modules.values();
-                    }
+                            @Override
+                            protected Collection<IvyModule> all() {
+                                return modules.values();
+                            }
 
-                    @Override
-                    protected String getName(IvyModule o) {
-                        return o.getName();
-                    }
-                });
+                            @Override
+                            protected String getName(IvyModule o) {
+                                return o.getName();
+                            }
+                        });
     }
 
     @Override
@@ -635,6 +638,7 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet, IvyModu
             this.module = module;
         }
 
+        @Override
         public String getShortDescription() {
             return Messages.IvyModuleSet_ModuleBuildInProgress(module.getName());
         }
@@ -655,6 +659,7 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet, IvyModu
         return null;
     }
 
+    @Override
     public AbstractProject<?, ?> asProject() {
         return this;
     }
@@ -701,17 +706,21 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet, IvyModu
         settings = Util.fixEmptyAndTrim(json.getString("settings"));
         ivySettingsPropertyFiles = Util.fixEmptyAndTrim(json.getString("ivySettingsPropertyFiles"));
         ivyBranch = Util.fixEmptyAndTrim(json.getString("ivyBranch"));
-        relativePathToDescriptorFromModuleRoot = Util.fixEmptyAndTrim(json.getString("relativePathToDescriptorFromModuleRoot"));
+        relativePathToDescriptorFromModuleRoot =
+                Util.fixEmptyAndTrim(json.getString("relativePathToDescriptorFromModuleRoot"));
         JSONObject ivyBuilderTypeJson = json.getJSONObject("ivyBuilderType");
         try {
-            ivyBuilderType = (IvyBuilderType) req.bindJSON(Class.forName(ivyBuilderTypeJson.getString("stapler-class")), ivyBuilderTypeJson);
+            ivyBuilderType = (IvyBuilderType)
+                    req.bindJSON(Class.forName(ivyBuilderTypeJson.getString("stapler-class")), ivyBuilderTypeJson);
         } catch (ClassNotFoundException e) {
             throw new FormException("Error creating specified builder type.", e, "ivyBuilderType");
         }
         aggregatorStyleBuild = !req.hasParameter("perModuleBuild");
         incrementalBuild = req.hasParameter("incrementalBuild");
-        if (incrementalBuild)
-            changedModulesProperty = Util.fixEmptyAndTrim(json.getJSONObject("incrementalBuild").getString("changedModulesProperty"));
+        if (incrementalBuild) {
+            changedModulesProperty =
+                    Util.fixEmptyAndTrim(json.getJSONObject("incrementalBuild").getString("changedModulesProperty"));
+        }
 
         publishers.rebuildHetero(req, json, Publisher.all(), "publisher");
         buildWrappers.rebuild(req, json, BuildWrappers.getFor(this));
@@ -801,6 +810,7 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet, IvyModu
         return buildTypeDescriptors;
     }
 
+    @Override
     public DescriptorImpl getDescriptor() {
         return DESCRIPTOR;
     }
@@ -839,6 +849,7 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet, IvyModu
             return Messages.IvyModuleSet_DisplayName();
         }
 
+        @Override
         public TopLevelItem newInstance(ItemGroup parent, String name) {
             return new IvyModuleSet(parent, name);
         }

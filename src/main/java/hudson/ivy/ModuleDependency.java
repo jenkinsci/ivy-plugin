@@ -24,7 +24,6 @@
 package hudson.ivy;
 
 import java.io.Serializable;
-
 import org.apache.ivy.core.module.descriptor.DependencyDescriptor;
 import org.apache.ivy.core.module.descriptor.ModuleDescriptor;
 
@@ -43,7 +42,12 @@ public final class ModuleDependency implements Serializable {
     public ModuleDependency(String organisation, String name, String revision, String branch) {
         this.organisation = organisation;
         this.name = name;
-        this.revision = (revision == null || revision.startsWith("latest.") || revision.startsWith("working@") || revision.contains("${")) ? UNKNOWN : revision;
+        this.revision = (revision == null
+                        || revision.startsWith("latest.")
+                        || revision.startsWith("working@")
+                        || revision.contains("${"))
+                ? UNKNOWN
+                : revision;
         this.branch = (branch == null || branch.contains("${")) ? UNKNOWN : branch;
     }
 
@@ -52,12 +56,18 @@ public final class ModuleDependency implements Serializable {
     }
 
     public ModuleDependency(DependencyDescriptor dep) {
-        this(dep.getDependencyRevisionId().getOrganisation(), dep.getDependencyRevisionId().getName(), dep.getDependencyRevisionId().getRevision(),
+        this(
+                dep.getDependencyRevisionId().getOrganisation(),
+                dep.getDependencyRevisionId().getName(),
+                dep.getDependencyRevisionId().getRevision(),
                 dep.getDependencyRevisionId().getBranch());
     }
 
     public ModuleDependency(ModuleDescriptor module) {
-        this(module.getModuleRevisionId().getOrganisation(), module.getModuleRevisionId().getName(), module.getModuleRevisionId().getRevision(),
+        this(
+                module.getModuleRevisionId().getOrganisation(),
+                module.getModuleRevisionId().getName(),
+                module.getModuleRevisionId().getRevision(),
                 module.getModuleRevisionId().getBranch());
     }
 
@@ -81,14 +91,18 @@ public final class ModuleDependency implements Serializable {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o)
+        if (this == o) {
             return true;
-        if (o == null || getClass() != o.getClass())
+        }
+        if (o == null || getClass() != o.getClass()) {
             return false;
+        }
 
         ModuleDependency that = (ModuleDependency) o;
 
-        return this.name.equals(that.name) && this.organisation.equals(that.organisation) && this.revision.equals(that.revision)
+        return this.name.equals(that.name)
+                && this.organisation.equals(that.organisation)
+                && this.revision.equals(that.revision)
                 && this.branch.equals(that.branch);
     }
 
