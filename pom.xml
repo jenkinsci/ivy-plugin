@@ -131,7 +131,7 @@
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>nant</artifactId>
-      <version>1.4.3</version>
+      <version>248.vcc8a_3eec8db_a</version>
       <optional>true</optional>
     </dependency>
     <dependency>
