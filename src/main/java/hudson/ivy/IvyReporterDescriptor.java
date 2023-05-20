@@ -25,9 +25,7 @@ package hudson.ivy;
 
 import hudson.model.Describable;
 import hudson.model.Descriptor;
-
 import java.util.Collection;
-
 import jenkins.model.Jenkins;
 import org.apache.commons.jelly.JellyException;
 import org.kohsuke.stapler.MetaClass;
@@ -52,8 +50,7 @@ public abstract class IvyReporterDescriptor extends Descriptor<IvyReporter> {
      *
      * @since 1.278
      */
-    protected IvyReporterDescriptor() {
-    }
+    protected IvyReporterDescriptor() {}
 
     /**
      * Returns an instance used for automatic {@link IvyReporter} activation.
@@ -92,8 +89,8 @@ public abstract class IvyReporterDescriptor extends Descriptor<IvyReporter> {
         MetaClass c = WebApp.getCurrent().getMetaClass(getClass());
         try {
             JellyClassTearOff tearOff = c.loadTearOff(JellyClassTearOff.class);
-            return tearOff.findScript(getConfigPage())!=null;
-        } catch(JellyException e) {
+            return tearOff.findScript(getConfigPage()) != null;
+        } catch (JellyException e) {
             return false;
         }
     }
@@ -103,6 +100,6 @@ public abstract class IvyReporterDescriptor extends Descriptor<IvyReporter> {
      */
     public static Collection<IvyReporterDescriptor> all() {
         // use getDescriptorList and not getExtensionList to pick up legacy instances
-        return Jenkins.get().<IvyReporter,IvyReporterDescriptor>getDescriptorList(IvyReporter.class);
+        return Jenkins.get().<IvyReporter, IvyReporterDescriptor>getDescriptorList(IvyReporter.class);
     }
 }

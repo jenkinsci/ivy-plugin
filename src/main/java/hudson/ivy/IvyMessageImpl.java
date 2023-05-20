@@ -1,6 +1,6 @@
 /*
  * Copyright 2008-2011 Martin Ficker
- * 
+ *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,7 +24,6 @@ import org.apache.ivy.util.AbstractMessageLogger;
 import org.apache.ivy.util.Message;
 import org.apache.ivy.util.MessageLogger;
 
-
 /**
  * This implements Ivy's MessageLogger. We log all Messages to java.util.logging.
  * if we wouldn't provide an implementation, all messages go to err
@@ -32,6 +31,8 @@ import org.apache.ivy.util.MessageLogger;
  */
 public class IvyMessageImpl extends AbstractMessageLogger implements MessageLogger {
     private final Logger logger = Logger.getLogger(IvyMessageImpl.class.getName());
+
+    @Override
     public void log(String msg, int level) {
         Level logLevel = Level.INFO;
         switch (level) {
@@ -51,25 +52,21 @@ public class IvyMessageImpl extends AbstractMessageLogger implements MessageLogg
                 logLevel = Level.FINEST;
                 break;
         }
-        logger.log(logLevel,msg);
+        logger.log(logLevel, msg);
     }
 
-
+    @Override
     public void rawlog(String msg, int level) {
-        log (msg, level);
+        log(msg, level);
     }
-
-
 
     @Override
     protected void doEndProgress(String msg) {
-        log (msg, Message.MSG_INFO);
-
+        log(msg, Message.MSG_INFO);
     }
 
     @Override
     protected void doProgress() {
-        log (".", Message.MSG_INFO);
+        log(".", Message.MSG_INFO);
     }
-
 }

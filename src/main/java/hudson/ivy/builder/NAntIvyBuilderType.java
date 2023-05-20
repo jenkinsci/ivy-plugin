@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2010-2011, Timothy Bingaman
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -23,19 +23,17 @@
  */
 package hudson.ivy.builder;
 
+import hudson.Extension;
+import hudson.model.Environment;
+import hudson.plugins.nant.NantBuilder;
+import hudson.plugins.nant.NantBuilder.NantInstallation;
+import hudson.tasks.Builder;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-
-import hudson.model.Environment;
 import jenkins.model.Jenkins;
 import org.kohsuke.stapler.DataBoundConstructor;
-
-import hudson.Extension;
-import hudson.plugins.nant.NantBuilder;
-import hudson.plugins.nant.NantBuilder.NantInstallation;
-import hudson.tasks.Builder;
 
 public class NAntIvyBuilderType extends IvyBuilderType {
     private final String targets;
@@ -59,7 +57,8 @@ public class NAntIvyBuilderType extends IvyBuilderType {
     private final String nantProperties;
 
     @DataBoundConstructor
-    public NAntIvyBuilderType(String nantName, String buildFile, String targets, String nantProperties, String nantOpts) {
+    public NAntIvyBuilderType(
+            String nantName, String buildFile, String targets, String nantProperties, String nantOpts) {
         this.nantName = nantName;
         this.buildFile = buildFile;
         this.targets = targets;
@@ -95,9 +94,10 @@ public class NAntIvyBuilderType extends IvyBuilderType {
     @Override
     public Builder getBuilder(Properties additionalProperties, String overrideTargets, List<Environment> environments) {
         StringBuilder properties = new StringBuilder();
-        
-        if (nantProperties != null)
+
+        if (nantProperties != null) {
             properties.append(nantProperties);
+        }
 
         if (additionalProperties != null) {
             for (String key : additionalProperties.stringPropertyNames()) {
@@ -105,8 +105,11 @@ public class NAntIvyBuilderType extends IvyBuilderType {
                 properties.append(key).append("=").append(additionalProperties.getProperty(key));
             }
         }
-        return new NantBuilder(buildFile, nantName, overrideTargets == null ? targets : overrideTargets, properties
-                .length() == 0 ? null : properties.toString());
+        return new NantBuilder(
+                buildFile,
+                nantName,
+                overrideTargets == null ? targets : overrideTargets,
+                properties.length() == 0 ? null : properties.toString());
     }
 
     @Extension(optional = true)
@@ -118,8 +121,9 @@ public class NAntIvyBuilderType extends IvyBuilderType {
         }
 
         public NantInstallation[] getInstallations() {
-            return Jenkins.get().getDescriptorByType(NantBuilder.DescriptorImpl.class).getInstallations();
+            return Jenkins.get()
+                    .getDescriptorByType(NantBuilder.DescriptorImpl.class)
+                    .getInstallations();
         }
-
     }
 }

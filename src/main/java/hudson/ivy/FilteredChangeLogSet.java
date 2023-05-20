@@ -25,7 +25,6 @@ package hudson.ivy;
 
 import hudson.scm.ChangeLogSet;
 import hudson.scm.ChangeLogSet.Entry;
-
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -43,7 +42,7 @@ public class FilteredChangeLogSet extends ChangeLogSet<Entry> {
     /*package*/ FilteredChangeLogSet(IvyBuild build) {
         super(build);
         IvyModuleSetBuild parentBuild = build.getParentBuild();
-        if(parentBuild==null) {
+        if (parentBuild == null) {
             core = ChangeLogSet.createEmpty(build);
             master = Collections.emptyList();
         } else {
@@ -52,6 +51,7 @@ public class FilteredChangeLogSet extends ChangeLogSet<Entry> {
         }
     }
 
+    @Override
     public Iterator<Entry> iterator() {
         return master.iterator();
     }

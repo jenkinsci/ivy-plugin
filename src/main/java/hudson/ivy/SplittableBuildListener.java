@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2011, Sun Microsystems, Inc., Kohsuke Kawaguchi, Timothy Bingaman
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -29,7 +29,6 @@ import hudson.model.Cause;
 import hudson.model.Result;
 import hudson.model.StreamBuildListener;
 import hudson.model.TaskListener;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -69,30 +68,34 @@ final class SplittableBuildListener implements BuildListener, TaskListener, Seri
         this.core = core;
         final OutputStream base = core.getLogger();
         logger = new PrintStream(new OutputStream() {
+            @Override
             public void write(int b) throws IOException {
                 base.write(b);
                 side.write(b);
             }
 
+            @Override
             public void write(byte[] b, int off, int len) throws IOException {
-                base.write(b,off,len);
-                side.write(b,off,len);
+                base.write(b, off, len);
+                side.write(b, off, len);
             }
 
+            @Override
             public void flush() throws IOException {
                 base.flush();
                 side.flush();
             }
 
+            @Override
             public void close() throws IOException {
                 base.close();
                 side.close();
             }
         });
     }
-    
+
     public void setSideOutputStream(OutputStream os) throws IOException {
-        if(os==null) {
+        if (os == null) {
             os = unclaimed;
         } else {
             os.write(unclaimed.toByteArray());
@@ -101,38 +104,46 @@ final class SplittableBuildListener implements BuildListener, TaskListener, Seri
         this.side = os;
     }
 
+    @Override
     public void started(List<Cause> causes) {
         core.started(causes);
     }
 
+    @Override
     public void finished(Result result) {
         core.finished(result);
     }
 
+    @Override
     public PrintStream getLogger() {
         return logger;
     }
 
+    @Override
     public PrintWriter error(String msg) {
         core.error(msg);
         return new PrintWriter(logger);
     }
 
+    @Override
     public PrintWriter error(String format, Object... args) {
-        core.error(format,args);
+        core.error(format, args);
         return new PrintWriter(logger);
     }
 
+    @Override
     public PrintWriter fatalError(String msg) {
         core.fatalError(msg);
         return new PrintWriter(logger);
     }
 
+    @Override
     public PrintWriter fatalError(String format, Object... args) {
-        core.fatalError(format,args);
+        core.fatalError(format, args);
         return new PrintWriter(logger);
     }
 
+    @Override
     public void annotate(ConsoleNote ann) throws IOException {
         core.annotate(ann);
     }

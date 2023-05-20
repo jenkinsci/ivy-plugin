@@ -26,7 +26,6 @@ package hudson.ivy;
 import java.io.Serializable;
 import java.util.LinkedHashSet;
 import java.util.Set;
-
 import org.apache.ivy.core.module.descriptor.DependencyDescriptor;
 import org.apache.ivy.core.module.descriptor.ModuleDescriptor;
 import org.apache.ivy.core.module.id.ModuleRevisionId;
@@ -84,14 +83,20 @@ final class IvyModuleInfo implements Serializable {
     public IvyModuleInfo(ModuleDescriptor module, String relativePathToDescriptor) {
         this.name = new ModuleName(module);
         ModuleRevisionId mrid = module.getModuleRevisionId();
-        this.revision = (mrid.getRevision() == null || mrid.getRevision().startsWith("working@") || mrid.getRevision().contains("${")) ? ModuleDependency.UNKNOWN
+        this.revision = (mrid.getRevision() == null
+                        || mrid.getRevision().startsWith("working@")
+                        || mrid.getRevision().contains("${"))
+                ? ModuleDependency.UNKNOWN
                 : mrid.getRevision();
-        this.branch = (mrid.getBranch() == null || mrid.getBranch().contains("${")) ? ModuleDependency.UNKNOWN : mrid.getBranch();
+        this.branch = (mrid.getBranch() == null || mrid.getBranch().contains("${"))
+                ? ModuleDependency.UNKNOWN
+                : mrid.getBranch();
         this.displayName = mrid.getName();
         this.relativePathToDescriptor = relativePathToDescriptor;
 
-        for (DependencyDescriptor dep : module.getDependencies())
+        for (DependencyDescriptor dep : module.getDependencies()) {
             dependencies.add(new ModuleDependency(dep));
+        }
     }
 
     private static final long serialVersionUID = 1L;

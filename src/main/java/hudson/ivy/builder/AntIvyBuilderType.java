@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2010-2011, Timothy Bingaman
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -23,22 +23,20 @@
  */
 package hudson.ivy.builder;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-
-import jenkins.model.Jenkins;
-import org.apache.commons.lang.StringUtils;
-import org.kohsuke.stapler.DataBoundConstructor;
-
 import hudson.Extension;
 import hudson.ivy.AntIvyBuildWrapper;
 import hudson.ivy.IvyModuleSet;
 import hudson.model.Environment;
 import hudson.tasks.Ant;
-import hudson.tasks.Builder;
 import hudson.tasks.Ant.AntInstallation;
+import hudson.tasks.Builder;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import jenkins.model.Jenkins;
+import org.apache.commons.lang.StringUtils;
+import org.kohsuke.stapler.DataBoundConstructor;
 
 public class AntIvyBuilderType extends IvyBuilderType {
     private final String targets;
@@ -145,8 +143,12 @@ public class AntIvyBuilderType extends IvyBuilderType {
                 properties.append(key).append("=").append(additionalProperties.getProperty(key));
             }
         }
-        return new Ant(getCalculatedTargets(overrideTargets == null ? targets : overrideTargets, environments), antName,
-                getCalculatedAntOpts(environments), buildFile, properties.length() == 0 ? null : properties.toString());
+        return new Ant(
+                getCalculatedTargets(overrideTargets == null ? targets : overrideTargets, environments),
+                antName,
+                getCalculatedAntOpts(environments),
+                buildFile,
+                properties.length() == 0 ? null : properties.toString());
     }
 
     @Extension
@@ -160,7 +162,6 @@ public class AntIvyBuilderType extends IvyBuilderType {
         public Ant.AntInstallation[] getInstallations() {
             return Jenkins.get().getDescriptorByType(Ant.DescriptorImpl.class).getInstallations();
         }
-
     }
 
     private String getAdditionalAntTargets(List<Environment> buildEnvironments) {
@@ -168,7 +169,8 @@ public class AntIvyBuilderType extends IvyBuilderType {
             StringBuilder additionalAntTargets = new StringBuilder();
             for (Environment environment : buildEnvironments) {
                 if (environment instanceof AntIvyBuildWrapper.AntIvyBuilderEnvironment) {
-                    additionalAntTargets.append(((AntIvyBuildWrapper.AntIvyBuilderEnvironment) environment).getAdditionalArgs())
+                    additionalAntTargets
+                            .append(((AntIvyBuildWrapper.AntIvyBuilderEnvironment) environment).getAdditionalArgs())
                             .append(" ");
                 }
             }
@@ -182,7 +184,8 @@ public class AntIvyBuilderType extends IvyBuilderType {
             StringBuilder additionalAntOpts = new StringBuilder();
             for (Environment environment : buildEnvironments) {
                 if (environment instanceof AntIvyBuildWrapper.AntIvyBuilderEnvironment) {
-                    additionalAntOpts.append(((AntIvyBuildWrapper.AntIvyBuilderEnvironment) environment).getAdditionalOpts())
+                    additionalAntOpts
+                            .append(((AntIvyBuildWrapper.AntIvyBuilderEnvironment) environment).getAdditionalOpts())
                             .append(" ");
                 }
             }

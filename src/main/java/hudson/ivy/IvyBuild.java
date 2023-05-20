@@ -24,6 +24,7 @@
 package hudson.ivy;
 
 import static hudson.model.Result.FAILURE;
+
 import hudson.AbortException;
 import hudson.EnvVars;
 import hudson.FilePath;
@@ -43,7 +44,6 @@ import hudson.slaves.WorkspaceList;
 import hudson.slaves.WorkspaceList.Lease;
 import hudson.tasks.BuildWrapper;
 import hudson.tasks.Publisher;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -54,7 +54,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
-
 import org.apache.tools.ant.BuildEvent;
 import org.kohsuke.stapler.Ancestor;
 import org.kohsuke.stapler.Stapler;
@@ -70,7 +69,7 @@ public class IvyBuild extends AbstractIvyBuild<IvyModule, IvyBuild> {
      * {@link IvyReporter}s that will contribute project actions. Can be null if
      * there's none.
      */
-    /* package */List<IvyReporter> projectActionReporters;
+    /* package */ List<IvyReporter> projectActionReporters;
 
     public IvyBuild(IvyModule job) throws IOException {
         super(job);
@@ -155,8 +154,9 @@ public class IvyBuild extends AbstractIvyBuild<IvyModule, IvyBuild> {
     }
 
     public void registerAsProjectAction(IvyReporter reporter) {
-        if (projectActionReporters == null)
+        if (projectActionReporters == null) {
             projectActionReporters = new ArrayList<>();
+        }
         projectActionReporters.add(reporter);
     }
 
@@ -168,8 +168,9 @@ public class IvyBuild extends AbstractIvyBuild<IvyModule, IvyBuild> {
         getProject().updateTransientActions();
 
         IvyModuleSetBuild parentBuild = getModuleSetBuild();
-        if (parentBuild != null)
+        if (parentBuild != null) {
             parentBuild.notifyModuleBuild(this);
+        }
     }
 
     /**
@@ -189,7 +190,12 @@ public class IvyBuild extends AbstractIvyBuild<IvyModule, IvyBuild> {
 
         private long startTime;
 
-        public Builder(BuildListener listener, IvyBuildProxy buildProxy, IvyReporter[] reporters, List<String> goals, Map<String, String> systemProps) {
+        public Builder(
+                BuildListener listener,
+                IvyBuildProxy buildProxy,
+                IvyReporter[] reporters,
+                List<String> goals,
+                Map<String, String> systemProps) {
             super(listener, goals, systemProps);
             this.buildProxy = new FilterImpl(buildProxy);
             this.reporters = reporters;
@@ -210,28 +216,34 @@ public class IvyBuild extends AbstractIvyBuild<IvyModule, IvyBuild> {
 
         @Override
         void preBuild(BuildEvent event) throws IOException, InterruptedException {
-            for (IvyReporter r : reporters)
+            for (IvyReporter r : reporters) {
                 r.preBuild(buildProxy, event, listener);
+            }
         }
 
         @Override
         void postBuild(BuildEvent event) throws IOException, InterruptedException {
-            for (IvyReporter r : reporters)
+            for (IvyReporter r : reporters) {
                 r.postBuild(buildProxy, event, listener);
+            }
         }
 
         @Override
         void preModule(BuildEvent event) throws InterruptedException, IOException, AbortException {
-            for (IvyReporter r : reporters)
-                if (!r.enterModule(buildProxy, event, listener))
+            for (IvyReporter r : reporters) {
+                if (!r.enterModule(buildProxy, event, listener)) {
                     throw new AbortException(r + " failed");
+                }
+            }
         }
 
         @Override
         void postModule(BuildEvent event) throws InterruptedException, IOException, AbortException {
-            for (IvyReporter r : reporters)
-                if (!r.leaveModule(buildProxy, event, listener))
+            for (IvyReporter r : reporters) {
+                if (!r.leaveModule(buildProxy, event, listener)) {
                     throw new AbortException(r + " failed");
+                }
+            }
         }
 
         private static final long serialVersionUID = 1L;
@@ -241,7 +253,9 @@ public class IvyBuild extends AbstractIvyBuild<IvyModule, IvyBuild> {
      * {@link IvyBuildProxy} implementation.
      */
     class ProxyImpl implements IvyBuildProxy, Serializable {
-        public <V, T extends Throwable> V execute(BuildCallable<V, T> program) throws T, IOException, InterruptedException {
+        @Override
+        public <V, T extends Throwable> V execute(BuildCallable<V, T> program)
+                throws T, IOException, InterruptedException {
             return program.call(IvyBuild.this);
         }
 
@@ -253,51 +267,63 @@ public class IvyBuild extends AbstractIvyBuild<IvyModule, IvyBuild> {
          * @deprecated This helps IDE find coding mistakes when someone tries to
          *             call this method.
          */
+        @Override
         @Deprecated
         public final void executeAsync(BuildCallable<?, ?> program) throws IOException {
             throw new AssertionError();
         }
 
+        @Override
         public FilePath getRootDir() {
             return new FilePath(IvyBuild.this.getRootDir());
         }
 
+        @Override
         public FilePath getProjectRootDir() {
             return new FilePath(IvyBuild.this.getParent().getRootDir());
         }
 
+        @Override
         public FilePath getModuleSetRootDir() {
             return new FilePath(IvyBuild.this.getParent().getParent().getRootDir());
         }
 
+        @Override
         public FilePath getArtifactsDir() {
             return new FilePath(IvyBuild.this.getArtifactsDir());
         }
 
+        @Override
         public void setResult(Result result) {
             IvyBuild.this.setResult(result);
         }
 
+        @Override
         public Calendar getTimestamp() {
             return IvyBuild.this.getTimestamp();
         }
 
+        @Override
         public long getMilliSecsSinceBuildStart() {
             return System.currentTimeMillis() - getTimestamp().getTimeInMillis();
         }
 
+        @Override
         public boolean isArchivingDisabled() {
             return IvyBuild.this.getParent().getParent().isArchivingDisabled();
         }
 
+        @Override
         public void registerAsProjectAction(IvyReporter reporter) {
             IvyBuild.this.registerAsProjectAction(reporter);
         }
 
+        @Override
         public void registerAsAggregatedProjectAction(IvyReporter reporter) {
             IvyModuleSetBuild pb = getParentBuild();
-            if (pb != null)
+            if (pb != null) {
                 pb.registerAsProjectAction(reporter);
+            }
         }
 
         private Object writeReplace() {
@@ -315,10 +341,11 @@ public class IvyBuild extends AbstractIvyBuild<IvyModule, IvyBuild> {
             this.parentBuild = parentBuild;
             this.listener = listener;
             log = new FileOutputStream(getLogFile()); // no buffering so that
-                                                      // AJAX clients can see
-                                                      // the log live
+            // AJAX clients can see
+            // the log live
         }
 
+        @Override
         public void start() {
             onStartBuilding();
             startTime = System.currentTimeMillis();
@@ -329,9 +356,11 @@ public class IvyBuild extends AbstractIvyBuild<IvyModule, IvyBuild> {
             }
         }
 
+        @Override
         public void end() {
-            if (result == null)
+            if (result == null) {
                 setResult(Result.SUCCESS);
+            }
             onEndBuilding();
             duration = System.currentTimeMillis() - startTime;
             parentBuild.notifyModuleBuild(IvyBuild.this);
@@ -347,6 +376,7 @@ public class IvyBuild extends AbstractIvyBuild<IvyModule, IvyBuild> {
          * Sends the accumulated log in {@link SplittableBuildListener} to the
          * log of this build.
          */
+        @Override
         public void appendLastLog() {
             try {
                 listener.setSideOutputStream(log);
@@ -379,12 +409,10 @@ public class IvyBuild extends AbstractIvyBuild<IvyModule, IvyBuild> {
                     }
 
                     @Override
-                    public void post(BuildListener listener) {
-                    }
+                    public void post(BuildListener listener) {}
 
                     @Override
-                    public void cleanUp(BuildListener listener) {
-                    }
+                    public void cleanUp(BuildListener listener) {}
                 });
             }
         }
@@ -399,7 +427,10 @@ public class IvyBuild extends AbstractIvyBuild<IvyModule, IvyBuild> {
         private Object writeReplace() {
             // when called from remote, methods need to be executed in the
             // proper Executor's context.
-            return Channel.current().export(IvyBuildProxy2.class, Executor.currentExecutor().newImpersonatingProxy(IvyBuildProxy2.class, this));
+            return Channel.current()
+                    .export(
+                            IvyBuildProxy2.class,
+                            Executor.currentExecutor().newImpersonatingProxy(IvyBuildProxy2.class, this));
         }
     }
 
@@ -417,33 +448,43 @@ public class IvyBuild extends AbstractIvyBuild<IvyModule, IvyBuild> {
         protected Result doRun(BuildListener listener) throws Exception {
             // pick up a list of reporters to run
             reporters = IvyBuild.this.getProject().createModulePublishers();
-            if (debug)
+            if (debug) {
                 listener.getLogger().println("Reporters=" + reporters);
-            if (!preBuild(listener, reporters))
+            }
+            if (!preBuild(listener, reporters)) {
                 return FAILURE;
+            }
 
             Result r = null;
             try {
-                List<BuildWrapper> wrappers = new ArrayList<>(IvyBuild.this.getProject().getBuildWrappersList().toList());
+                List<BuildWrapper> wrappers = new ArrayList<>(
+                        IvyBuild.this.getProject().getBuildWrappersList().toList());
 
                 ParametersAction parameters = getAction(ParametersAction.class);
-                if (parameters != null)
+                if (parameters != null) {
                     parameters.createBuildWrappers(IvyBuild.this, wrappers);
+                }
 
                 for (BuildWrapper w : wrappers) {
                     Environment e = w.setUp(IvyBuild.this, launcher, listener);
-                    if (e == null)
+                    if (e == null) {
                         return (r = FAILURE);
+                    }
                     buildEnvironments.add(e);
                 }
 
-                hudson.tasks.Builder builder = IvyBuild.this.getProject().getParent().getIvyBuilderType()
+                hudson.tasks.Builder builder = IvyBuild.this
+                        .getProject()
+                        .getParent()
+                        .getIvyBuilderType()
                         .getBuilder(null, IvyBuild.this.getProject().getTargets(), buildEnvironments);
-                if (!builder.perform(IvyBuild.this, launcher, listener))
+                if (!builder.perform(IvyBuild.this, launcher, listener)) {
                     r = FAILURE;
+                }
             } finally {
-                if (r != null)
+                if (r != null) {
                     setResult(r);
+                }
                 // tear down in reverse order
                 boolean failed = false;
                 for (int i = buildEnvironments.size() - 1; i >= 0; i--) {
@@ -452,8 +493,9 @@ public class IvyBuild extends AbstractIvyBuild<IvyModule, IvyBuild> {
                     }
                 }
                 // WARNING The return in the finally clause will trump any return before
-                if (failed)
+                if (failed) {
                     return FAILURE;
+                }
             }
 
             return r;
@@ -461,19 +503,21 @@ public class IvyBuild extends AbstractIvyBuild<IvyModule, IvyBuild> {
 
         @Override
         public void post2(BuildListener listener) throws Exception {
-            if (!performAllBuildSteps(listener, reporters, true))
+            if (!performAllBuildSteps(listener, reporters, true)) {
                 setResult(FAILURE);
-            if (!performAllBuildSteps(listener, project.getProperties(), true))
+            }
+            if (!performAllBuildSteps(listener, project.getProperties(), true)) {
                 setResult(FAILURE);
+            }
         }
 
         @Override
         public void cleanUp(BuildListener listener) throws Exception {
             super.cleanUp(listener);
-            
+
             // at this point it's too late to mark the build as a failure, so ignore return value.
-            performAllBuildSteps(listener, reporters,false);
-            performAllBuildSteps(listener, project.getProperties(),false);
+            performAllBuildSteps(listener, reporters, false);
+            performAllBuildSteps(listener, project.getProperties(), false);
             scheduleDownstreamBuilds(listener);
         }
     }
@@ -484,23 +528,27 @@ public class IvyBuild extends AbstractIvyBuild<IvyModule, IvyBuild> {
     public static boolean debug = false;
 
     @Override
-    public IvyModule getParent() {// don't know why, but javac wants this
+    public IvyModule getParent() { // don't know why, but javac wants this
         return super.getParent();
     }
 
     public static class IvyModuleEnvironmentAction implements EnvironmentContributingAction {
+        @Override
         public String getUrlName() {
             return null;
         }
 
+        @Override
         public String getIconFileName() {
             return null;
         }
 
+        @Override
         public String getDisplayName() {
             return null;
         }
 
+        @Override
         public void buildEnvVars(AbstractBuild<?, ?> build, EnvVars env) {
             Object buildParent = build.getParent(); // workaround for javac inconvertible types with generics error
             env.put("IVY_MODULE_NAME", ((IvyModule) buildParent).getModuleName().name);

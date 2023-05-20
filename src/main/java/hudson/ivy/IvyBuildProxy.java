@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2011, Sun Microsystems, Inc., Kohsuke Kawaguchi, Timothy Bingaman
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -27,11 +27,10 @@ import hudson.FilePath;
 import hudson.model.Result;
 import hudson.remoting.Callable;
 import hudson.remoting.DelegatingCallable;
-import jenkins.security.MasterToSlaveCallable;
-
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.Calendar;
+import jenkins.security.MasterToSlaveCallable;
 
 /**
  * Remoting proxy interface for {@link IvyReporter}s to talk to {@link IvyBuild}
@@ -58,7 +57,7 @@ public interface IvyBuildProxy {
      *      if the remote execution is aborted.
      * @see #executeAsync(BuildCallable)
      */
-    <V,T extends Throwable> V execute( BuildCallable<V,T> program ) throws T, IOException, InterruptedException;
+    <V, T extends Throwable> V execute(BuildCallable<V, T> program) throws T, IOException, InterruptedException;
 
     /**
      * Executes the given {@link BuildCallable} asynchronously on the master.
@@ -68,14 +67,14 @@ public interface IvyBuildProxy {
      * <p>
      * The completions of asynchronous executions are accounted for before
      * the build completes. If they throw exceptions, they'll be reported
-     * and the build will be marked as a failure. 
+     * and the build will be marked as a failure.
      */
-    void executeAsync( BuildCallable<?,?> program ) throws IOException;
+    void executeAsync(BuildCallable<?, ?> program) throws IOException;
 
     /**
      * Root directory of the build.
      *
-     * @see IvyBuild#getRootDir() 
+     * @see IvyBuild#getRootDir()
      */
     FilePath getRootDir();
 
@@ -117,14 +116,14 @@ public interface IvyBuildProxy {
      * If true, artifacts will not actually be archived to master. Calls {@link IvyModuleSet#isArchivingDisabled()}.
      */
     boolean isArchivingDisabled();
-    
+
     /**
      * Nominates that the reporter will contribute a project action
      * for this build by using {@link IvyReporter#getProjectAction(IvyModule)}.
      *
      * <p>
      * The specified {@link IvyReporter} object will be transferred to the master
-     * and will become a persisted part of the {@link IvyBuild}. 
+     * and will become a persisted part of the {@link IvyBuild}.
      */
     void registerAsProjectAction(IvyReporter reporter);
 
@@ -136,9 +135,9 @@ public interface IvyBuildProxy {
      * The specified {@link IvyReporter} object will be transferred to the master
      * and will become a persisted part of the {@link IvyModuleSetBuild}.
      */
-    void registerAsAggregatedProjectAction(IvyReporter  reporter);
+    void registerAsAggregatedProjectAction(IvyReporter reporter);
 
-    public interface BuildCallable<V,T extends Throwable> extends Serializable {
+    public interface BuildCallable<V, T extends Throwable> extends Serializable {
         /**
          * Performs computation and returns the result,
          * or throws some exception.
@@ -158,57 +157,70 @@ public interface IvyBuildProxy {
      *
      * Meant to be useful as the base class for other filters.
      */
-    /*package*/ static abstract class Filter<CORE extends IvyBuildProxy> implements IvyBuildProxy, Serializable {
+    /*package*/ abstract static class Filter<CORE extends IvyBuildProxy> implements IvyBuildProxy, Serializable {
         protected final CORE core;
 
         protected Filter(CORE core) {
             this.core = core;
         }
 
-        public <V, T extends Throwable> V execute(BuildCallable<V, T> program) throws T, IOException, InterruptedException {
+        @Override
+        public <V, T extends Throwable> V execute(BuildCallable<V, T> program)
+                throws T, IOException, InterruptedException {
             return core.execute(program);
         }
 
+        @Override
         public void executeAsync(BuildCallable<?, ?> program) throws IOException {
             core.executeAsync(program);
         }
 
+        @Override
         public FilePath getRootDir() {
             return core.getRootDir();
         }
 
+        @Override
         public FilePath getProjectRootDir() {
             return core.getProjectRootDir();
         }
 
+        @Override
         public FilePath getModuleSetRootDir() {
             return core.getModuleSetRootDir();
         }
 
+        @Override
         public FilePath getArtifactsDir() {
             return core.getArtifactsDir();
         }
 
+        @Override
         public void setResult(Result result) {
             core.setResult(result);
         }
 
+        @Override
         public Calendar getTimestamp() {
             return core.getTimestamp();
         }
 
+        @Override
         public long getMilliSecsSinceBuildStart() {
             return core.getMilliSecsSinceBuildStart();
         }
 
+        @Override
         public boolean isArchivingDisabled() {
             return core.isArchivingDisabled();
         }
-        
+
+        @Override
         public void registerAsProjectAction(IvyReporter reporter) {
             core.registerAsProjectAction(reporter);
         }
 
+        @Override
         public void registerAsAggregatedProjectAction(IvyReporter reporter) {
             core.registerAsAggregatedProjectAction(reporter);
         }
@@ -218,23 +230,26 @@ public interface IvyBuildProxy {
         /**
          * {@link Callable} for invoking {@link BuildCallable} asynchronously.
          */
-        protected static final class AsyncInvoker extends MasterToSlaveCallable<Object, Throwable> implements DelegatingCallable<Object, Throwable> {
+        protected static final class AsyncInvoker extends MasterToSlaveCallable<Object, Throwable>
+                implements DelegatingCallable<Object, Throwable> {
             private final IvyBuildProxy proxy;
-            private final BuildCallable<?,?> program;
+            private final BuildCallable<?, ?> program;
 
-            public AsyncInvoker(IvyBuildProxy proxy, BuildCallable<?,?> program) {
+            public AsyncInvoker(IvyBuildProxy proxy, BuildCallable<?, ?> program) {
                 this.proxy = proxy;
                 this.program = program;
             }
 
+            @Override
             public ClassLoader getClassLoader() {
                 return program.getClass().getClassLoader();
             }
 
+            @Override
             public Object call() throws Throwable {
                 // by the time this method is invoked on the master, proxy points to a real object
                 proxy.execute(program);
-                return null;    // ignore the result, as there's no point in sending it back
+                return null; // ignore the result, as there's no point in sending it back
             }
 
             private static final long serialVersionUID = 1L;

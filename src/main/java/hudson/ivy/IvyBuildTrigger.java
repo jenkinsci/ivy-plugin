@@ -24,23 +24,22 @@ import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Util;
+import hudson.model.AbstractBuild;
 import hudson.model.AbstractDescribableImpl;
+import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
+import hudson.model.Cause;
 import hudson.model.DependencyGraph;
 import hudson.model.Descriptor;
 import hudson.model.Item;
 import hudson.model.PersistentDescriptor;
-import hudson.model.Result;
-import hudson.model.AbstractBuild;
-import hudson.model.AbstractProject;
-import hudson.model.Cause;
 import hudson.model.Project;
+import hudson.model.Result;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Notifier;
 import hudson.tasks.Publisher;
 import hudson.util.FormValidation;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -53,13 +52,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import javax.servlet.ServletException;
-
-import jenkins.model.Jenkins;
 import jenkins.model.DependencyDeclarer;
+import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
-
 import org.apache.ivy.Ivy;
 import org.apache.ivy.Ivy.IvyCallback;
 import org.apache.ivy.core.IvyContext;
@@ -158,7 +154,12 @@ public class IvyBuildTrigger extends Notifier implements DependencyDeclarer {
      * @param useUpstreamParameters
      */
     @DataBoundConstructor
-    public IvyBuildTrigger(final String ivyFile, final String ivyConfName, final String ivyPropertiesFile, final boolean triggerWhenUnstable, final boolean useUpstreamParameters) {
+    public IvyBuildTrigger(
+            final String ivyFile,
+            final String ivyConfName,
+            final String ivyPropertiesFile,
+            final boolean triggerWhenUnstable,
+            final boolean useUpstreamParameters) {
         this.ivyFile = ivyFile;
         this.ivyConfName = ivyConfName;
         this.ivyProperties = ivyPropertiesFile;
@@ -287,7 +288,9 @@ public class IvyBuildTrigger extends Notifier implements DependencyDeclarer {
      * @throws IOException   If unable to access/copy the workspace ivy file
      * @throws InterruptedException  If interrupted while accessing the workspace ivy file
      */
-    private boolean copyFileFromWorkspaceIfNecessary(FilePath workspace, String fileToCopy, File localFile, String localDestFile) throws IOException, InterruptedException {
+    private boolean copyFileFromWorkspaceIfNecessary(
+            FilePath workspace, String fileToCopy, File localFile, String localDestFile)
+            throws IOException, InterruptedException {
         boolean copied = false;
         if (workspace != null) { // Unless the workspace is non-null we can not copy a new ivy file
             FilePath f = workspace.child(fileToCopy);
@@ -301,7 +304,8 @@ public class IvyBuildTrigger extends Notifier implements DependencyDeclarer {
                 f.copyTo(backupCopy);
                 localFile.setLastModified(flastModified);
                 copied = true;
-                LOGGER.info("Copied the workspace file " + fileToCopy + " to backup " + localFile.getCanonicalFile().toString() + "/" + localDestFile);
+                LOGGER.info("Copied the workspace file " + fileToCopy + " to backup "
+                        + localFile.getCanonicalFile().toString() + "/" + localDestFile);
             }
         }
         return copied;
@@ -354,10 +358,14 @@ public class IvyBuildTrigger extends Notifier implements DependencyDeclarer {
         if (moduleDescriptor == null || fivyF.lastModified() > lastmodified) {
             lastmodified = fivyF.lastModified();
             return (ModuleDescriptor) ivy.execute(new IvyCallback() {
+                @Override
                 public Object doInIvyContext(Ivy ivy, IvyContext context) {
                     try {
-                        return ModuleDescriptorParserRegistry.getInstance().parseDescriptor(ivy.getSettings(),
-                                fivyF.toURI().toURL(), ivy.getSettings().doValidate());
+                        return ModuleDescriptorParserRegistry.getInstance()
+                                .parseDescriptor(
+                                        ivy.getSettings(),
+                                        fivyF.toURI().toURL(),
+                                        ivy.getSettings().doValidate());
                     } catch (MalformedURLException e) {
                         LOGGER.log(Level.WARNING, "The URL is malformed : " + fivyF, e);
                         return null;
@@ -397,11 +405,15 @@ public class IvyBuildTrigger extends Notifier implements DependencyDeclarer {
                 copyFileFromWorkspaceIfNecessary(b.getWorkspace(), propertyFile, destDir, BACKUP_IVY_PROPERTIES_NAME);
                 propertyFileToLoadIntoIvy = BACKUP_IVY_PROPERTIES_NAME;
             } catch (IOException e) {
-                LOGGER.log(Level.WARNING, "Failed to access the workspace ivy properties file '" + propertyFile + "'", e);
+                LOGGER.log(
+                        Level.WARNING, "Failed to access the workspace ivy properties file '" + propertyFile + "'", e);
                 LOGGER.log(Level.WARNING, "Removing ModuleDescriptor");
                 return null;
             } catch (InterruptedException e) {
-                LOGGER.log(Level.WARNING, "Interrupted while accessing the workspace ivy properties file '" + propertyFile + "'", e);
+                LOGGER.log(
+                        Level.WARNING,
+                        "Interrupted while accessing the workspace ivy properties file '" + propertyFile + "'",
+                        e);
                 File ivyP = new File(destDir, BACKUP_IVY_PROPERTIES_NAME);
                 if (ivyP.canRead()) {
                     LOGGER.log(Level.WARNING, "Will try to use use existing ivy properties backup");
@@ -426,11 +438,15 @@ public class IvyBuildTrigger extends Notifier implements DependencyDeclarer {
                 copyFileFromWorkspaceIfNecessary(b.getWorkspace(), ivyDesc, destDir, BACKUP_IVY_FILE_NAME);
             } catch (IOException e) {
                 LOGGER.log(Level.WARNING, "Failed to access the workspace ivy file '" + ivyDesc + "'", e);
-                //Slave may not be available, so try using the backup.
-                if (ivyF.canRead()) LOGGER.log(Level.WARNING, "Will try to use use existing ivy file backup");
+                // Slave may not be available, so try using the backup.
+                if (ivyF.canRead()) {
+                    LOGGER.log(Level.WARNING, "Will try to use use existing ivy file backup");
+                }
             } catch (InterruptedException e) {
                 LOGGER.log(Level.WARNING, "Interrupted while accessing the workspace ivy file '" + ivyDesc + "'", e);
-                if (ivyF.canRead()) LOGGER.log(Level.WARNING, "Will try to use use existing ivy file backup");
+                if (ivyF.canRead()) {
+                    LOGGER.log(Level.WARNING, "Will try to use use existing ivy file backup");
+                }
             }
         }
 
@@ -445,10 +461,14 @@ public class IvyBuildTrigger extends Notifier implements DependencyDeclarer {
         if (moduleDescriptor == null || fivyF.lastModified() > lastmodified) {
             lastmodified = fivyF.lastModified();
             return (ModuleDescriptor) ivy.execute(new IvyCallback() {
+                @Override
                 public Object doInIvyContext(Ivy ivy, IvyContext context) {
                     try {
-                        return ModuleDescriptorParserRegistry.getInstance().parseDescriptor(ivy.getSettings(),
-                                fivyF.toURI().toURL(), ivy.getSettings().doValidate());
+                        return ModuleDescriptorParserRegistry.getInstance()
+                                .parseDescriptor(
+                                        ivy.getSettings(),
+                                        fivyF.toURI().toURL(),
+                                        ivy.getSettings().doValidate());
                     } catch (MalformedURLException e) {
                         LOGGER.log(Level.WARNING, "The URL is malformed : " + fivyF, e);
                         return null;
@@ -476,7 +496,9 @@ public class IvyBuildTrigger extends Notifier implements DependencyDeclarer {
     private void setModuleDescriptor(ModuleDescriptor d) {
         ModuleDescriptor old = moduleDescriptor;
         moduleDescriptor = d;
-        if (old == moduleDescriptor) return;
+        if (old == moduleDescriptor) {
+            return;
+        }
         if ((old == null) || !old.equals(moduleDescriptor)) {
             DESCRIPTOR.invalidateProjectMap();
             Jenkins.get().rebuildDependencyGraph();
@@ -489,7 +511,8 @@ public class IvyBuildTrigger extends Notifier implements DependencyDeclarer {
      * @return always returns true so the build can continue
      */
     @Override
-    public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+    public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener)
+            throws InterruptedException, IOException {
         setModuleDescriptor(recomputeModuleDescriptor(build));
         return true;
     }
@@ -506,6 +529,7 @@ public class IvyBuildTrigger extends Notifier implements DependencyDeclarer {
         return true;
     }
 
+    @Override
     public BuildStepMonitor getRequiredMonitorService() {
         return BuildStepMonitor.BUILD;
     }
@@ -516,6 +540,7 @@ public class IvyBuildTrigger extends Notifier implements DependencyDeclarer {
      * @param owner  the project this trigger belongs to
      * @param graph  the DependencyGraph to which computed dependencies are added
      */
+    @Override
     public void buildDependencyGraph(AbstractProject owner, DependencyGraph graph) {
         ModuleDescriptor md;
         md = getModuleDescriptor(owner);
@@ -536,12 +561,18 @@ public class IvyBuildTrigger extends Notifier implements DependencyDeclarer {
             boolean found = false;
             for (AbstractProject p : possibleDeps) {
                 // ignore disabled Projects
-                if (p.isDisabled()) p = null;
+                if (p.isDisabled()) {
+                    p = null;
+                }
                 // Such a project might not exist
                 if (p != null && p instanceof Project) {
                     if (captures(rid, (Project) p)) {
                         found = true;
-                        graph.addDependency(new IvyThresholdDependency(p, owner, triggerWhenUnstable ? Result.UNSTABLE : Result.SUCCESS, useUpstreamParameters));
+                        graph.addDependency(new IvyThresholdDependency(
+                                p,
+                                owner,
+                                triggerWhenUnstable ? Result.UNSTABLE : Result.SUCCESS,
+                                useUpstreamParameters));
                     }
                 }
             }
@@ -685,9 +716,13 @@ public class IvyBuildTrigger extends Notifier implements DependencyDeclarer {
          * @return a List of Matching Projects
          */
         private List<AbstractProject> getProjectsFor(ModuleId searchId) {
-            if (projectMap == null) calculateProjectMap();
+            if (projectMap == null) {
+                calculateProjectMap();
+            }
             List<AbstractProject> result = projectMap.get(searchId);
-            if (result == null) result = Collections.emptyList();
+            if (result == null) {
+                result = Collections.emptyList();
+            }
             return result;
         }
 
@@ -719,8 +754,14 @@ public class IvyBuildTrigger extends Notifier implements DependencyDeclarer {
 
                     try {
                         m = t.getModuleDescriptor(p);
-                    } catch (Exception e) { // This does sometimes fail with an exception instead of returning null for an offline slave
-                        LOGGER.log(Level.WARNING, "Calculating the ModuleDescriptor failed for project " + p.getFullDisplayName(), e);
+                    } catch (
+                            Exception
+                                    e) { // This does sometimes fail with an exception instead of returning null for an
+                        // offline slave
+                        LOGGER.log(
+                                Level.WARNING,
+                                "Calculating the ModuleDescriptor failed for project " + p.getFullDisplayName(),
+                                e);
                         m = null;
                     }
 
@@ -819,7 +860,8 @@ public class IvyBuildTrigger extends Notifier implements DependencyDeclarer {
          * @throws ServletException   ServletException on the servlet call
          * @see #isExtendedVersionMatching()
          */
-        public void doHandleExternalTrigger(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        public void doHandleExternalTrigger(StaplerRequest req, StaplerResponse rsp)
+                throws IOException, ServletException {
             String org = Util.fixEmptyAndTrim(req.getParameter("org"));
             String name = Util.fixEmptyAndTrim(req.getParameter("name"));
             String branch = Util.fixEmptyAndTrim(req.getParameter("branch"));
@@ -832,11 +874,13 @@ public class IvyBuildTrigger extends Notifier implements DependencyDeclarer {
             }
 
             if (extendedVersionMatching && branch == null && rev == null) {
-                throw new IllegalArgumentException("doHandleExternalTrigger requires rev or branch when using extended revision matching");
+                throw new IllegalArgumentException(
+                        "doHandleExternalTrigger requires rev or branch when using extended revision matching");
             }
 
             ModuleId id = ModuleId.newInstance(org, name);
-            String ivylabel = ModuleRevisionId.newInstance(org, name, branch, Util.fixNull(rev)).toString();  // Used only in reporting.
+            String ivylabel = ModuleRevisionId.newInstance(org, name, branch, Util.fixNull(rev))
+                    .toString(); // Used only in reporting.
             List<AbstractProject> downstream = Collections.emptyList();
 
             List<AbstractProject> candidates = getProjectsFor(id);
@@ -845,7 +889,9 @@ public class IvyBuildTrigger extends Notifier implements DependencyDeclarer {
                 // Don't try to identify downstream dependencies of a disabled project.
                 // This is more consistent when simulating Jenkins dependency behavior,
                 // i.e. a disabled parent could not have been built to initiate the trigger.
-                if (candidate.isDisabled() || !(candidate instanceof Project)) continue;
+                if (candidate.isDisabled() || !(candidate instanceof Project)) {
+                    continue;
+                }
 
                 Project p = (Project) candidate;
                 IvyBuildTrigger t = (IvyBuildTrigger) p.getPublisher(DESCRIPTOR);
@@ -855,12 +901,15 @@ public class IvyBuildTrigger extends Notifier implements DependencyDeclarer {
                         ModuleDescriptor md = t.getModuleDescriptor(p);
                         ModuleRevisionId mdrid = md.getModuleRevisionId();
                         String mdbranch = mdrid.getBranch();
-                        if (branch != null && branch.equals(mdbranch) == false)
+                        if (branch != null && branch.equals(mdbranch) == false) {
                             continue;
-                        if (branch == null && mdbranch != null)
+                        }
+                        if (branch == null && mdbranch != null) {
                             continue;
-                        if (rev != null && rev.equals(mdrid.getRevision()) == false)
+                        }
+                        if (rev != null && rev.equals(mdrid.getRevision()) == false) {
                             continue;
+                        }
                     }
                     downstream = Jenkins.get().getDependencyGraph().getDownstream(p);
                     break;
