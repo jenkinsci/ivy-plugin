@@ -1,6 +1,6 @@
 /*
  * Copyright 2010-2011 Timothy Bingaman
- * 
+ *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,22 +18,21 @@
  */
 package hudson.ivy;
 
-import java.util.List;
-
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.TaskListener;
+import java.util.List;
 
 /**
  * Represents a dependency that never triggers a downstream build.
- * 
+ *
  * Used to represent the association between an Ivy Project configured to build
  * its modules as separate jobs and downstream projects depending on its
  * modules. This is required to make downstream projects behave properly when
  * they have their "Block build when upstream project is building" option
  * enabled.
- * 
+ *
  * @author tbingaman
  */
 public class IvyVirtualDependency extends IvyDependency {
@@ -46,5 +45,4 @@ public class IvyVirtualDependency extends IvyDependency {
     public boolean shouldTriggerBuild(AbstractBuild build, TaskListener listener, List<Action> actions) {
         return false;
     }
-
 }

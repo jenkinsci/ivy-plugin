@@ -31,7 +31,6 @@ import hudson.model.Cause;
 import hudson.model.ItemGroup;
 import hudson.model.ParametersAction;
 import hudson.triggers.Trigger;
-
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -41,7 +40,8 @@ import java.util.Set;
  *
  * @author Timothy Bingaman
  */
-public abstract class AbstractIvyProject<P extends AbstractProject<P,R>,R extends AbstractBuild<P,R>> extends AbstractProject<P,R> {
+public abstract class AbstractIvyProject<P extends AbstractProject<P, R>, R extends AbstractBuild<P, R>>
+        extends AbstractProject<P, R> {
     protected AbstractIvyProject(ItemGroup parent, String name) {
         super(parent, name);
     }
@@ -58,8 +58,9 @@ public abstract class AbstractIvyProject<P extends AbstractProject<P,R>,R extend
         addTransientActionsFromBuild(getLastBuild(), r, added);
         addTransientActionsFromBuild(getLastSuccessfulBuild(), r, added);
 
-        for (Trigger<?> trigger : getTriggers().values())
+        for (Trigger<?> trigger : getTriggers().values()) {
             r.addAll(trigger.getProjectActions());
+        }
 
         return r;
     }
@@ -74,14 +75,14 @@ public abstract class AbstractIvyProject<P extends AbstractProject<P,R>,R extend
 
     @Override
     public boolean scheduleBuild(Cause c) {
-        if(c instanceof ParameterizedUpstreamCause) {
+        if (c instanceof ParameterizedUpstreamCause) {
 
             ParameterizedUpstreamCause upc = (ParameterizedUpstreamCause) c;
 
-            if(isUseUpstreamParameters()) {
+            if (isUseUpstreamParameters()) {
                 List<ParametersAction> upStreamParams = upc.getUpStreamParameters();
 
-                return scheduleBuild(getQuietPeriod(),c,upStreamParams.toArray(new ParametersAction[0]));
+                return scheduleBuild(getQuietPeriod(), c, upStreamParams.toArray(new ParametersAction[0]));
             }
         }
 

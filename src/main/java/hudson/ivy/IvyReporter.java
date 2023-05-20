@@ -32,12 +32,10 @@ import hudson.model.BuildListener;
 import hudson.model.Describable;
 import hudson.tasks.BuildStep;
 import hudson.tasks.Publisher;
-
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
-
 import jenkins.model.Jenkins;
 import org.apache.tools.ant.BuildEvent;
 
@@ -113,7 +111,8 @@ public abstract class IvyReporter implements Describable<IvyReporter>, Extension
      *      provide a better error message, if it can do so, so that users have better
      *      understanding on why it failed.
      */
-    public boolean preBuild(IvyBuildProxy build, BuildEvent event, BuildListener listener) throws InterruptedException, IOException {
+    public boolean preBuild(IvyBuildProxy build, BuildEvent event, BuildListener listener)
+            throws InterruptedException, IOException {
         return true;
     }
 
@@ -131,7 +130,8 @@ public abstract class IvyReporter implements Describable<IvyReporter>, Extension
      * @throws IOException
      *      See {@link #preBuild}
      */
-    public boolean enterModule(IvyBuildProxy build, BuildEvent event, BuildListener listener) throws InterruptedException, IOException {
+    public boolean enterModule(IvyBuildProxy build, BuildEvent event, BuildListener listener)
+            throws InterruptedException, IOException {
         return true;
     }
 
@@ -140,7 +140,8 @@ public abstract class IvyReporter implements Describable<IvyReporter>, Extension
      *
      * @see #enterModule
      */
-    public boolean leaveModule(IvyBuildProxy build, BuildEvent event, BuildListener listener) throws InterruptedException, IOException {
+    public boolean leaveModule(IvyBuildProxy build, BuildEvent event, BuildListener listener)
+            throws InterruptedException, IOException {
         return true;
     }
 
@@ -157,7 +158,8 @@ public abstract class IvyReporter implements Describable<IvyReporter>, Extension
      * @throws IOException
      *      See {@link #preBuild}
      */
-    public boolean postBuild(IvyBuildProxy build, BuildEvent event, BuildListener listener) throws InterruptedException, IOException {
+    public boolean postBuild(IvyBuildProxy build, BuildEvent event, BuildListener listener)
+            throws InterruptedException, IOException {
         return true;
     }
 
@@ -168,7 +170,8 @@ public abstract class IvyReporter implements Describable<IvyReporter>, Extension
      * This method fires after {@link #postBuild(IvyBuildProxy, BuildEvent, BuildListener)}.
      * Works like {@link Publisher#perform(Build, Launcher, BuildListener)}.
      */
-    public boolean end(IvyBuild build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+    public boolean end(IvyBuild build, Launcher launcher, BuildListener listener)
+            throws InterruptedException, IOException {
         return true;
     }
 
@@ -193,6 +196,7 @@ public abstract class IvyReporter implements Describable<IvyReporter>, Extension
      * @deprecated as of 1.21
      *      Use {@link #getProjectActions(IvyModule)} instead.
      */
+    @Deprecated
     public Action getProjectAction(IvyModule module) {
         return null;
     }
@@ -220,7 +224,9 @@ public abstract class IvyReporter implements Describable<IvyReporter>, Extension
     public Collection<? extends Action> getProjectActions(IvyModule module) {
         // delegate to getProjectAction (singular) for backward compatible behavior
         Action a = getProjectAction(module);
-        if (a==null)    return Collections.emptyList();
+        if (a == null) {
+            return Collections.emptyList();
+        }
         return Collections.singletonList(a);
     }
 
@@ -239,6 +245,7 @@ public abstract class IvyReporter implements Describable<IvyReporter>, Extension
         return null;
     }
 
+    @Override
     public IvyReporterDescriptor getDescriptor() {
         return (IvyReporterDescriptor) Jenkins.get().getDescriptorOrDie(getClass());
     }

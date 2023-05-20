@@ -1,6 +1,6 @@
 /*
  * Copyright 2010-2011 Timothy Bingaman, Jesse Bexten
- * 
+ *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,19 +18,18 @@
  */
 package hudson.ivy;
 
-import java.util.List;
-
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
-import hudson.model.ParametersAction;
 import hudson.model.Action;
+import hudson.model.ParametersAction;
 import hudson.model.Result;
 import hudson.model.TaskListener;
+import java.util.List;
 
 /**
  * Invoke downstream projects with applicable parameters using Jenkins'
  * DependencyGraph.Dependency interface.
- * 
+ *
  * @author tbingaman
  */
 public class IvyThresholdDependency extends IvyDependency {
@@ -38,7 +37,11 @@ public class IvyThresholdDependency extends IvyDependency {
     private final Result threshold;
     private final boolean useUpstreamParameters;
 
-    public IvyThresholdDependency(AbstractProject<?, ?> upstream, AbstractProject<?, ?> downstream, Result threshold, boolean useUpstreamParameters) {
+    public IvyThresholdDependency(
+            AbstractProject<?, ?> upstream,
+            AbstractProject<?, ?> downstream,
+            Result threshold,
+            boolean useUpstreamParameters) {
         super(upstream, downstream);
         this.threshold = threshold;
         this.useUpstreamParameters = useUpstreamParameters;
@@ -46,16 +49,13 @@ public class IvyThresholdDependency extends IvyDependency {
 
     @Override
     public boolean shouldTriggerBuild(AbstractBuild build, TaskListener listener, List<Action> actions) {
-        if (build.getResult().isBetterOrEqualTo(threshold))
-        {
-        	if(useUpstreamParameters)
-        	{
-        		List<ParametersAction> paramActions = build.getActions(ParametersAction.class);
-        		actions.addAll(paramActions);
-        	}
+        if (build.getResult().isBetterOrEqualTo(threshold)) {
+            if (useUpstreamParameters) {
+                List<ParametersAction> paramActions = build.getActions(ParametersAction.class);
+                actions.addAll(paramActions);
+            }
             return true;
         }
         return false;
     }
-
 }

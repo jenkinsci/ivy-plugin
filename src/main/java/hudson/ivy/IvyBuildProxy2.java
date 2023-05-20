@@ -54,19 +54,23 @@ public interface IvyBuildProxy2 extends IvyBuildProxy {
      *
      * Meant to be useful as the base class for other filters.
      */
-    /*package*/ static abstract class Filter<CORE extends IvyBuildProxy2> extends IvyBuildProxy.Filter<CORE> implements IvyBuildProxy2 {
+    /*package*/ abstract static class Filter<CORE extends IvyBuildProxy2> extends IvyBuildProxy.Filter<CORE>
+            implements IvyBuildProxy2 {
         protected Filter(CORE core) {
             super(core);
         }
 
+        @Override
         public void start() {
             core.start();
         }
 
+        @Override
         public void end() {
             core.end();
         }
 
+        @Override
         public void appendLastLog() {
             core.appendLastLog();
         }
