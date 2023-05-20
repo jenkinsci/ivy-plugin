@@ -39,7 +39,10 @@ THE SOFTWARE.
               <div>
                 <script>
                   function build(a) {
-                    new Ajax.Request(a.href);
+                    fetch(a.href, {
+                        method: "post",
+                        headers: crumb.wrap({}),
+                    });
                     hoverNotification('${%Build scheduled}',a);
                     return false;
                   }
