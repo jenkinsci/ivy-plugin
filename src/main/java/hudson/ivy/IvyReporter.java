@@ -61,7 +61,7 @@ import org.apache.tools.ant.BuildEvent;
  * This is the {@link IvyBuild} equivalent of {@link BuildStep}. Instances
  * of {@link IvyReporter}s are persisted with {@link IvyModule}/{@link IvyModuleSet},
  * possibly with configuration specific to that job.
- *
+ * <p>
  *
  * <h2>Callback Firing Sequence</h2>
  * <p>
@@ -75,7 +75,7 @@ import org.apache.tools.ant.BuildEvent;
  * <p>
  * When an error happens, the call sequence could be terminated at any point
  * and no further callback methods may be invoked.
- *
+ * <p>
  *
  * <h2>Action</h2>
  * <p>

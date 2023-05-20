@@ -229,7 +229,7 @@ public class IvyBuild extends AbstractIvyBuild<IvyModule, IvyBuild> {
         }
 
         @Override
-        void preModule(BuildEvent event) throws InterruptedException, IOException, AbortException {
+        void preModule(BuildEvent event) throws InterruptedException, IOException {
             for (IvyReporter r : reporters) {
                 if (!r.enterModule(buildProxy, event, listener)) {
                     throw new AbortException(r + " failed");
@@ -238,7 +238,7 @@ public class IvyBuild extends AbstractIvyBuild<IvyModule, IvyBuild> {
         }
 
         @Override
-        void postModule(BuildEvent event) throws InterruptedException, IOException, AbortException {
+        void postModule(BuildEvent event) throws InterruptedException, IOException {
             for (IvyReporter r : reporters) {
                 if (!r.leaveModule(buildProxy, event, listener)) {
                     throw new AbortException(r + " failed");

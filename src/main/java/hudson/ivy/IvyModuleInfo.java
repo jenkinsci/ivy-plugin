@@ -55,7 +55,7 @@ final class IvyModuleInfo implements Serializable {
     /**
      * Relative path from the workspace to the ivy descriptor file for this
      * module.
-     *
+     * <p>
      * Strings like "ivy.xml" (if the ivy.xml file is checked out directly in
      * the workspace), "abc/ivy.xml", "foo/bar/zot/ivy.xml".
      */

@@ -105,7 +105,7 @@ public interface IvyBuildProxy {
 
     /**
      * # of milliseconds elapsed since {@link #getTimestamp()}.
-     *
+     * <p>
      * Where the clock skew is involved between the master and the Ivy JVM, comparing
      * current time on Ivy JVM with {@link #getTimestamp()} could be problematic,
      * but this value is more robust.
@@ -137,7 +137,7 @@ public interface IvyBuildProxy {
      */
     void registerAsAggregatedProjectAction(IvyReporter reporter);
 
-    public interface BuildCallable<V, T extends Throwable> extends Serializable {
+    interface BuildCallable<V, T extends Throwable> extends Serializable {
         /**
          * Performs computation and returns the result,
          * or throws some exception.
@@ -154,10 +154,10 @@ public interface IvyBuildProxy {
 
     /**
      * Filter for {@link IvyBuildProxy}.
-     *
+     * <p>
      * Meant to be useful as the base class for other filters.
      */
-    /*package*/ abstract static class Filter<CORE extends IvyBuildProxy> implements IvyBuildProxy, Serializable {
+    /*package*/ abstract class Filter<CORE extends IvyBuildProxy> implements IvyBuildProxy, Serializable {
         protected final CORE core;
 
         protected Filter(CORE core) {

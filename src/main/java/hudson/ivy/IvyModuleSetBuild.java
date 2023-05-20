@@ -26,12 +26,23 @@ package hudson.ivy;
 import hudson.AbortException;
 import hudson.EnvVars;
 import hudson.FilePath;
+import hudson.Functions;
 import hudson.Launcher;
 import hudson.Util;
 import hudson.ivy.IvyBuild.ProxyImpl2;
 import hudson.ivy.builder.IvyBuilderType;
-import hudson.model.*;
+import hudson.model.AbstractProject;
+import hudson.model.Action;
+import hudson.model.Build;
+import hudson.model.BuildListener;
+import hudson.model.Environment;
+import hudson.model.Executor;
+import hudson.model.Fingerprint;
+import hudson.model.ParametersAction;
 import hudson.model.Queue;
+import hudson.model.Result;
+import hudson.model.Run;
+import hudson.model.TaskListener;
 import hudson.remoting.Callable;
 import hudson.remoting.Channel;
 import hudson.scm.ChangeLogSet;
@@ -45,8 +56,16 @@ import java.io.PrintStream;
 import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.text.ParseException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Properties;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
@@ -107,7 +126,7 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
 
     /**
      * Exposes {@code ANT_OPTS} to forked processes.
-     *
+     * <p>
      * When we fork Ant, we do so directly by executing Java, thus this
      * environment variable is pointless (we have to tweak JVM launch option
      * correctly instead, which can be seen in {@code IvyProcessFactory}), but
@@ -151,7 +170,7 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
      * Returns the filtered changeset entries that match the given module.
      */
     /* package */ List<ChangeLogSet.Entry> getChangeSetFor(final IvyModule mod) {
-        return new ArrayList<ChangeLogSet.Entry>() {
+        return new ArrayList<>() {
             {
                 for (ChangeLogSet.Entry e : getChangeSet()) {
                     if (isDescendantOf(e, mod)) {
@@ -404,7 +423,7 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
                             if (triggerBuild) {
                                 logger.println("Triggering " + module.getModuleName());
                                 module.scheduleBuild(new ParameterizedUpstreamCause(
-                                        ((Run<?, ?>) IvyModuleSetBuild.this),
+                                        IvyModuleSetBuild.this,
                                         IvyModuleSetBuild.this.getActions(ParametersAction.class)));
                             }
                             triggeredModules.add(module);
@@ -434,7 +453,7 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
                             if (triggerBuild) {
                                 logger.println("Triggering " + module.getModuleName());
                                 module.scheduleBuild(new ParameterizedUpstreamCause(
-                                        ((Run<?, ?>) IvyModuleSetBuild.this),
+                                        IvyModuleSetBuild.this,
                                         IvyModuleSetBuild.this.getActions(ParametersAction.class)));
                                 triggeredModules.add(module);
                             }
@@ -657,7 +676,7 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
 
     /**
      * Runs Ant and builds the project.
-     *
+     * <p>
      * This is only used for {@link IvyModuleSet#isAggregatorStyleBuild() the
      * aggregator style build}.
      */
@@ -741,7 +760,7 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
         }
 
         @Override
-        void preModule(BuildEvent event) throws InterruptedException, IOException, AbortException {
+        void preModule(BuildEvent event) throws InterruptedException, IOException {
             File baseDir = event.getProject().getBaseDir();
             // TODO: find the module that contains this path?
             //            ModuleName name = new ModuleName(event.getProject().getBaseDir());
@@ -754,7 +773,7 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
         }
 
         @Override
-        void postModule(BuildEvent event) throws InterruptedException, IOException, AbortException {
+        void postModule(BuildEvent event) throws InterruptedException, IOException {
             //            ModuleName name = new ModuleName(project);
             //            IvyBuildProxy2 proxy = proxies.get(name);
             //            List<IvyReporter> rs = reporters.get(name);
@@ -884,7 +903,6 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
         /**
          *
          * @return the Ivy instance based on the {@link #ivyConfName}
-         * @throws AbortException
          */
         public Ivy getIvy(PrintStream logger) throws AbortException {
             Message.setDefaultLogger(new IvyMessageImpl());
@@ -932,7 +950,7 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
                 return Ivy.newInstance(ivySettings);
             } catch (Exception e) {
                 logger.println("Error while reading the default Ivy 2.1 settings: " + e.getMessage());
-                logger.println(e.getStackTrace());
+                Functions.printStackTrace(e, logger);
             }
             return null;
         }

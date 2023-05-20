@@ -82,7 +82,7 @@ public final class IvyModule extends AbstractIvyProject<IvyModule, IvyBuild> imp
     /**
      * Revision number of this module as of the last build, taken from
      * {@link ModuleRevisionId#getRevision()}.
-     *
+     * <p>
      * This field can be null if Jenkins loaded old data that didn't record this
      * information, so that situation needs to be handled gracefully.
      */
@@ -91,7 +91,7 @@ public final class IvyModule extends AbstractIvyProject<IvyModule, IvyBuild> imp
     /**
      * Ivy branch of this module as of the last build, taken from
      * {@link ModuleRevisionId#getBranch()}.
-     *
+     * <p>
      * This field can be null if Jenkins loaded old data that didn't record this
      * information, so that situation needs to be handled gracefully.
      */
@@ -102,7 +102,7 @@ public final class IvyModule extends AbstractIvyProject<IvyModule, IvyBuild> imp
     /**
      * Relative path from the workspace to the ivy descriptor file for this
      * module.
-     *
+     * <p>
      * Strings like "ivy.xml" (if the ivy.xml file is checked out directly in
      * the workspace), "abc/ivy.xml", "foo/bar/zot/ivy.xml".
      */
@@ -117,7 +117,7 @@ public final class IvyModule extends AbstractIvyProject<IvyModule, IvyBuild> imp
     /**
      * Relative path from the workspace to the ivy descriptor file for this
      * module.
-     *
+     * <p>
      * Strings like "ivy.xml" (if the ivy.xml file is directly in
      * the module root), "ivy/ivy.xml", "build/ivy.xml".
      */
@@ -225,7 +225,7 @@ public final class IvyModule extends AbstractIvyProject<IvyModule, IvyBuild> imp
     /**
      * Relative path to this module's root directory from the workspace of a
      * {@link IvyModuleSet}.
-     *
+     * <p>
      * The path separator is normalized to '/'.
      */
     public String getRelativePath() {

@@ -151,7 +151,6 @@ public class IvyBuildTrigger extends Notifier implements DependencyDeclarer {
      * @param triggerWhenUnstable
      *            true if this build should be triggered even when an upstream build in Unstable.
      *            false if this build should be triggered only when an upstream build is Successful.
-     * @param useUpstreamParameters
      */
     @DataBoundConstructor
     public IvyBuildTrigger(
@@ -304,8 +303,8 @@ public class IvyBuildTrigger extends Notifier implements DependencyDeclarer {
                 f.copyTo(backupCopy);
                 localFile.setLastModified(flastModified);
                 copied = true;
-                LOGGER.info("Copied the workspace file " + fileToCopy + " to backup "
-                        + localFile.getCanonicalFile().toString() + "/" + localDestFile);
+                LOGGER.info("Copied the workspace file " + fileToCopy + " to backup " + localFile.getCanonicalFile()
+                        + "/" + localDestFile);
             }
         }
         return copied;
@@ -565,7 +564,7 @@ public class IvyBuildTrigger extends Notifier implements DependencyDeclarer {
                     p = null;
                 }
                 // Such a project might not exist
-                if (p != null && p instanceof Project) {
+                if (p instanceof Project) {
                     if (captures(rid, (Project) p)) {
                         found = true;
                         graph.addDependency(new IvyThresholdDependency(
@@ -901,13 +900,13 @@ public class IvyBuildTrigger extends Notifier implements DependencyDeclarer {
                         ModuleDescriptor md = t.getModuleDescriptor(p);
                         ModuleRevisionId mdrid = md.getModuleRevisionId();
                         String mdbranch = mdrid.getBranch();
-                        if (branch != null && branch.equals(mdbranch) == false) {
+                        if (branch != null && !branch.equals(mdbranch)) {
                             continue;
                         }
                         if (branch == null && mdbranch != null) {
                             continue;
                         }
-                        if (rev != null && rev.equals(mdrid.getRevision()) == false) {
+                        if (rev != null && !rev.equals(mdrid.getRevision())) {
                             continue;
                         }
                     }
@@ -916,7 +915,7 @@ public class IvyBuildTrigger extends Notifier implements DependencyDeclarer {
                 }
             }
             for (AbstractProject down : downstream) {
-                if (down.isDisabled() == false) {
+                if (!down.isDisabled()) {
                     down.scheduleBuild(new UserCause(ivylabel));
                 }
             }

@@ -149,8 +149,7 @@ public abstract class AbstractIvyBuild<P extends AbstractIvyProject<P, B>, B ext
 
             if (trigger) {
                 listener.getLogger().println(Messages.IvyBuild_Triggering(down.getName()));
-                down.scheduleBuild(
-                        new ParameterizedUpstreamCause((Run<?, ?>) this, this.getActions(ParametersAction.class)));
+                down.scheduleBuild(new ParameterizedUpstreamCause(this, this.getActions(ParametersAction.class)));
             }
         }
     }
@@ -185,7 +184,7 @@ public abstract class AbstractIvyBuild<P extends AbstractIvyProject<P, B>, B ext
     /**
      * Determines whether any of the upstream project are either
      * building or in the queue.
-     *
+     * <p>
      * This means eventually there will be an automatic triggering of
      * the given project (provided that all builds went smoothly.)
      *

@@ -1,11 +1,13 @@
 package hudson.ivy;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
 
 import io.jenkins.plugins.casc.ConfigurationAsCode;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import org.apache.commons.io.IOUtils;
 import org.junit.Rule;
 import org.junit.Test;
@@ -36,12 +38,13 @@ public class IvyModuleSetTest {
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         ConfigurationAsCode.get().export(outputStream);
-        String exportedYaml = outputStream.toString("UTF-8");
+        String exportedYaml = outputStream.toString(StandardCharsets.UTF_8);
 
         InputStream yamlStream =
                 getClass().getResourceAsStream(getClass().getSimpleName() + "/configuration-as-code.yml");
-        String expectedYaml =
-                IOUtils.toString(yamlStream, "UTF-8").replaceAll("\r\n?", "\n").replace("unclassified:\n", "");
+        String expectedYaml = IOUtils.toString(yamlStream, StandardCharsets.UTF_8)
+                .replaceAll("\r\n?", "\n")
+                .replace("unclassified:\n", "");
 
         assertThat(exportedYaml, containsString(expectedYaml));
     }
