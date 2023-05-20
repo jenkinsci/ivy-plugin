@@ -100,6 +100,6 @@ public abstract class IvyReporterDescriptor extends Descriptor<IvyReporter> {
      */
     public static Collection<IvyReporterDescriptor> all() {
         // use getDescriptorList and not getExtensionList to pick up legacy instances
-        return Jenkins.get().<IvyReporter, IvyReporterDescriptor>getDescriptorList(IvyReporter.class);
+        return Jenkins.get().getDescriptorList(IvyReporter.class);
     }
 }

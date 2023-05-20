@@ -62,7 +62,6 @@ import org.apache.tools.ant.BuildEvent;
  * of {@link IvyReporter}s are persisted with {@link IvyModule}/{@link IvyModuleSet},
  * possibly with configuration specific to that job.
  *
- *
  * <h2>Callback Firing Sequence</h2>
  * <p>
  * The callback methods are invoked in the following order:
@@ -75,7 +74,6 @@ import org.apache.tools.ant.BuildEvent;
  * <p>
  * When an error happens, the call sequence could be terminated at any point
  * and no further callback methods may be invoked.
- *
  *
  * <h2>Action</h2>
  * <p>

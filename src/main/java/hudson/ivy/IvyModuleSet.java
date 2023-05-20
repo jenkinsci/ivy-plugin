@@ -552,7 +552,7 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet, IvyModu
         modules = Collections.emptyMap(); // needed during load
         super.onLoad(parent, name);
 
-        modules = loadChildren(this, getModulesDir(), module -> module.getModuleName());
+        modules = loadChildren(this, getModulesDir(), IvyModule::getModuleName);
         if (publishers == null) {
             publishers = new DescribableList<>(this);
         }

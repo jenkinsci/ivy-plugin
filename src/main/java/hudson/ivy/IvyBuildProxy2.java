@@ -51,10 +51,10 @@ public interface IvyBuildProxy2 extends IvyBuildProxy {
 
     /**
      * Filter for {@link IvyBuildProxy2}.
-     *
+     * <p>
      * Meant to be useful as the base class for other filters.
      */
-    /*package*/ abstract static class Filter<CORE extends IvyBuildProxy2> extends IvyBuildProxy.Filter<CORE>
+    /*package*/ abstract class Filter<CORE extends IvyBuildProxy2> extends IvyBuildProxy.Filter<CORE>
             implements IvyBuildProxy2 {
         protected Filter(CORE core) {
             super(core);
