@@ -84,6 +84,7 @@ import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.verb.POST;
 
 /**
  * Group of {@link IvyModule}s.
@@ -744,6 +745,7 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet, IvyModu
     /**
      * Delete all disabled modules.
      */
+    @POST
     public void doDoDeleteAllDisabledModules(StaplerResponse rsp) throws IOException, InterruptedException {
         checkPermission(DELETE);
         for (IvyModule m : getDisabledModules(true)) {
