@@ -30,26 +30,9 @@
 
   <developers>
     <developer>
-      <id>hibou</id>
-    </developer>
-    <developer>
-      <id>martinficker</id>
-      <name>Martin Ficker</name>
-    </developer>
-    <developer>
-      <id>jmetcalf</id>
-    </developer>
-    <developer>
-      <id>tbingaman</id>
-      <name>Timothy Bingaman</name>
-    </developer>
-    <developer>
-      <id>gboissinot</id>
-      <name>Gregory Boissinot</name>
-    </developer>
-    <developer>
-      <id>arothian</id>
-      <name>Kevin Formsma</name>
+      <id>markewaite</id>
+      <name>Mark Waite</name>
+      <email>mark.earl.waite@gmail.com</email>
     </developer>
   </developers>
 
