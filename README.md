@@ -1,21 +1,13 @@
-# Jenkins Ivy Plugin
+# Ivy Plugin
 
 Provides Jenkins integration with [Apache Ivy](http://ant.apache.org/ivy/).
 
 This plugin automatically configures a build to trigger other builds
-based on dependency configuration via [Apache
-Ivy](http://ant.apache.org/ivy).
-
-**Note**: Support for Hudson has been dropped.  Only Jenkins will be supported from now on.
-
-## Plugin download
-
-- [Latest hpi](http://updates.jenkins-ci.org/latest/ivy.hpi)
+based on dependency configuration via [Apache Ivy](http://ant.apache.org/ivy).
 
 ## Supported versions
 
-Since Version 1.25 this plugin uses Ivy 2.4.0 internally (but it should
-work with Ivy 2.+ projects).
+Since Version 2.6 this plugin uses Ivy 2.5.2 internally.
 
 ## Creating an Ivy Project (added in version 1.0)
 
