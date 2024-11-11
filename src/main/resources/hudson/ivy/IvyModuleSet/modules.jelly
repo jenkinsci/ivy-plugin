@@ -36,18 +36,9 @@ THE SOFTWARE.
               ${%A build is in progress to parse the list of modules from the Ivy descriptor files.}
             </j:when>
             <j:otherwise>
-              <div>
-                <script>
-                  function build(a) {
-                    fetch(a.href, {
-                        method: "post",
-                        headers: crumb.wrap({}),
-                    });
-                    hoverNotification('${%Build scheduled}',a);
-                    return false;
-                  }
-                </script>
-                ${%schedule("build?delay=0sec", it.parameterized?null:'return build(this)', !it.parameterized)}
+              <st:adjunct includes="hudson.ivy.IvyModuleSet.modules-resource"/>
+              <div class="ivy-data-holder" data-is-parametrized="${it.parameterized}" data-build-scheduled-message="${%Build scheduled}">
+                ${%schedule("build?delay=0sec")}
               </div>
             </j:otherwise>
           </j:choose>
