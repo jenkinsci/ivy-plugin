@@ -36,7 +36,7 @@ THE SOFTWARE.
             <f:textbox/>
           </f:entry>
           <f:entry title="${%ivy_configuration_file_title}" field="ivyConfPath">
-            <f:textbox checkUrl="'publisher/IvyBuildTrigger/checkIvyConf?value='+escape(this.value)"/>
+            <f:textbox checkUrl="publisher/IvyBuildTrigger/checkIvyConf" checkDependsOn=""/>
           </f:entry>
           <f:entry title="" field="settingsDelete">
             <div align="right">
