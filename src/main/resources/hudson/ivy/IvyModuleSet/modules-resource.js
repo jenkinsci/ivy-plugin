@@ -10,8 +10,13 @@ window.addEventListener("DOMContentLoaded", () => {
             fetch(anchor.href, {
                 method: "post",
                 headers: crumb.wrap({}),
+            }).then((rsp) => {
+                if (rsp.ok) {
+                    notificationBar.show(buildScheduledMessage, notificationBar.SUCCESS);
+                } else {
+                    notificationBar.show("Could not schedule a build", notificationBar.ERROR);
+                }
             });
-            hoverNotification(buildScheduledMessage, anchor);
         }
     });
 });
