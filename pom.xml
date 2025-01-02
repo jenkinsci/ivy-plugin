@@ -9,7 +9,7 @@
   </parent>
 
   <artifactId>ivy</artifactId>
-  <version>2.8</version>
+  <version>${revision}${changelist}</version>
   <packaging>hpi</packaging>
   <name>Ivy Plugin</name>
   <description>This plugin adds Ivy support to Jenkins</description>
@@ -31,12 +31,12 @@
   <scm>
     <connection>scm:git:https://github.com/${gitHubRepo}.git</connection>
     <developerConnection>scm:git:git@github.com:${gitHubRepo}.git</developerConnection>
-    <tag>ivy-2.8</tag>
+    <tag>${scmTag}</tag>
     <url>https://github.com/${gitHubRepo}</url>
   </scm>
 
   <properties>
-    <revision>2.8</revision>
+    <revision>2.9</revision>
     <changelist>-SNAPSHOT</changelist>
     <jenkins.baseline>2.452</jenkins.baseline>
     <jenkins.version>${jenkins.baseline}.4</jenkins.version>
