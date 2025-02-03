@@ -29,7 +29,6 @@ import java.util.Collection;
 import jenkins.model.Jenkins;
 import org.apache.commons.jelly.JellyException;
 import org.kohsuke.stapler.MetaClass;
-import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.WebApp;
 import org.kohsuke.stapler.jelly.JellyClassTearOff;
 
@@ -78,7 +77,7 @@ public abstract class IvyReporterDescriptor extends Descriptor<IvyReporter> {
      */
     @Override
     @Deprecated
-    public IvyReporter newInstance(StaplerRequest req) throws FormException {
+    public IvyReporter newInstance(org.kohsuke.stapler.StaplerRequest req) throws FormException {
         return null;
     }
 

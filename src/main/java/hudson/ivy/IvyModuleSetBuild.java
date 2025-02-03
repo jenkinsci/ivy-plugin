@@ -84,8 +84,8 @@ import org.apache.tools.ant.types.FileSet;
 import org.jenkinsci.lib.configprovider.model.Config;
 import org.jenkinsci.plugins.configfiles.ConfigFiles;
 import org.jenkinsci.plugins.configfiles.common.CleanTempFilesAction;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 
 /**
  * {@link Build} for {@link IvyModuleSet}.
@@ -224,7 +224,7 @@ public class IvyModuleSetBuild extends AbstractIvyBuild<IvyModuleSet, IvyModuleS
     }
 
     @Override
-    public Object getDynamic(String token, StaplerRequest req, StaplerResponse rsp) {
+    public Object getDynamic(String token, StaplerRequest2 req, StaplerResponse2 rsp) {
         // map corresponding module build under this object
         if (token.indexOf('$') > 0) {
             IvyModule m = getProject().getModule(token);

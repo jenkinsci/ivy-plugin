@@ -46,6 +46,7 @@ import hudson.tasks.BuildWrapper;
 import hudson.tasks.LogRotator;
 import hudson.tasks.Publisher;
 import hudson.util.DescribableList;
+import jakarta.servlet.ServletException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -56,12 +57,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
 import org.apache.commons.lang.StringUtils;
 import org.apache.ivy.core.module.id.ModuleRevisionId;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.export.Exported;
 
 /**
@@ -572,7 +572,8 @@ public final class IvyModule extends AbstractIvyProject<IvyModule, IvyBuild> imp
     }
 
     @Override
-    protected void submit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, FormException {
+    protected void submit(StaplerRequest2 req, StaplerResponse2 rsp)
+            throws IOException, ServletException, FormException {
         super.submit(req, rsp);
 
         targets = Util.fixEmptyAndTrim(req.getParameter("targets"));

@@ -40,6 +40,7 @@ import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Notifier;
 import hudson.tasks.Publisher;
 import hudson.util.FormValidation;
+import jakarta.servlet.ServletException;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -52,7 +53,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.servlet.ServletException;
 import jenkins.model.DependencyDeclarer;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
@@ -70,8 +70,8 @@ import org.apache.ivy.util.Message;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 
 /**
  * Trigger the build of other project based on the Ivy dependency management system.
@@ -818,7 +818,7 @@ public class IvyBuildTrigger extends Notifier implements DependencyDeclarer {
          * Configure the Descriptor from a GUI request.
          */
         @Override
-        public boolean configure(StaplerRequest req, JSONObject json) {
+        public boolean configure(StaplerRequest2 req, JSONObject json) {
             try (BulkChange bc = new BulkChange(this)) {
                 configurations = new IvyConfiguration[0];
                 req.bindJSON(this, json);
@@ -839,9 +839,9 @@ public class IvyBuildTrigger extends Notifier implements DependencyDeclarer {
          * One such triggering event could be publish of a non-integration (milestone/release) build of the IvyBuildTrigger
          * managed project code to the Ivy repository that is visible to your build system.
          * <p>
-         * The StaplerRequest parameter must include request parameters <code>org</code> and <code>name</code>
+         * The StaplerRequest2 parameter must include request parameters <code>org</code> and <code>name</code>
          * which respectively represent the Ivy module descriptor attributes <code>organisation</code> and <code>module</code>.
-         * Optional request parameters that can be passed on the StaplerRequest include <code>branch</code> and <code>rev</code>
+         * Optional request parameters that can be passed on the StaplerRequest2 include <code>branch</code> and <code>rev</code>
          * which respectively represent the Ivy module descriptor attributes <code>branch</code> and <code>revision</code>.
          * These values are used to match against the ModuleDescriptor of Jenkins projects using the IvyBuildTrigger.  In the
          * case that more than one project matches, it is the first match that will win, and only that project will have
@@ -853,13 +853,13 @@ public class IvyBuildTrigger extends Notifier implements DependencyDeclarer {
          * dependent projects.  Successfully executing this event trigger requires global {@link Item#BUILD} permission on a
          * secured Jenkins instance.
          *
-         * @param req  The StaplerRequest
-         * @param rsp  The StaplerResponse
+         * @param req  The StaplerRequest2
+         * @param rsp  The StaplerResponse2
          * @throws IOException    IOException on the servlet call
          * @throws ServletException   ServletException on the servlet call
          * @see #isExtendedVersionMatching()
          */
-        public void doHandleExternalTrigger(StaplerRequest req, StaplerResponse rsp)
+        public void doHandleExternalTrigger(StaplerRequest2 req, StaplerResponse2 rsp)
                 throws IOException, ServletException {
             String org = Util.fixEmptyAndTrim(req.getParameter("org"));
             String name = Util.fixEmptyAndTrim(req.getParameter("name"));
@@ -983,7 +983,7 @@ public class IvyBuildTrigger extends Notifier implements DependencyDeclarer {
      * This cause is used when triggering downstream builds from the external event trigger.
      *
      * @author jmetcalf@dev.java.net
-     * @see hudson.ivy.IvyBuildTrigger.DescriptorImpl#doHandleExternalTrigger(StaplerRequest, StaplerResponse)
+     * @see hudson.ivy.IvyBuildTrigger.DescriptorImpl#doHandleExternalTrigger(StaplerRequest2, StaplerResponse2)
      */
     public static class UserCause extends Cause.UserIdCause {
 
@@ -992,7 +992,7 @@ public class IvyBuildTrigger extends Notifier implements DependencyDeclarer {
         /**
          * Constructor
          *
-         * @param ivylabel The Ivy ModuleRevisionId label computed from the StaplerRequest.
+         * @param ivylabel The Ivy ModuleRevisionId label computed from the StaplerRequest2.
          */
         public UserCause(String ivylabel) {
             this.ivylabel = ivylabel;

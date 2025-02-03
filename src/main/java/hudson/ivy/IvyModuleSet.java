@@ -63,6 +63,7 @@ import hudson.util.CopyOnWriteMap;
 import hudson.util.DescribableList;
 import hudson.util.FormValidation;
 import hudson.util.ListBoxModel;
+import jakarta.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -73,7 +74,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.jenkinsci.lib.configprovider.model.Config;
@@ -81,8 +81,8 @@ import org.jenkinsci.plugins.configfiles.ConfigFiles;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.verb.POST;
 
@@ -309,7 +309,7 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet, IvyModu
     }
 
     /**
-     * Called by {@link IvyModule#doDoDelete(StaplerRequest, StaplerResponse)}.
+     * Called by {@link IvyModule#doDoDelete(StaplerRequest2, StaplerResponse2)}.
      * Real deletion is done by the caller, and this method only adjusts the
      * data structure the parent maintains.
      */
@@ -471,7 +471,7 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet, IvyModu
     }
 
     @Override
-    public Object getDynamic(String token, StaplerRequest req, StaplerResponse rsp) {
+    public Object getDynamic(String token, StaplerRequest2 req, StaplerResponse2 rsp) {
         if (ModuleName.isValid(token)) {
             return getModule(token);
         }
@@ -694,7 +694,8 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet, IvyModu
     //
 
     @Override
-    protected void submit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, FormException {
+    protected void submit(StaplerRequest2 req, StaplerResponse2 rsp)
+            throws IOException, ServletException, FormException {
         super.submit(req, rsp);
         JSONObject json = req.getSubmittedForm();
 
@@ -746,7 +747,7 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet, IvyModu
      * Delete all disabled modules.
      */
     @POST
-    public void doDoDeleteAllDisabledModules(StaplerResponse rsp) throws IOException, InterruptedException {
+    public void doDoDeleteAllDisabledModules(StaplerResponse2 rsp) throws IOException, InterruptedException {
         checkPermission(DELETE);
         for (IvyModule m : getDisabledModules(true)) {
             m.delete();
@@ -857,7 +858,7 @@ public final class IvyModuleSet extends AbstractIvyProject<IvyModuleSet, IvyModu
         }
 
         @Override
-        public boolean configure(StaplerRequest req, JSONObject json) {
+        public boolean configure(StaplerRequest2 req, JSONObject json) {
             req.bindJSON(this, json);
             save();
 
