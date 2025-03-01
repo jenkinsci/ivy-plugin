@@ -74,6 +74,12 @@
       <version>2.10.0</version>
       <exclusions>
         <exclusion>
+          <!-- provided by Jenkins core -->
+          <!-- Exclusion can be removed when Jenkins 2.492.x or newer is minimum version -->
+          <groupId>commons-io</groupId>
+          <artifactId>commons-io</artifactId>
+        </exclusion>
+        <exclusion>
           <groupId>org.apache.hadoop</groupId>
           <artifactId>hadoop-hdfs-client</artifactId>
         </exclusion>
