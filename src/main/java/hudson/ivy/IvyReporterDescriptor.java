@@ -27,8 +27,10 @@ import hudson.model.Describable;
 import hudson.model.Descriptor;
 import java.util.Collection;
 import jenkins.model.Jenkins;
+import net.sf.json.JSONObject;
 import org.apache.commons.jelly.JellyException;
 import org.kohsuke.stapler.MetaClass;
+import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.WebApp;
 import org.kohsuke.stapler.jelly.JellyClassTearOff;
 
@@ -76,8 +78,7 @@ public abstract class IvyReporterDescriptor extends Descriptor<IvyReporter> {
      * this method can safely return null, which is the default implementation.
      */
     @Override
-    @Deprecated
-    public IvyReporter newInstance(org.kohsuke.stapler.StaplerRequest req) throws FormException {
+    public IvyReporter newInstance(StaplerRequest2 req, JSONObject formData) throws FormException {
         return null;
     }
 
