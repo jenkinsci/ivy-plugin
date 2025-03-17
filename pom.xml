@@ -9,7 +9,7 @@
   </parent>
 
   <artifactId>ivy</artifactId>
-  <version>${revision}${changelist}</version>
+  <version>${changelist}</version>
   <packaging>hpi</packaging>
   <name>Ivy Plugin</name>
   <description>This plugin adds Ivy support to Jenkins</description>
@@ -36,8 +36,7 @@
   </scm>
 
   <properties>
-    <revision>2.10</revision>
-    <changelist>-SNAPSHOT</changelist>
+    <changelist>999999-SNAPSHOT</changelist>
     <jenkins.baseline>2.479</jenkins.baseline>
     <jenkins.version>${jenkins.baseline}.3</jenkins.version>
     <gitHubRepo>jenkinsci/${project.artifactId}-plugin</gitHubRepo>
