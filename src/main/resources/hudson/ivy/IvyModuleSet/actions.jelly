@@ -29,7 +29,7 @@ THE SOFTWARE.
       <l:task icon="icon-delete-document icon-md" href="deleteAllDisabledModules" title="${%Delete All Disabled Modules}"/>
     </l:isAdmin>
   </j:if>
-  <j:set var="url" value="${h.getNearestAncestorUrl(request,it)}"/>
+  <j:set var="url" value="${h.getNearestAncestorUrl(request2,it)}"/>
   <l:task icon="plugin/ivy/images/24x24/tree-diagramm.png" href="${url}/modules" title="${%Modules}"/>
 
   <!-- include super class definition -->
