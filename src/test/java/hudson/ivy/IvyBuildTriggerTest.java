@@ -5,49 +5,36 @@ import static org.hamcrest.Matchers.arrayWithSize;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 
-import hudson.ivy.IvyBuildTrigger.IvyConfiguration;
 import io.jenkins.plugins.casc.ConfigurationAsCode;
+import io.jenkins.plugins.casc.misc.ConfiguredWithCode;
+import io.jenkins.plugins.casc.misc.JenkinsConfiguredWithCodeRule;
+import io.jenkins.plugins.casc.misc.junit.jupiter.WithJenkinsConfiguredWithCode;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import org.apache.commons.io.IOUtils;
-import org.junit.Rule;
-import org.junit.Test;
-import org.jvnet.hudson.test.JenkinsRule;
+import org.junit.jupiter.api.Test;
 
-public class IvyBuildTriggerTest {
-
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+@WithJenkinsConfiguredWithCode
+class IvyBuildTriggerTest {
 
     @Test
-    public void should_support_jcasc_from_yaml() throws Exception {
+    @ConfiguredWithCode("IvyBuildTriggerTest/configuration-as-code.yml")
+    void should_support_jcasc_from_yaml(JenkinsConfiguredWithCodeRule j) {
         IvyBuildTrigger.DescriptorImpl globalConfig =
                 j.jenkins.getDescriptorByType(IvyBuildTrigger.DescriptorImpl.class);
 
-        String yamlUrl = getClass()
-                .getResource(getClass().getSimpleName() + "/configuration-as-code.yml")
-                .toString();
-        ConfigurationAsCode.get().configure(yamlUrl);
-
+        assertThat(globalConfig.getConfigurations(), arrayWithSize(2));
         assertThat(globalConfig.getConfigurations()[0].getName(), equalTo("setting1"));
         assertThat(globalConfig.getConfigurations()[0].getIvyConfPath(), equalTo("dir/file1.xml"));
         assertThat(globalConfig.getConfigurations()[1].getName(), equalTo("setting2"));
         assertThat(globalConfig.getConfigurations()[1].getIvyConfPath(), equalTo("dir/file2.xml"));
-        assertThat(globalConfig.getConfigurations(), arrayWithSize(2));
         assertThat(globalConfig.isExtendedVersionMatching(), equalTo(true));
     }
 
     @Test
-    public void should_support_jcasc_to_yaml() throws Exception {
-        IvyBuildTrigger.DescriptorImpl globalConfig =
-                j.jenkins.getDescriptorByType(IvyBuildTrigger.DescriptorImpl.class);
-
-        IvyConfiguration config1 = new IvyConfiguration("setting1", "dir/file1.xml");
-        IvyConfiguration config2 = new IvyConfiguration("setting2", "dir/file2.xml");
-        globalConfig.setConfigurations(new IvyConfiguration[] {config1, config2});
-        globalConfig.setExtendedVersionMatching(true);
-
+    @ConfiguredWithCode("IvyBuildTriggerTest/configuration-as-code.yml")
+    void should_support_jcasc_to_yaml(JenkinsConfiguredWithCodeRule j) throws Exception {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         ConfigurationAsCode.get().export(outputStream);
         String exportedYaml = outputStream.toString(StandardCharsets.UTF_8);
