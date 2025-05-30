@@ -16,7 +16,6 @@ Here is a partial list of Apache Ivy versions and their matching inclusion in th
 | 2.5.3        | 2.8                      |
 | 2.5.2        | 2.6                      |
 | 2.5.1        | 2.3                      |
-| 2.5.1        | 2.3                      |
 | 2.5.0        | 2.2                      |
 
 ## Creating an Ivy Project (added in version 1.0)
