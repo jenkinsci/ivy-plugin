@@ -7,7 +7,16 @@ based on dependency configuration via [Apache Ivy](http://ant.apache.org/ivy).
 
 ## Supported versions
 
-Since Version 2.6 this plugin uses Ivy 2.5.2 internally.
+The [release notes](https://plugins.jenkins.io/ivy/releases/) include entries when the version of Apache Ivy is changed in the plugin.
+
+Here is a partial list of Apache Ivy versions and their matching inclusion in the Ivy plugin:
+
+| Ivy version  | Matching plugin release  |
+|--------------|--------------------------|
+| 2.5.3        | 2.8                      |
+| 2.5.2        | 2.6                      |
+| 2.5.1        | 2.3                      |
+| 2.5.0        | 2.2                      |
 
 ## Creating an Ivy Project (added in version 1.0)
 
