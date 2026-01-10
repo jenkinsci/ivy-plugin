@@ -40,6 +40,8 @@
     <jenkins.baseline>2.479</jenkins.baseline>
     <jenkins.version>${jenkins.baseline}.3</jenkins.version>
     <gitHubRepo>jenkinsci/${project.artifactId}-plugin</gitHubRepo>
+    <hpi.bundledArtifacts>cloning,commons-vfs2,ivy,objenesis</hpi.bundledArtifacts>
+    <hpi.strictBundledArtifacts>true</hpi.strictBundledArtifacts>
     <!-- TODO fix violations -->
     <spotbugs.threshold>High</spotbugs.threshold>
     <spotless.check.skip>false</spotless.check.skip>
