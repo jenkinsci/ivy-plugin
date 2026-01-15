@@ -35,7 +35,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import jenkins.model.Jenkins;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 public class AntIvyBuilderType extends IvyBuilderType {

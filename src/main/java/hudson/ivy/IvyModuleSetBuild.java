@@ -70,7 +70,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
 import jenkins.security.MasterToSlaveCallable;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.ivy.Ivy;
 import org.apache.ivy.Ivy.IvyCallback;
 import org.apache.ivy.core.IvyContext;
